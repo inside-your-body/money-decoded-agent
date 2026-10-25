@@ -281,7 +281,7 @@ export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
   const fadeIn = interpolate(f, [b.start, b.start + 5], [0, 1], cl);
   const out = interpolate(f, [b.end - 5, b.end], [1, 0], cl);
   const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
-  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const hasMarks = false;   // owner (Oct 25): no day/month/year time bar on this channel (that was the health channel's idea)
   const clips = (b.clips || []).filter(Boolean);
   const isB = clips.length > 0;
   const words = (b.words || []).slice(0, 4).map((w) => w.toUpperCase());
