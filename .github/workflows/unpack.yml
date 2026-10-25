@@ -1,0 +1,44 @@
+name: Unpack code bundle
+
+# Claude delivers code changes as incoming/bundle.tar.gz (uploaded in the GitHub web UI); this unpacks them into the repo.
+# Workflow files themselves are uploaded directly (GITHUB_TOKEN may not change .github/workflows).
+on:
+  push:
+    paths: ['incoming/bundle.tar.gz']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+concurrency: unpack
+
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - name: Unpack
+        run: |
+          set -e
+          test -f incoming/bundle.tar.gz || { echo "no bundle"; exit 0; }
+          tar -xzf incoming/bundle.tar.gz -C .
+          git rm -q --cached incoming/bundle.tar.gz || true
+          rm -rf incoming
+      - name: Shared licensed assets (music + sound effects) from the Inside Your Body repo
+        run: |
+          if [ ! -d assets/music ] || [ -z "$(ls -A assets/music 2>/dev/null)" ]; then
+            git clone -q --depth 1 https://github.com/inside-your-body/agent /tmp/iyb
+            mkdir -p assets render/public
+            cp -r /tmp/iyb/assets/music assets/
+            [ -d render/public/sfx2 ] || cp -r /tmp/iyb/render/public/sfx2 render/public/
+            [ -d render/public/fonts ] || cp -r /tmp/iyb/render/public/fonts render/public/
+          fi
+          if [ ! -f render/package-lock.json ]; then
+            [ -d /tmp/iyb ] || git clone -q --depth 1 https://github.com/inside-your-body/agent /tmp/iyb
+            cp /tmp/iyb/render/package-lock.json render/
+          fi
+      - name: Commit
+        run: |
+          git config user.name "money-decoded-agent"; git config user.email "agent@users.noreply.github.com"
+          git add -A && git commit -q -m "Unpack code bundle from Claude [skip ci]" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase --autostash -q origin main && git push && break; sleep 5; done

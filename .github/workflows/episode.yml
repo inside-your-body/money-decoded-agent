@@ -1,0 +1,168 @@
+name: Make episode
+
+on:
+  schedule:
+    - cron: '7 11 * * *'       # daily 11:07 UTC = 14:07 Istanbul (GitHub often starts scheduled runs late, so start early)
+    - cron: '7 15 * * *'       # backup run 15:07 UTC; run.py makes at most one episode per day (16 h gap guard)
+                               # long video publishes 20:00 UTC (23:00 Istanbul), the Short 20:30 UTC (23:30 Istanbul)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build only, do not upload'
+        type: boolean
+        default: true
+      topic:
+        description: 'Optional topic override (title or topic-bank number)'
+        required: false
+      replace_ids:
+        description: 'Optional: video ids (comma separated) of a broken upload to delete before this one is uploaded (owner-approved)'
+        required: false
+      resume_run:
+        description: 'Optional: run id whose finished build (work artifact) should be rendered + published without rebuilding'
+        required: false
+
+permissions:
+  contents: write
+  actions: read
+concurrency: episode
+
+env:
+  SHARDS: 7          # 6 parallel parts of the long video + 1 Short
+
+jobs:
+  build:             # research, script, voice, storyboard, drawings, new animations, render props
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    outputs:
+      go: ${{ steps.run.outputs.go }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11', cache: 'pip'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '20', cache: 'npm', cache-dependency-path: render/package-lock.json}
+      - name: System deps
+        timeout-minutes: 8
+        run: for i in 1 2 3; do timeout 150 sudo apt-get update -qq && timeout 300 sudo apt-get install -y -qq ffmpeg fonts-noto-color-emoji && break; sleep 10; done
+      - name: Python deps
+        run: pip install -r requirements.txt
+      - name: Render deps
+        run: cd render && npm ci && npx remotion browser ensure
+      - name: Reuse a finished build
+        if: inputs.resume_run != ''
+        uses: actions/download-artifact@v4
+        with: {name: work, path: work, run-id: '${{ inputs.resume_run }}', github-token: '${{ github.token }}'}
+      - name: Build episode
+        id: run
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          YT_TOKEN_JSON: ${{ secrets.YT_TOKEN_JSON }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ] || [ -z "$OPENAI_API_KEY" ]; then echo "API keys are not set in Settings > Secrets yet -> nothing to do"; exit 0; fi
+          if [ -n "${{ inputs.resume_run }}" ] && [ -f work/current.json ]; then echo "go=1" >> $GITHUB_OUTPUT; echo "reusing build of run ${{ inputs.resume_run }}"; exit 0; fi
+          ARGS="--stage build"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ -n "${{ inputs.topic }}" ]; then ARGS="$ARGS --topic \"${{ inputs.topic }}\""; fi
+          eval python -m agent.run $ARGS
+          if [ -f work/current.json ]; then echo "go=1" >> $GITHUB_OUTPUT; fi
+      - name: Save work
+        if: steps.run.outputs.go == '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: work
+          path: |
+            work/
+            !work/tts_model/
+          retention-days: 3
+      - name: Save build outputs (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.run_number }}
+          path: |
+            work/*/episode.json
+            work/*/research.md
+            work/*/props_*.json
+            work/*/thumbs/*
+            work/*/thumbnail*.jpg
+            work/cost.json
+          retention-days: 14
+
+  render:            # the long video in parallel frame ranges + the Short
+    needs: build
+    if: needs.build.outputs.go == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix: {shard: [0, 1, 2, 3, 4, 5, 6]}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11', cache: 'pip'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '20', cache: 'npm', cache-dependency-path: render/package-lock.json}
+      - name: Deps
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fonts-noto-color-emoji
+          pip install -r requirements.txt
+          cd render && npm ci && npx remotion browser ensure
+      - uses: actions/download-artifact@v4
+        with: {name: work, path: work}
+      - name: Render part ${{ matrix.shard }}
+        run: python -m agent.shard ${{ matrix.shard }} $SHARDS
+      - uses: actions/upload-artifact@v4
+        with: {name: "part-${{ matrix.shard }}", path: work/*/parts/*.mp4, retention-days: 3}
+
+  finish:            # join parts, sound, QA, thumbnail, upload package, publish
+    needs: [build, render]
+    if: needs.build.outputs.go == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11', cache: 'pip'}
+      - name: Deps
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fonts-noto-color-emoji && pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with: {name: work, path: work}
+      - uses: actions/download-artifact@v4
+        with: {pattern: "part-*", path: partsdl, merge-multiple: true}
+      - name: Collect parts
+        run: |
+          D=$(python -c "import json;print(json.load(open('work/current.json'))['dir'])")
+          mkdir -p work/$D/parts && find partsdl -name '*.mp4' -exec mv {} work/$D/parts/ \;
+          ls -la work/$D/parts
+      - name: Finish episode
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          YT_TOKEN_JSON: ${{ secrets.YT_TOKEN_JSON }}
+          REPLACE_IDS: ${{ inputs.replace_ids }}
+        run: |
+          ARGS="--stage finish"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          eval python -m agent.run $ARGS
+      - name: Save outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: episode-${{ github.run_number }}
+          path: |
+            work/*/final_*.mp4
+            work/*/thumbnail*.jpg
+            work/*/package.json
+            work/*/episode.json
+            work/*/qa/*.jpg
+            work/cost.json
+          retention-days: 14
+      - name: Commit topic/history updates
+        if: success()
+        run: |
+          git config user.name "money-decoded-agent"; git config user.email "agent@users.noreply.github.com"
+          git add data/ && git commit -m "episode: update topics/history/library [skip ci]" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase --autostash -q origin main && git push && break; sleep 5; done
