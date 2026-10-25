@@ -1,0 +1,12 @@
+requests
+numpy
+scipy
+soundfile
+Pillow
+fonttools
+brotli
+kokoro-onnx==0.6.1
+faster-whisper==1.2.1
+google-api-python-client
+google-auth
+google-auth-oauthlib

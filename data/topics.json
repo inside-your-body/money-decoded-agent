@@ -1,0 +1,236 @@
+[
+ {
+  "id": 1,
+  "title": "How Banks Create Money Out of Thin Air",
+  "main_keyword": "how banks create money",
+  "angle": "stamps: MINUTE 1 > DAY 1 > YEAR 1 > YEAR 30",
+  "hook": "The moment you sign a mortgage, a bank creates $300,000 that did not exist one second earlier.",
+  "format": "timeline",
+  "status": "next",
+  "source": "owner",
+  "ref": {
+   "note": "Primal Space money-creation video went viral (UNILAD Tech, Feb 2025)"
+  }
+ },
+ {
+  "id": 2,
+  "title": "Where Your Money Actually Goes After You Deposit It",
+  "main_keyword": "where does my money go bank",
+  "angle": "stamps: 9:00 AM > NOON > MIDNIGHT > YEAR 1",
+  "hook": "You deposit $1,000 at nine in the morning. By lunch, most of it is already gone.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Playbook lesson: hidden-process angles perform best"
+  }
+ },
+ {
+  "id": 3,
+  "title": "What Happens to Your Savings After 10 Years of Inflation",
+  "main_keyword": "inflation",
+  "angle": "stamps: DAY 1 > YEAR 1 > YEAR 5 > YEAR 10",
+  "hook": "Your $10,000 is still sitting in the bank. Every number on the screen is exactly the same. And yet it is quietly shrinking.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Primate Economics \"Inflation Explained with Bananas\" 1.7M (2× median); How Money Works \"How Is Everything Outpacing Inflation…\" 1.5M"
+  }
+ },
+ {
+  "id": 4,
+  "title": "What Happens If You Invest $100 a Month From Age 20",
+  "main_keyword": "invest $100 a month",
+  "angle": "stamps: AGE 20 > 25 > 35 > 50 > 65",
+  "hook": "One of them invested for 10 years and stopped. The other invested for 35 years. Guess who ends up with more. (hypothetical, shown with the math)",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Mark Tilbury \"The Only Investing Video… (Start With $100)\" 6.7M; Humphrey Yang \"If I Started Investing In 2026…\" 2.1M"
+  }
+ },
+ {
+  "id": 5,
+  "title": "Why People With the Same Salary End Up Rich or Broke",
+  "main_keyword": "same salary rich or broke",
+  "angle": "stamps: AGE 25 > 30 > 40 > 50 > 65",
+  "hook": "Two neighbours. Same job. Same salary. Thirty years later, one of them owns both houses.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Humphrey Yang \"Why People with the Same Income End Up Rich or Broke\" 1.2M; \"The #1 Wealth Killer No One Talks About\" 4.0M"
+  }
+ },
+ {
+  "id": 6,
+  "title": "What Happens in the First 24 Hours of a Stock Market Crash",
+  "main_keyword": "stock market crash",
+  "angle": "stamps: 9:30 AM > 11 AM > 4 PM > DAY 2 > YEAR 1",
+  "hook": "At 9:31 a.m. the selling starts. By lunch, trillions of dollars have vanished from the screens — and nobody can say where they went.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Casually Finance \"The 1973 Stock Market Crash that Nobody Remembers\" 1.2M, \"Brace For Impact.\" 2.0M (419K subs)"
+  }
+ },
+ {
+  "id": 7,
+  "title": "How the Real Wolf of Wall Street Fooled Thousands",
+  "main_keyword": "wolf of wall street",
+  "angle": "stamps: 1987 > 1989 > 1993 > 1998 > TODAY",
+  "hook": "The phone rings. The voice on the other end is 22 years old — and about to take your life savings.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "How Money Works \"How The Wolf of Wall Street Scam Actually Worked\" 4.8M"
+  }
+ },
+ {
+  "id": 8,
+  "title": "How Bernie Madoff's Ponzi Scheme Fooled Wall Street",
+  "main_keyword": "ponzi scheme",
+  "angle": "stamps: 1960 > 1990 > 2005 > DEC 2008",
+  "hook": "For decades, his fund never had a bad year. That was the first clue.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Scam stories pull views (Wolf of Wall Street 4.8M; How Money Works)"
+  }
+ },
+ {
+  "id": 9,
+  "title": "What Happens to Your Money When a Bank Collapses",
+  "main_keyword": "bank collapse",
+  "angle": "stamps: DAY 1 > HOUR 10 > DAY 2 > WEEK 1",
+  "hook": "On Thursday morning, the bank was fine. By Friday lunch, it no longer existed.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Economics Explained \"What Happens When No One Wants to Trade With You?\" 993K; casually finance \"World's Safest Market Is Breaking\" 1.7M"
+  }
+ },
+ {
+  "id": 10,
+  "title": "How Rockefeller Became the Richest Man in History",
+  "main_keyword": "rockefeller",
+  "angle": "stamps: AGE 16 > 1870 > 1882 > 1911 > TODAY",
+  "hook": "He started as a 16-year-old clerk earning 50 cents a day. Forty years later, his company refined about nine out of every ten barrels of oil in America.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Business Casual \"How Rockefeller Built His Trillion Dollar Oil Empire\" 5.6M"
+  }
+ },
+ {
+  "id": 11,
+  "title": "How George Soros Broke the Bank of England",
+  "main_keyword": "soros bank of england",
+  "angle": "stamps: AUG 1992 > SEPT 15 > 7:30 AM > 7 PM > SEPT 17",
+  "hook": "In a single day, one man bet against an entire country — and the country lost.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Business Casual \"How Soros Made A Billion Dollars And Almost Broke Britain\" 2.9M"
+  }
+ },
+ {
+  "id": 12,
+  "title": "What Happens When a Country's Money Becomes Worthless",
+  "main_keyword": "hyperinflation",
+  "angle": "stamps: JAN 1923 > JULY > OCT > NOV 1923",
+  "hook": "In November 1923, one US dollar was worth 4.2 trillion German marks. Bread cost a wheelbarrow of cash.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Economics Explained \"How the World's Richest Country Lost 90% of its GDP\" 5.2M; \"Why Türkiye Is Not Fixing Its Hyperinflation\" 3.7M"
+  }
+ },
+ {
+  "id": 13,
+  "title": "Tulip Mania: How a Flower Became Worth More Than a House",
+  "main_keyword": "tulip mania",
+  "angle": "stamps: 1634 > 1636 > FEB 3 1637 > FEB 7 1637",
+  "hook": "In 1637, people in Amsterdam were reportedly trading a single flower bulb for a house.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Primate Economics \"Financial Bubbles Explained with Bananas\" 1.1M; How Money Works \"If Not Bubble… Why Bubble Shaped?\" 2.4M"
+  }
+ },
+ {
+  "id": 14,
+  "title": "How the Rich Pay Less Tax Than You (Buy, Borrow, Die)",
+  "main_keyword": "buy borrow die",
+  "angle": "stamps: AGE 30 > 45 > 60 > 85 > HEIRS",
+  "hook": "Some billionaires report almost no income — and it's completely legal.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "How Money Works \"If We Tax Rich People… They Will Just Leave!\" 1.7M; Primate \"Tax Explained with Bananas\" 1.5M; Economics Explained \"Finally a Country Is Taxing Its Billionaires\" 1.3M"
+  }
+ },
+ {
+  "id": 15,
+  "title": "How Credit Card Companies Make Money From You",
+  "main_keyword": "credit card",
+  "angle": "stamps: SWIPE > MONTH 1 > MONTH 6 > YEAR 5",
+  "hook": "The most profitable customer a credit card company can have is the one who never misses a payment.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Primate Economics \"Credit Cards Explained with Bananas\" 1.1M"
+  }
+ },
+ {
+  "id": 16,
+  "title": "Why Lottery Winners Go Broke",
+  "main_keyword": "lottery winners",
+  "angle": "stamps: DAY 1 > MONTH 1 > YEAR 1 > YEAR 5",
+  "hook": "The ticket wins $10 million on a Tuesday. The first stranger calls on Wednesday.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Evergreen search topic (widely covered, e.g. CNBC) — no view count verified yet"
+  }
+ },
+ {
+  "id": 17,
+  "title": "What Happens If America Defaults on Its Debt",
+  "main_keyword": "us debt default",
+  "angle": "stamps: DAY 1 > WEEK 1 > MONTH 1 > YEAR 1",
+  "hook": "It has never happened. Not once in 230 years. Here's what the first morning would look like.",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "How Money Works \"Why A National Debt Default Now Looks Genuinely Possible…\" 3.0M"
+  }
+ },
+ {
+  "id": 18,
+  "title": "Why Millennials Can't Afford What Their Parents Could",
+  "main_keyword": "millennials poorer than parents",
+  "angle": "stamps: 1985 > 1995 > 2010 > 2025",
+  "hook": "In 1985, a 25-year-old could buy a house with three years of salary. Today, it takes more than seven.\" *",
+  "format": "timeline",
+  "status": "todo",
+  "source": "owner",
+  "ref": {
+   "note": "Economics Explained \"Young Generations Are Now Poorer Than Their Parents…\" 7.5M; How Money Works \"If Nobody Can Afford A Home…\" 4.0M"
+  }
+ }
+]

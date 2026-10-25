@@ -1,0 +1,11 @@
+work/
+node_modules
+render/out/
+render/public/ep/
+__pycache__/
+*.pyc
+render/public/proto/
+render/src/gen/a_*.tsx
+render/src/gen/g_*.tsx
+work/
+render/src/gen/t_*.tsx
