@@ -82,7 +82,7 @@ def run_tl(a, topic, ep_dir):
         s = ep['shorts'][k]
         title = (s.get('title') or ep['upload']['title'])[:85]
         spk.append({'k': k, 'file': str(f), 'title': title + ' #Shorts',
-                    'description': s['lines'][0]['text'] + '\n\nThe full story: {FULL_URL}\n\n' + tags + '\n\n' + disclaimer + '\n\n' + audio.credit(st)})
+                    'description': (s.get('caption') or s['lines'][0]['text']) + '\n\nThe full story: {FULL_URL}\n\n' + tags + '\n\n' + disclaimer + '\n\n' + audio.credit(st)})
     pkg['shorts'] = spk; save(ep_dir / 'package.json', pkg)
     if a.dry_run:
         print('dry run: outputs in', ep_dir); return

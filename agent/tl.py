@@ -130,7 +130,9 @@ For EVERY sentence decide what we SEE:
   filmable, generic, e.g. "bank building facade", "hands counting dollar bills", "stock exchange trading floor", "people queue outside bank",
   "signing mortgage contract", "money printing press", "city skyline at night", "family moving into house", "credit card payment terminal",
   "worried man looking at bills", "gold bars vault". No brand names, logos, real people's names, no text-heavy scenes. Use null when the
-  sentence is about a number, a mechanism or a comparison that a graphic shows better.
+  sentence is about a number, a mechanism or a comparison that a graphic shows better. The query must name money/finance things
+  people can film (bank, cash, coins, card, house, office, trader, screen) — never ambiguous words that stock sites misread
+  ("leaves", "fan", "drop", "smoke", "run", "flow"): "money leaves the bank" -> "cash withdrawal at bank counter".
 - "visual": ALWAYS give a code-drawn widget too (it is shown when "broll" is null, and is the fallback if no clip is found).
 Mix (very important, viewers leave when the screen is monotonous): about 55-65% of sentences get a broll clip; never more than 3 broll
 sentences in a row and never more than 2 graphic sentences in a row; the first sentence (the hook) gets the most striking footage.
@@ -219,7 +221,7 @@ def props(lines, stages, segs, vertical):
     for k, (ln, st, sg) in enumerate(zip(lines, stages, segs)):
         a = int(round(sg['start'] * FPS)) if k else 0
         beats.append({'start': a, 'stage': st, 'stageIdx': marks.index(st) if st in marks else -1, 'node': ln['node'],
-                      'visual': ln['visual'], 'words': ln['words'], 'q': ln.get('broll')})
+                      'visual': ln['visual'], 'words': ln['words'], 'q': ln.get('broll'), 'text': ln['text']})
     total = int(round((segs[-1]['end'] + 1.5) * FPS))
     for k, b in enumerate(beats): b['end'] = beats[k + 1]['start'] if k + 1 < len(beats) else total
     return {'beats': beats, 'marks': marks, 'frames': total, 'vertical': vertical}
@@ -268,9 +270,57 @@ Lines: {json.dumps([l['text'] for l in s['lines']], ensure_ascii=False)}""", max
                 save(ep_dir / 'episode.json', ep)
                 for f in (f'vo_short{k}.wav', f'segs_short{k}.json'): (ep_dir / f).unlink(missing_ok=True)
         save(ep_dir / f'props_short{k}.json', broll.attach(props(s['lines'], [l.get('stage') for l in s['lines']], sg, True), ep_dir, f'short{k}'))
+    if not ep.get('polished'):
+        try: ep = polish(ep); save(ep_dir / 'episode.json', ep)
+        except Exception as e: print('packaging polish failed (keeping the writer\'s title/description):', e)
     if not (ep_dir / 'thumbnail.jpg').exists():
         try: thumbs(ep, ep_dir)
         except Exception as e: print('thumbnail failed:', e)
+    return ep
+
+
+# ---------------- packaging (title, description, Short caption) ----------------
+def polish(ep):
+    """Owner (Oct 25): the bot must write a strong title and a real caption. Second pass by a 'packaging editor' who sees the finished
+    script: 10 title ideas -> picks the best (search keyword + curiosity, honest), rewrites the description's opening, the Short's title
+    and caption, and the pinned comment. Facts may only come from the script."""
+    up = ep['upload']
+    narr = ' '.join(l['text'] for l in long_lines(ep))[:14000]
+    short = ep.get('shorts', [{}])[0] if ep.get('shorts') else {}
+    r = llm.ask_json(f"""You are the packaging editor of the finance YouTube channel "Money Decoded" (English; US/UK/Canada adults).
+The video is finished. Write its packaging so that people who see it WANT to click — through curiosity, never false hope.
+Rules: every claim must be true to the script; no clickbait lies, no "get rich", no advice, no predictions, no ALL-CAPS sentences, max one emoji
+in the Short caption and none elsewhere. Use concrete, surprising specifics from the script (a number, a twist, a reversal).
+
+Main search keyword: "{up.get('main_keyword') or ep.get('main_keyword', '')}"
+Writer's title: "{up.get('title')}"
+Script: {narr}
+Short script: {' '.join(l['text'] for l in short.get('lines', []))}
+
+1. "title_ideas": 10 different titles (≤ 60 characters each). Each contains the main keyword (or its most natural wording) near the start,
+   and adds a curiosity gap: a twist, a hidden truth, a surprising number, a "nobody tells you" angle — understandable at a glance.
+2. "title": the best one of them (best mix of searchable + curiosity + honest).
+3. "hook": the first 2 lines of the description (≤ 220 characters total): they show under the video in search — keyword in sentence 1,
+   then an open question or twist that makes people want to watch. No hashtags.
+4. "short_title": the Short's title (≤ 55 characters, no hashtags): a curiosity question or shocking true claim from the Short.
+5. "short_caption": the Short's caption, 2-3 short lines: line 1 the curiosity hook, line 2 what they'll understand, line 3 a question
+   that invites comments. No hashtags, no links (they are added later).
+6. "pinned_comment": one friendly question to viewers about the video's idea (≤ 140 characters).
+Return JSON: {{"title_ideas": [str], "title": str, "hook": str, "short_title": str, "short_caption": str, "pinned_comment": str}}""",
+                         max_tokens=4000)
+    t = (r.get('title') or '').strip()
+    if 10 <= len(t) <= 70: up['title'] = t
+    if r.get('hook'):
+        d = up.get('description', '')
+        cut = d.find('\n\n')
+        up['description'] = r['hook'].strip() + ('\n\n' + d[cut + 2:] if cut > 0 else '\n\n' + d)
+    if r.get('pinned_comment'): up['pinned_comment'] = r['pinned_comment'].strip()
+    if short:
+        if r.get('short_title'): short['title'] = r['short_title'].strip()
+        if r.get('short_caption'): short['caption'] = r['short_caption'].strip()
+    ep['title_ideas'] = r.get('title_ideas', [])
+    ep['polished'] = True
+    print('packaging:', up['title'], '|', short.get('title'))
     return ep
 
 
@@ -336,8 +386,11 @@ def thumbs(ep, ep_dir):
 Video title: {title}
 What the video shows: {summ}
 
-The text on the thumbnail must tell the viewer clearly what the video is about AND make them curious enough to click — not vague,
-not too short to understand, not the full title either: one short headline of 3-6 words (it may have one highlighted key word).
+Goal: the highest possible click-through rate from people scrolling YouTube — the thumbnail must create CURIOSITY.
+The text on the thumbnail: a few words only (2-5 words, never the title repeated) that hint at what the video is about AND open a
+curiosity gap — a twist, a secret, a shocking true number or a reversal the viewer wants explained (e.g. "IT WAS NEVER REAL", "$0 IN THE VAULT",
+"THEY TYPE IT IN"). It must still make clear the topic (money / banks / markets) together with the picture. One highlighted key word.
+It must be true to the video: no false promises, no "get rich".
 Choose the single most striking visual that shows the topic at a glance. {THUMB_STYLE}
 Keep it SIMPLE and uncluttered like a top finance explainer channel: one main subject (or a clear 2-3 step change with arrows), no people's faces,
 no more than one small number badge besides the headline. Keep a small margin around the headline. Spell every word correctly.{note}"""
