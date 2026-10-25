@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 env:
-  YT_CLIENT_ID: 632857013327-s142t92upagc7s2b2cdpq0237k16i443.apps.googleusercontent.com
+  YT_CLIENT_ID: 284823645962-pk32li91jr26p2v8va7j8kric6evrqh6.apps.googleusercontent.com
   WANT_CHANNEL: UCtnSs_1t34lVrBwn0xKqSdg
 
 jobs:
