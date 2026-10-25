@@ -27,6 +27,7 @@ permissions:
 concurrency: episode
 
 env:
+  YT_CLIENT_ID: 632857013327-s142t92upagc7s2b2cdpq0237k16i443.apps.googleusercontent.com
   SHARDS: 7          # 6 parallel parts of the long video + 1 Short
 
 jobs:
@@ -59,7 +60,12 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           YT_TOKEN_JSON: ${{ secrets.YT_TOKEN_JSON }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
         run: |
+          if [ -z "$YT_TOKEN_JSON" ] && [ -f data/yt_token.enc ] && [ -n "$YT_CLIENT_SECRET" ]; then
+            RT=$(openssl enc -d -aes-256-cbc -pbkdf2 -a -A -in data/yt_token.enc -pass env:YT_CLIENT_SECRET); echo "::add-mask::$RT"
+            export YT_TOKEN_JSON=$(RT="$RT" python3 -c "import json,os;print(json.dumps({'client_id':os.environ['YT_CLIENT_ID'],'client_secret':os.environ['YT_CLIENT_SECRET'],'refresh_token':os.environ['RT'],'token_uri':'https://oauth2.googleapis.com/token'}))")
+          fi
           if [ -z "$ANTHROPIC_API_KEY" ] || [ -z "$OPENAI_API_KEY" ]; then echo "API keys are not set in Settings > Secrets yet -> nothing to do"; exit 0; fi
           if [ -n "${{ inputs.resume_run }}" ] && [ -f work/current.json ]; then echo "go=1" >> $GITHUB_OUTPUT; echo "reusing build of run ${{ inputs.resume_run }}"; exit 0; fi
           ARGS="--stage build"
@@ -143,7 +149,12 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           YT_TOKEN_JSON: ${{ secrets.YT_TOKEN_JSON }}
           REPLACE_IDS: ${{ inputs.replace_ids }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
         run: |
+          if [ -z "$YT_TOKEN_JSON" ] && [ -f data/yt_token.enc ] && [ -n "$YT_CLIENT_SECRET" ]; then
+            RT=$(openssl enc -d -aes-256-cbc -pbkdf2 -a -A -in data/yt_token.enc -pass env:YT_CLIENT_SECRET); echo "::add-mask::$RT"
+            export YT_TOKEN_JSON=$(RT="$RT" python3 -c "import json,os;print(json.dumps({'client_id':os.environ['YT_CLIENT_ID'],'client_secret':os.environ['YT_CLIENT_SECRET'],'refresh_token':os.environ['RT'],'token_uri':'https://oauth2.googleapis.com/token'}))")
+          fi
           ARGS="--stage finish"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           eval python -m agent.run $ARGS

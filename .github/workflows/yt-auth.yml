@@ -1,0 +1,63 @@
+name: Connect YouTube
+
+# One-time: connects the bot to the Money Decoded channel.
+# 1) open the approval link Claude gives you, choose the Money Decoded channel, approve
+# 2) copy the code from the address bar (the part after "code=" up to "&scope") and run this workflow with it
+# The refresh token is never printed: it is stored encrypted (key = the YT_CLIENT_SECRET secret) in data/yt_token.enc.
+on:
+  workflow_dispatch:
+    inputs:
+      code:
+        description: 'The code from the address bar after approving (after code= and before &scope)'
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  YT_CLIENT_ID: 632857013327-s142t92upagc7s2b2cdpq0237k16i443.apps.googleusercontent.com
+  WANT_CHANNEL: UCtnSs_1t34lVrBwn0xKqSdg
+
+jobs:
+  connect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - name: Exchange the code and check the channel
+        env:
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          CODE: ${{ inputs.code }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys, urllib.parse, urllib.request
+          code = urllib.parse.unquote(os.environ['CODE'].strip())
+          if 'code=' in code: code = code.split('code=', 1)[1]
+          code = code.split('&')[0]
+          if not os.environ.get('YT_CLIENT_SECRET'): sys.exit('Secret YT_CLIENT_SECRET is missing')
+          body = urllib.parse.urlencode({'code': code, 'client_id': os.environ['YT_CLIENT_ID'], 'client_secret': os.environ['YT_CLIENT_SECRET'],
+                                         'redirect_uri': 'http://localhost:8765', 'grant_type': 'authorization_code'}).encode()
+          try:
+              tok = json.load(urllib.request.urlopen('https://oauth2.googleapis.com/token', body))
+          except urllib.error.HTTPError as e:
+              sys.exit('Google refused the code: ' + e.read().decode()[:300])
+          if 'refresh_token' not in tok: sys.exit('No refresh token returned (approve again with the link from Claude)')
+          print('::add-mask::' + tok['refresh_token']); print('::add-mask::' + tok['access_token'])
+          req = urllib.request.Request('https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true', headers={'Authorization': 'Bearer ' + tok['access_token']})
+          items = json.load(urllib.request.urlopen(req)).get('items', [])
+          print('Connected channel(s):', [(c['id'], c['snippet']['title']) for c in items])
+          if os.environ['WANT_CHANNEL'] not in [c['id'] for c in items]:
+              sys.exit('This approval is NOT for the Money Decoded channel -> nothing saved. Approve again and pick Money Decoded.')
+          print('Scopes:', tok.get('scope'))
+          open('rt.txt', 'w').write(tok['refresh_token'])
+          PY
+      - name: Save encrypted
+        env:
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+        run: |
+          openssl enc -aes-256-cbc -pbkdf2 -salt -a -A -in rt.txt -out data/yt_token.enc -pass env:YT_CLIENT_SECRET
+          rm -f rt.txt
+          git config user.name "money-decoded-agent"; git config user.email "agent@users.noreply.github.com"
+          git add data/yt_token.enc && git commit -q -m "Connect YouTube (encrypted token) [skip ci]"
+          for i in 1 2 3; do git pull --rebase --autostash -q origin main && git push && break; sleep 5; done
+          echo "YouTube connected to Money Decoded."
