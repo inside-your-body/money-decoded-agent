@@ -35,6 +35,8 @@ export type TLEpProps = {beats: TLBeat[]; marks: string[]; frames: number; verti
 const Label: React.FC<{y: number; text?: string; o?: number}> = ({y, text, o = 1}) => text ?
   <text x={0} y={y} textAnchor="middle" fontFamily="F_inter" fontWeight={800} fontSize={28} letterSpacing={5} fill={TL.mute} opacity={o}>{text.toUpperCase().slice(0, 34)}</text> : null;
 
+const cur = (u?: string) => (/^[$£€¥]/.test(u || '') ? (u as string)[0] : '');
+const rest = (u?: string) => (u || '').replace(/^[$£€¥]/, '');
 const fmt = (v: number) => (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : (Math.abs(v) < 10 && v % 1 ? v.toFixed(1) : String(Math.round(v))));
 
 // price-line shapes (x 0..1 -> y 0..1, 1 = top)
@@ -143,7 +145,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
         <circle r={210} fill="none" stroke={col} strokeOpacity={0.15} strokeWidth={30} />
         <circle r={210} fill="none" stroke={col} strokeWidth={6} pathLength={1} strokeDasharray={`${t} 1`} transform="rotate(-90)" strokeLinecap="round" />
         <text y={40} textAnchor="middle" fontFamily="F_anton" fontSize={((n) => n > 9 ? 78 : n > 7 ? 96 : n > 5 ? 124 : 150)((v.prefix || '').length + val.length + (v.unit || '').length)} fill={col}>
-          {v.prefix || (v.unit === '$' ? '$' : '')}{val}<tspan fontSize={60} dx={8}>{v.unit === '$' ? '' : (v.unit || '')}</tspan></text>
+          {v.prefix || cur(v.unit)}{val}<tspan fontSize={60} dx={8}>{rest(v.unit)}</tspan></text>
       </g></g>;
     }
     case 'meter': {
@@ -177,7 +179,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
         return <g key={y}>
           <text x={-340} y={y - 22} fontFamily="F_inter" fontWeight={800} fontSize={38} letterSpacing={3} fill={TL.ink}>{r.label.toUpperCase().slice(0, 26)}</text>
           <rect x={-340} y={y} width={520 * Math.abs(r.value) / mx * k} height={60} rx={12} fill={col} />
-          <text x={-340 + 520 * Math.abs(r.value) / mx * k + 20} y={y + 48} fontFamily="F_anton" fontSize={52} fill={col}>{v.unit === '$' ? '$' : ''}{fmt(r.value * k)}{v.unit === '$' ? '' : (v.unit || '')}</text>
+          <text x={-340 + 520 * Math.abs(r.value) / mx * k + 20} y={y + 48} fontFamily="F_anton" fontSize={52} fill={col}>{cur(v.unit)}{fmt(r.value * k)}{rest(v.unit)}</text>
         </g>;
       };
       return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
@@ -257,11 +259,12 @@ const CWords: React.FC<{words: string[]; at: number; f: number; x: number; y: nu
   const acc = words.length - 1;
   return <g>{lines.map((ln, li) => {
     const p = sp(f, at + ln[0] * 5, 12, 200);
-    return <text key={li} x={x} y={y + li * size * 1.08 + (1 - Math.min(1, p)) * 30} textAnchor="middle" fontFamily="F_anton" fontSize={size} xmlSpace="preserve"
+    const lw = ln.reduce((a, i) => a + words[i].length * size * 0.5 + size * 0.3, 0);
+    return <g key={li}>{shadow && <rect x={x - lw / 2 - size * 0.3} y={y + li * size * 1.08 - size * 0.95} width={lw + size * 0.6} height={size * 1.18} rx={size * 0.18} fill="rgba(5,12,24,0.6)" opacity={Math.min(1, p * 1.5)} />}<text x={x} y={y + li * size * 1.08 + (1 - Math.min(1, p)) * 30} textAnchor="middle" fontFamily="F_anton" fontSize={size} xmlSpace="preserve"
       stroke={shadow ? 'rgba(0,0,0,0.55)' : 'none'} strokeWidth={shadow ? size * 0.08 : 0} paintOrder="stroke">
       {ln.map((i) => { const q = sp(f, at + i * 5, 12, 200);
         return <tspan key={i} fill={i === acc && words.length > 1 ? GOOD : '#FFFFFF'} fillOpacity={f < at + i * 5 ? 0 : Math.min(1, q * 1.6)}>{words[i] + (i === ln[ln.length - 1] ? '' : '  ')}</tspan>; })}
-    </text>;
+    </text></g>;
   })}</g>;
 };
 
@@ -291,8 +294,8 @@ export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
         <OffthreadVideo src={staticFile(c)} muted style={{width: W, height: H, objectFit: 'cover'}} />
       </Sequence>)}
       <AbsoluteFill style={{background: vertical
-        ? 'linear-gradient(180deg, rgba(5,12,24,0.55) 0%, rgba(5,12,24,0.05) 22%, rgba(5,12,24,0.05) 55%, rgba(5,12,24,0.75) 80%, rgba(5,12,24,0.85) 100%)'
-        : 'linear-gradient(180deg, rgba(5,12,24,0.45) 0%, rgba(5,12,24,0.0) 30%, rgba(5,12,24,0.15) 60%, rgba(5,12,24,0.85) 100%)'}} />
+        ? 'linear-gradient(180deg, rgba(5,12,24,0.6) 0%, rgba(5,12,24,0.05) 20%, rgba(5,12,24,0.1) 48%, rgba(5,12,24,0.8) 64%, rgba(5,12,24,0.9) 100%)'
+        : 'linear-gradient(180deg, rgba(5,12,24,0.5) 0%, rgba(5,12,24,0.0) 28%, rgba(5,12,24,0.2) 55%, rgba(5,12,24,0.9) 100%)'}} />
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{position: 'absolute'}}>
         {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={stampXY[0]} y={stampXY[1]} size={stampXY[2]} />}
         <g opacity={out}><CWords key={'w' + i} words={words} at={b.start + 6} f={f} x={W / 2} y={vertical ? 1330 : 905} size={vertical ? 96 : 104} maxW={vertical ? 940 : 1600} shadow /></g>
