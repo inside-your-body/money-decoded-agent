@@ -6,7 +6,7 @@
   "angle": "stamps: MINUTE 1 > DAY 1 > YEAR 1 > YEAR 30",
   "hook": "The moment you sign a mortgage, a bank creates $300,000 that did not exist one second earlier.",
   "format": "timeline",
-  "status": "next",
+  "status": "done",
   "source": "owner",
   "ref": {
    "note": "Primal Space money-creation video went viral (UNILAD Tech, Feb 2025)"
@@ -19,7 +19,7 @@
   "angle": "stamps: 9:00 AM > NOON > MIDNIGHT > YEAR 1",
   "hook": "You deposit $1,000 at nine in the morning. By lunch, most of it is already gone.",
   "format": "timeline",
-  "status": "todo",
+  "status": "next",
   "source": "owner",
   "ref": {
    "note": "Playbook lesson: hidden-process angles perform best"

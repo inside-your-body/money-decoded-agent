@@ -1,4 +1,18 @@
 {
- "episodes": [],
- "used_music": []
+ "episodes": [
+  {
+   "topic": "How Banks Create Money Out of Thin Air",
+   "video_id": "_q2ZO33HEhI",
+   "short_ids": [
+    "SCVEMeYdjiA"
+   ],
+   "publish_at": "2026-10-25T20:00:00Z",
+   "format": "tl",
+   "music": "deliberate_thought",
+   "built_at": "2026-10-25T18:10:11"
+  }
+ ],
+ "used_music": [
+  "deliberate_thought"
+ ]
 }
