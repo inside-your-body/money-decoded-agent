@@ -14,7 +14,9 @@
   "publish_short_utc": "20:30",
   "audience": "Owner (Oct 24): every day, long video 23:00 Istanbul (20:00 UTC = 4 PM US Eastern / 8-9 PM UK), ONE Short at 23:30 Istanbul. Both are uploaded earlier as scheduled (private + publishAt).",
   "mode": "auto_public",
-  "min_hours_between_episodes": 16
+  "min_hours_between_episodes": 16,
+  "paused": true,
+  "paused_note": "Owner (Oct 25): new B-roll style is being tested -> scheduled runs skip until this is false."
  },
  "voice": {
   "engine": "openai",
@@ -27,13 +29,34 @@
   },
   "model_url": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx",
   "voices_url": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin",
-  "blend": {"am_michael": 0.55, "am_fenrir": 0.45},
+  "blend": {
+   "am_michael": 0.55,
+   "am_fenrir": 0.45
+  },
   "speed": 1.05
  },
- "long_video": {"width": 1920, "height": 1080, "fps": 30, "min_seconds": 485, "target_seconds": 525, "max_seconds": 570},
- "short": {"width": 1080, "height": 1920, "fps": 30, "min_seconds": 38, "max_seconds": 50},
- "models": {"claude": "claude-sonnet-5-5", "openai_image": "gpt-image-2.5-flare"},
- "audio": {"target_lufs": -14},
+ "long_video": {
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "min_seconds": 485,
+  "target_seconds": 525,
+  "max_seconds": 570
+ },
+ "short": {
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "min_seconds": 38,
+  "max_seconds": 50
+ },
+ "models": {
+  "claude": "claude-sonnet-5-5",
+  "openai_image": "gpt-image-2.5-flare"
+ },
+ "audio": {
+  "target_lufs": -14
+ },
  "repo": "inside-your-body/money-decoded-agent",
  "format": "tl"
 }

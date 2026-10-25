@@ -123,16 +123,24 @@ def board_lines(lines, context, recent=()):
 
 def _board_ask(lines, context):
     stage_key = ', "stage": str|null' if 'stage' in context else ''
-    return llm.ask_json(f"""You storyboard a "Money Decoded" video: a hologram money map (one place lights up, money flows into it) + one
-code-drawn widget + 2-4 big key words per sentence. Video: {context}
+    return llm.ask_json(f"""You are the editor of a "Money Decoded" documentary video (like How Money Works / Economics Explained):
+real stock-footage B-roll mixed with code-drawn motion graphics, kinetic typography and charts. Video: {context}
+For EVERY sentence decide what we SEE:
+- "broll": a stock-footage search query (2-5 plain English words) for a REAL video clip that literally shows the sentence — concrete,
+  filmable, generic, e.g. "bank building facade", "hands counting dollar bills", "stock exchange trading floor", "people queue outside bank",
+  "signing mortgage contract", "money printing press", "city skyline at night", "family moving into house", "credit card payment terminal",
+  "worried man looking at bills", "gold bars vault". No brand names, logos, real people's names, no text-heavy scenes. Use null when the
+  sentence is about a number, a mechanism or a comparison that a graphic shows better.
+- "visual": ALWAYS give a code-drawn widget too (it is shown when "broll" is null, and is the fallback if no clip is found).
+Mix (very important, viewers leave when the screen is monotonous): about 55-65% of sentences get a broll clip; never more than 3 broll
+sentences in a row and never more than 2 graphic sentences in a row; the first sentence (the hook) gets the most striking footage.
+Sentences with a key number or a money flow are graphics (stat, chart, growth, compare, flow, stack, node = the money map).
 {VISUALS}
-Rules: the widget must literally show what the sentence says (its number, object, flow of money, change); use the sentence's real numbers;
-"words" = 2-4 words lifted from the sentence that carry its meaning (short words, no filler), never the whole sentence;
-vary the widget types: "icon" at most 1 in 4 sentences and the same icon at most twice, "question" only for real open questions
-(at most 1 in 8); prefer numbers, flows, charts, growth curves, stacks and comparisons that SHOW the mechanism; labels are short (≤30 chars).
-"words" are punchy: 1-3 words each, max 3 items, e.g. ["BANK", "CREATES MONEY"].
+Widget rules: the widget must literally show what the sentence says; use the sentence's real numbers; vary the widget types; "icon" at most
+1 in 4 graphic sentences; "question" only for real open questions; labels are short (≤30 chars).
+"words" = 1-3 punchy key words lifted from the sentence (max 3 items, e.g. ["BANK", "CREATES MONEY"]), never the whole sentence.
 Sentences (index: text): {json.dumps({i: (t['text'] if isinstance(t, dict) else t) for i, t in enumerate(lines)}, ensure_ascii=False)}
-Return JSON: {{"beats": [{{"i": int, "node": NODE, "visual": {{...}}, "words": [str]{stage_key}}}]}} — one per sentence, same order.""", max_tokens=16000)
+Return JSON: {{"beats": [{{"i": int, "broll": str|null, "node": NODE, "visual": {{...}}, "words": [str]{stage_key}}}]}} — one per sentence, same order.""", max_tokens=16000)
 
 
 def _num(x):
@@ -175,7 +183,8 @@ def _node(x, fallback='none'):
 def _line(text, b, fallback_node='none', stage=False):
     nd = _node(b.get('node'), fallback_node)
     words = [w for w in (b.get('words') or []) if isinstance(w, str)][:4] or text.split()[:3]
-    out = {'text': text, 'node': nd, 'words': words, 'visual': _fix_visual(b.get('visual'), words, nd)}
+    q = b.get('broll'); q = q.strip()[:60] if isinstance(q, str) and q.strip() and q.strip().lower() not in ('null', 'none') else None
+    out = {'text': text, 'node': nd, 'words': words, 'visual': _fix_visual(b.get('visual'), words, nd), 'broll': q}
     if stage: out['stage'] = b.get('stage') or None
     return out
 
@@ -210,7 +219,7 @@ def props(lines, stages, segs, vertical):
     for k, (ln, st, sg) in enumerate(zip(lines, stages, segs)):
         a = int(round(sg['start'] * FPS)) if k else 0
         beats.append({'start': a, 'stage': st, 'stageIdx': marks.index(st) if st in marks else -1, 'node': ln['node'],
-                      'visual': ln['visual'], 'words': ln['words']})
+                      'visual': ln['visual'], 'words': ln['words'], 'q': ln.get('broll')})
     total = int(round((segs[-1]['end'] + 1.5) * FPS))
     for k, b in enumerate(beats): b['end'] = beats[k + 1]['start'] if k + 1 < len(beats) else total
     return {'beats': beats, 'marks': marks, 'frames': total, 'vertical': vertical}
@@ -242,7 +251,8 @@ def build(topic, ep_dir, dry_run=False):
     for sc in ep['scenes']: sc['narration'] = [l['text'] for l in sc['lines']]
     save(ep_dir / 'episode.json', ep)
     stages = [sc.get('stage') for sc in ep['scenes'] for _ in sc['lines']]
-    save(ep_dir / 'props_long.json', props(long_lines(ep), stages, segs, False))
+    from . import broll
+    save(ep_dir / 'props_long.json', broll.attach(props(long_lines(ep), stages, segs, False), ep_dir, 'long'))
     for k, s in enumerate(ep.get('shorts', [])[:N_SHORTS]):
         for attempt in range(3):
             sg = _voice([l['text'] for l in s['lines']], [len(s['lines'])], ep_dir / f'vo_short{k}.wav', ep_dir / f'segs_short{k}.json')
@@ -257,7 +267,7 @@ Lines: {json.dumps([l['text'] for l in s['lines']], ensure_ascii=False)}""", max
                 s['lines'] = [_line(t, b, stage=True) for t, b in zip(out['lines'], bs)]
                 save(ep_dir / 'episode.json', ep)
                 for f in (f'vo_short{k}.wav', f'segs_short{k}.json'): (ep_dir / f).unlink(missing_ok=True)
-        save(ep_dir / f'props_short{k}.json', props(s['lines'], [l.get('stage') for l in s['lines']], sg, True))
+        save(ep_dir / f'props_short{k}.json', broll.attach(props(s['lines'], [l.get('stage') for l in s['lines']], sg, True), ep_dir, f'short{k}'))
     if not (ep_dir / 'thumbnail.jpg').exists():
         try: thumbs(ep, ep_dir)
         except Exception as e: print('thumbnail failed:', e)
@@ -407,6 +417,7 @@ def render_local(ep_dir, kind):
     comp = 'TLLong' if kind == 'long' else 'TLShort'
     out = ep_dir / f'silent_{kind}.mp4'
     if not out.exists():
+        from . import broll; broll.stage(ep_dir)
         sh(['npx', 'remotion', 'render', 'src/index.ts', comp, str(out), f'--props={ep_dir / f"props_{kind}.json"}', '--muted', '--log=warn'], cwd=ROOT / 'render')
     return out
 

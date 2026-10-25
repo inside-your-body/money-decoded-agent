@@ -11,6 +11,7 @@ def run(i, n):
 
 def run_tl(i, n, ep_dir, parts):
     from .tl import N_SHORTS
+    from . import broll; broll.stage(ep_dir)
     shorts = [k for k in range(N_SHORTS) if (ep_dir / f'props_short{k}.json').exists()]
     n_long = n - N_SHORTS
     conc = os.environ.get('RENDER_CONCURRENCY', str(max(1, os.cpu_count() or 2)))

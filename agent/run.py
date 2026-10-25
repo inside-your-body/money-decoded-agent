@@ -37,6 +37,8 @@ def main():
     if a.stage == 'finish' and cur:
         return run_tl(a, cur['topic'], WORK / cur['dir'])
 
+    if CFG['schedule'].get('paused') and os.environ.get('GITHUB_EVENT_NAME') == 'schedule':
+        print('schedule paused in config/channel.json -> skip'); return
     # cron runs twice a day (main + backup); only one episode per day
     h = load(ROOT / 'data/history.json')
     last = max((e.get('built_at') for e in h['episodes'] if e.get('built_at')), default=None)
@@ -71,7 +73,7 @@ def run_tl(a, topic, ep_dir):
     long_final, shorts, track = tl.finish(ep, ep_dir)
     pkg = package.build(ep, ep_dir)
     disclaimer = 'Educational content only — not financial advice.'
-    desc = pkg['description']
+    desc = '\n'.join(l for l in pkg['description'].split('\n') if not l.strip().lower().startswith('music:'))   # the real credit is added below
     if 'not financial advice' not in desc.lower(): desc += '\n\n' + disclaimer
     pkg['description'] = (desc + '\n\n' + audio.credit(track))[:4900]
     tags = ' '.join('#' + h.lstrip('#') for h in ep['upload'].get('hashtags', [])[:3])
