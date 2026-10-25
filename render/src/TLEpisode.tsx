@@ -143,7 +143,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
         <circle r={210} fill="none" stroke={col} strokeOpacity={0.15} strokeWidth={30} />
         <circle r={210} fill="none" stroke={col} strokeWidth={6} pathLength={1} strokeDasharray={`${t} 1`} transform="rotate(-90)" strokeLinecap="round" />
         <text y={40} textAnchor="middle" fontFamily="F_anton" fontSize={((n) => n > 9 ? 78 : n > 7 ? 96 : n > 5 ? 124 : 150)((v.prefix || '').length + val.length + (v.unit || '').length)} fill={col}>
-          {v.prefix || ''}{val}<tspan fontSize={60} dx={8}>{v.unit || ''}</tspan></text>
+          {v.prefix || (v.unit === '</text>
       </g></g>;
     }
     case 'meter': {
@@ -177,7 +177,1759 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
         return <g key={y}>
           <text x={-340} y={y - 22} fontFamily="F_inter" fontWeight={800} fontSize={38} letterSpacing={3} fill={TL.ink}>{r.label.toUpperCase().slice(0, 26)}</text>
           <rect x={-340} y={y} width={520 * Math.abs(r.value) / mx * k} height={60} rx={12} fill={col} />
-          <text x={-340 + 520 * Math.abs(r.value) / mx * k + 20} y={y + 48} fontFamily="F_anton" fontSize={52} fill={col}>{fmt(r.value * k)}{v.unit || ''}</text>
+          <text x={-340 + 520 * Math.abs(r.value) / mx * k + 20} y={y + 48} fontFamily="F_anton" fontSize={52} fill={col}>{v.unit === '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ ? '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ : ''}{fmt(r.value * k)}{v.unit === '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ ? '' : (v.unit || '')}</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ ? '</text>
+      </g></g>;
+    }
+    case 'meter': {
+      const col = v.good ? GOOD : BAD; const val = v.from + (v.to - v.from) * t;
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <Label y={-80} text={v.label} />
+        <rect x={-340} y={-40} width={680} height={80} rx={40} fill={TL.bg2} stroke={TL.mute} strokeWidth={3} />
+        <rect x={-332} y={-32} width={Math.max(0, 664 * Math.min(1, Math.max(0, val)))} height={64} rx={32} fill={col} />
+        {[0.25, 0.5, 0.75].map((k) => <line key={k} x1={-340 + 680 * k} x2={-340 + 680 * k} y1={50} y2={66} stroke={TL.mute} strokeWidth={3} />)}
+        <text y={150} textAnchor="middle" fontFamily="F_anton" fontSize={90} fill={col}>{Math.round(val * 100)}%</text>
+      </g>;
+    }
+    case 'wave': {
+      const calm = v.calm ? t : 1 - t;
+      let d = 'M-340 40';
+      for (let i = 0; i <= 68; i++) {
+        const x = -340 + i * 10; const spike = Math.max(0, Math.sin(i * 0.55 + f / 8)) ** 8 * 200;
+        d += ` L${x} ${40 - spike * (1 - calm) - 26 * Math.sin(i * 0.25 + f / 20)}`;
+      }
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <rect x={-370} y={-200} width={740} height={320} rx={24} fill={TL.bg2} opacity={0.6} />
+        {[-140, -60, 20, 100].map((y) => <line key={y} x1={-350} x2={350} y1={y} y2={y} stroke={TL.mute} strokeOpacity={0.25} />)}
+        <path d={d} stroke={calm > 0.5 ? GOOD : BAD} strokeWidth={7} fill="none" strokeLinejoin="round" />
+        <Label y={180} text={v.label} />
+      </g>;
+    }
+    case 'compare': {
+      const mx = Math.max(1e-6, Math.abs(v.a.value), Math.abs(v.b.value));
+      const row = (r: {label: string; value: number}, y: number, col: string, d: number) => {
+        const k = interpolate(f, [at + 8 + d, at + 50 + d], [0, 1], cl);
+        return <g key={y}>
+          <text x={-340} y={y - 22} fontFamily="F_inter" fontWeight={800} fontSize={38} letterSpacing={3} fill={TL.ink}>{r.label.toUpperCase().slice(0, 26)}</text>
+          <rect x={-340} y={y} width={520 * Math.abs(r.value) / mx * k} height={60} rx={12} fill={col} />
+          <text x={-340 + 520 * Math.abs(r.value) / mx * k + 20} y={y + 48} fontFamily="F_anton" fontSize={52} fill={col}>{v.unit === '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ ? '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ : ''}{fmt(r.value * k)}{v.unit === '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ ? '' : (v.unit || '')}</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ : '')}{val}<tspan fontSize={60} dx={8}>{v.unit === '</text>
+      </g></g>;
+    }
+    case 'meter': {
+      const col = v.good ? GOOD : BAD; const val = v.from + (v.to - v.from) * t;
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <Label y={-80} text={v.label} />
+        <rect x={-340} y={-40} width={680} height={80} rx={40} fill={TL.bg2} stroke={TL.mute} strokeWidth={3} />
+        <rect x={-332} y={-32} width={Math.max(0, 664 * Math.min(1, Math.max(0, val)))} height={64} rx={32} fill={col} />
+        {[0.25, 0.5, 0.75].map((k) => <line key={k} x1={-340 + 680 * k} x2={-340 + 680 * k} y1={50} y2={66} stroke={TL.mute} strokeWidth={3} />)}
+        <text y={150} textAnchor="middle" fontFamily="F_anton" fontSize={90} fill={col}>{Math.round(val * 100)}%</text>
+      </g>;
+    }
+    case 'wave': {
+      const calm = v.calm ? t : 1 - t;
+      let d = 'M-340 40';
+      for (let i = 0; i <= 68; i++) {
+        const x = -340 + i * 10; const spike = Math.max(0, Math.sin(i * 0.55 + f / 8)) ** 8 * 200;
+        d += ` L${x} ${40 - spike * (1 - calm) - 26 * Math.sin(i * 0.25 + f / 20)}`;
+      }
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <rect x={-370} y={-200} width={740} height={320} rx={24} fill={TL.bg2} opacity={0.6} />
+        {[-140, -60, 20, 100].map((y) => <line key={y} x1={-350} x2={350} y1={y} y2={y} stroke={TL.mute} strokeOpacity={0.25} />)}
+        <path d={d} stroke={calm > 0.5 ? GOOD : BAD} strokeWidth={7} fill="none" strokeLinejoin="round" />
+        <Label y={180} text={v.label} />
+      </g>;
+    }
+    case 'compare': {
+      const mx = Math.max(1e-6, Math.abs(v.a.value), Math.abs(v.b.value));
+      const row = (r: {label: string; value: number}, y: number, col: string, d: number) => {
+        const k = interpolate(f, [at + 8 + d, at + 50 + d], [0, 1], cl);
+        return <g key={y}>
+          <text x={-340} y={y - 22} fontFamily="F_inter" fontWeight={800} fontSize={38} letterSpacing={3} fill={TL.ink}>{r.label.toUpperCase().slice(0, 26)}</text>
+          <rect x={-340} y={y} width={520 * Math.abs(r.value) / mx * k} height={60} rx={12} fill={col} />
+          <text x={-340 + 520 * Math.abs(r.value) / mx * k + 20} y={y + 48} fontFamily="F_anton" fontSize={52} fill={col}>{v.unit === '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ ? '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ : ''}{fmt(r.value * k)}{v.unit === '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ ? '' : (v.unit || '')}</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ ? '' : (v.unit || '')}</tspan></text>
+      </g></g>;
+    }
+    case 'meter': {
+      const col = v.good ? GOOD : BAD; const val = v.from + (v.to - v.from) * t;
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <Label y={-80} text={v.label} />
+        <rect x={-340} y={-40} width={680} height={80} rx={40} fill={TL.bg2} stroke={TL.mute} strokeWidth={3} />
+        <rect x={-332} y={-32} width={Math.max(0, 664 * Math.min(1, Math.max(0, val)))} height={64} rx={32} fill={col} />
+        {[0.25, 0.5, 0.75].map((k) => <line key={k} x1={-340 + 680 * k} x2={-340 + 680 * k} y1={50} y2={66} stroke={TL.mute} strokeWidth={3} />)}
+        <text y={150} textAnchor="middle" fontFamily="F_anton" fontSize={90} fill={col}>{Math.round(val * 100)}%</text>
+      </g>;
+    }
+    case 'wave': {
+      const calm = v.calm ? t : 1 - t;
+      let d = 'M-340 40';
+      for (let i = 0; i <= 68; i++) {
+        const x = -340 + i * 10; const spike = Math.max(0, Math.sin(i * 0.55 + f / 8)) ** 8 * 200;
+        d += ` L${x} ${40 - spike * (1 - calm) - 26 * Math.sin(i * 0.25 + f / 20)}`;
+      }
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <rect x={-370} y={-200} width={740} height={320} rx={24} fill={TL.bg2} opacity={0.6} />
+        {[-140, -60, 20, 100].map((y) => <line key={y} x1={-350} x2={350} y1={y} y2={y} stroke={TL.mute} strokeOpacity={0.25} />)}
+        <path d={d} stroke={calm > 0.5 ? GOOD : BAD} strokeWidth={7} fill="none" strokeLinejoin="round" />
+        <Label y={180} text={v.label} />
+      </g>;
+    }
+    case 'compare': {
+      const mx = Math.max(1e-6, Math.abs(v.a.value), Math.abs(v.b.value));
+      const row = (r: {label: string; value: number}, y: number, col: string, d: number) => {
+        const k = interpolate(f, [at + 8 + d, at + 50 + d], [0, 1], cl);
+        return <g key={y}>
+          <text x={-340} y={y - 22} fontFamily="F_inter" fontWeight={800} fontSize={38} letterSpacing={3} fill={TL.ink}>{r.label.toUpperCase().slice(0, 26)}</text>
+          <rect x={-340} y={y} width={520 * Math.abs(r.value) / mx * k} height={60} rx={12} fill={col} />
+          <text x={-340 + 520 * Math.abs(r.value) / mx * k + 20} y={y + 48} fontFamily="F_anton" fontSize={52} fill={col}>{v.unit === '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ ? '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ : ''}{fmt(r.value * k)}{v.unit === '</text>
+        </g>;
+      };
+      return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
+    }
+    case 'icon': {
+      const n = Math.min(8, Math.max(1, v.count || 1));
+      const one = (x: number, y: number, s: number, k: number, key: number) =>
+        <g key={key} transform={`translate(${x} ${y}) scale(${s * k}) translate(-50 -50)`}>
+          <path d={iconPath(v.name)} fill="none" stroke={GOLD} strokeWidth={14 / s} opacity={0.18} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={iconPath(v.name)} fill="none" stroke={v.cross ? TL.ink : GOLD} strokeWidth={5 / Math.max(1, s / 3)} strokeLinecap="round" strokeLinejoin="round"
+            pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - Math.min(1, k)} />
+        </g>;
+      return <g>
+        <circle r={190 + 6 * pulse} fill={GOLD} opacity={0.06} />
+        <circle r={190} fill="none" stroke={GOLD} strokeOpacity={0.35} strokeWidth={3} strokeDasharray="4 12" transform={`rotate(${f})`} />
+        {n === 1 ? one(0, -10, 3.2, p, 0) :
+          Array.from({length: n}).map((_, i) => one(-255 + (i % 4) * 170, -130 + Math.floor(i / 4) * 140, 0.95, sp(f, at + i * 4), i))}
+        {v.cross && <g opacity={sp(f, at + 18)} stroke={BAD} strokeWidth={22} strokeLinecap="round">
+          <line x1={-150} y1={-150} x2={-150 + 300 * sp(f, at + 18)} y2={-150 + 300 * sp(f, at + 18)} />
+          <line x1={150} y1={-150} x2={150 - 300 * sp(f, at + 24)} y2={-150 + 300 * sp(f, at + 24)} /></g>}
+        <Label y={230} text={v.label} />
+      </g>;
+    }
+    case 'clock': {
+      const mins = (s: string) => { const m = /(\d+):(\d+)/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : 0; };
+      let a = mins(v.from), b = mins(v.to); if (b < a) b += 24 * 60;
+      const cur = a + (b - a) * t; const h = Math.floor(cur / 60) % 24, m = Math.floor(cur % 60);
+      return <g opacity={Math.min(1, p * 1.5)}>
+        <circle r={170} fill={TL.bg2} stroke={GOOD} strokeWidth={6} />
+        {Array.from({length: 12}).map((_, i) => <line key={i} x1={0} y1={-150} x2={0} y2={-130} stroke={TL.ink} strokeWidth={5} transform={`rotate(${i * 30})`} />)}
+        <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
+        <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
+        <circle r={10} fill={GOLD} />
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+      </g>;
+    }
+    case 'checklist': {
+      const items = (v.items || []).slice(0, 4);
+      return <g>{items.map((it, i) => {
+        const k = sp(f, at + 6 + i * 12); const y = -((items.length - 1) * 130) / 2 + i * 130;
+        return <g key={i} opacity={Math.min(1, k * 1.5)} transform={`translate(${(1 - Math.min(1, k)) * 80} 0)`}>
+          <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
+          <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
+            <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
+          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+        </g>;
+      })}</g>;
+    }
+    case 'question':
+      return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
+        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <foreignObject x={-360} y={-120} width={720} height={240}>
+          <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+        </foreignObject>
+      </g>;
+    case 'versus': {
+      const k2 = sp(f, at + 25);
+      const card = (x: number, title: string, txt: string, col: string, k: number) =>
+        <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
+          <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
+          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <foreignObject x={-165} y={-90} width={330} height={290}>
+            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+          </foreignObject>
+        </g>;
+      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+    }
+  }
+  return null;
+};
+
+const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
+const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
+
+export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+  const f = useCurrentFrame();
+  let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
+  const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
+  // the node glow and the stamp only restart when they actually change; coins travel from the previous node
+  let nodeAt = b.start, j = i; for (; j > 0 && normNode(beats[j - 1].node) === normNode(b.node); j--) nodeAt = beats[j - 1].start;
+  let prev: MoneyNode = 'you'; for (let q = j - 1; q >= 0; q--) { const n = normNode(beats[q].node); if (n !== 'none') { prev = n; break; } }
+  let stAt = b.start; for (let q = i; q > 0 && beats[q - 1].stage === b.stage; q--) stAt = beats[q - 1].start;
+  const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
+  const dur = b.end - b.start;
+  const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
+  const mapOn = interpolate(f, [0, 20], [0, 1], cl);
+  const hasMarks = marks.length > 1 && b.stageIdx >= 0;
+  const L = vertical
+    ? {map: [540, 800, 0.95], stamp: [80, 210, 120], wid: [540, 1360, 0.8], words: [80, b.stage ? 330 : 250, 76, 920]}
+    : {map: [470, 520, 0.98], stamp: [990, 200, 150], wid: [1350, b.stage ? 500 : 430, 0.92], words: [990, b.stage ? 830 : 800, 70, 860]};
+  return <AbsoluteFill style={{background: `radial-gradient(circle at ${vertical ? '50% 40%' : '26% 50%'}, #14304F 0%, ${TL.bg} 68%)`}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      {Array.from({length: Math.ceil(W / 120)}).map((_, k) => <line key={k} x1={k * 120} y1={0} x2={k * 120} y2={H} stroke="#FFFFFF" opacity={0.025} />)}
+      {Array.from({length: 18}).map((_, k) => <circle key={'p' + k} cx={(k * 211 + f * (0.3 + (k % 3) * 0.2)) % W} cy={(k * 97) % H + Math.sin(f / 40 + k) * 20}
+        r={2 + (k % 3)} fill={TL.line} opacity={0.12} />)}
+      <g opacity={mapOn}><MoneyMap x={L.map[0]} y={L.map[1]} s={L.map[2]} focus={normNode(b.node)} from={prev} f={f} at={nodeAt} /></g>
+      {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={L.stamp[0]} y={L.stamp[1]} size={L.stamp[2]} />}
+      <g key={i} opacity={out} transform={`translate(${L.wid[0]} ${L.wid[1]}) scale(${L.wid[2]})`}>
+        <Widget v={b.visual} f={f} at={b.start + 2} dur={dur} />
+      </g>
+      <g opacity={out}><Words key={'w' + i} words={(b.words || []).slice(0, 4).map((w) => w.toUpperCase())} at={b.start + 10} f={f}
+        x={L.words[0]} y={L.words[1]} size={L.words[2]} maxW={L.words[3]} /></g>
+      {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
+      {!vertical && <text x={60} y={66} fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+    </svg>
+  </AbsoluteFill>;
+};
+export const tlMeta = ({props}: {props: TLEpProps}) => ({durationInFrames: Math.max(30, props.frames || 300)});
+ ? '' : (v.unit || '')}</text>
         </g>;
       };
       return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
