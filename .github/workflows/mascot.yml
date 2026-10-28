@@ -1,0 +1,28 @@
+name: Design mascot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mascot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11', cache: 'pip'}
+      - name: Deps
+        run: pip install requests numpy scipy Pillow
+      - name: Draw Finn
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python -m agent.mascot
+      - name: Commit designs
+        run: |
+          git config user.name "money-decoded-agent"; git config user.email "agent@users.noreply.github.com"
+          git add samples/mascot && git commit -m "mascot designs [skip ci]" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase --autostash -q origin main && git push && break; sleep 5; done
