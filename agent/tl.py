@@ -227,6 +227,18 @@ def props(lines, stages, segs, vertical):
     return {'beats': beats, 'marks': marks, 'frames': total, 'vertical': vertical}
 
 
+def _visuals(pr, ep_dir, kind, context):
+    """Owner (Oct 28): style "finn" = Finn the fox in storybook drawings + the sentence's motion graphic beside him;
+    otherwise the older documentary style (stock B-roll + full-screen graphics)."""
+    if CFG.get('style') == 'finn':
+        from . import fox
+        pr['finn'] = True
+        try: return fox.attach(pr, ep_dir, kind, context)
+        except Exception as e: print('finn drawings failed -> graphics only', e); return pr
+    from . import broll
+    return broll.attach(pr, ep_dir, kind)
+
+
 def build(topic, ep_dir, dry_run=False):
     ep = load(ep_dir / 'episode.json')
     notes = (ep_dir / 'research.md').read_text() if (ep_dir / 'research.md').exists() else ''
@@ -254,7 +266,7 @@ def build(topic, ep_dir, dry_run=False):
     save(ep_dir / 'episode.json', ep)
     stages = [sc.get('stage') for sc in ep['scenes'] for _ in sc['lines']]
     from . import broll
-    save(ep_dir / 'props_long.json', broll.attach(props(long_lines(ep), stages, segs, False), ep_dir, 'long'))
+    save(ep_dir / 'props_long.json', _visuals(props(long_lines(ep), stages, segs, False), ep_dir, 'long', ep['title']))
     for k, s in enumerate(ep.get('shorts', [])[:N_SHORTS]):
         for attempt in range(3):
             sg = _voice([l['text'] for l in s['lines']], [len(s['lines'])], ep_dir / f'vo_short{k}.wav', ep_dir / f'segs_short{k}.json')
@@ -269,7 +281,7 @@ Lines: {json.dumps([l['text'] for l in s['lines']], ensure_ascii=False)}""", max
                 s['lines'] = [_line(t, b, stage=True) for t, b in zip(out['lines'], bs)]
                 save(ep_dir / 'episode.json', ep)
                 for f in (f'vo_short{k}.wav', f'segs_short{k}.json'): (ep_dir / f).unlink(missing_ok=True)
-        save(ep_dir / f'props_short{k}.json', broll.attach(props(s['lines'], [l.get('stage') for l in s['lines']], sg, True), ep_dir, f'short{k}'))
+        save(ep_dir / f'props_short{k}.json', _visuals(props(s['lines'], [l.get('stage') for l in s['lines']], sg, True), ep_dir, f'short{k}', ep['title'] + ' (vertical Short)'))
     if not ep.get('polished'):
         try: ep = polish(ep); save(ep_dir / 'episode.json', ep)
         except Exception as e: print('packaging polish failed (keeping the writer\'s title/description):', e)
@@ -332,6 +344,12 @@ HUGE bold condensed sans-serif headline at the top in white with the key word in
 perfectly spelled; high contrast, very clean, easy to read on a phone. No real people's faces, no logos or brand names."""
 
 
+FINN_THUMB = """Style (the channel's look): warm hand-drawn storybook illustration (soft ink lines, watercolour shading) on a warm cream /
+soft orange background, with Finn the fox big on one side showing a strong emotion and ONE clear prop that shows the topic (a bank, coins,
+a house, a credit card, a chart…). HUGE bold condensed sans-serif headline in dark navy or white with thick outline, the key word in bright
+yellow or mint, perfectly spelled; high contrast, very clean, readable on a phone. No real people's faces, no logos or brand names."""
+
+
 def summary(ep):
     lines = [l['text'] for l in long_lines(ep)]
     return llm.ask(f"""Summarise this YouTube video for the person who designs its thumbnail, in 5-7 sentences: what the video is about,
@@ -391,10 +409,16 @@ The text on the thumbnail: a few words only (2-5 words, never the title repeated
 curiosity gap — a twist, a secret, a shocking true number or a reversal the viewer wants explained (e.g. "IT WAS NEVER REAL", "$0 IN THE VAULT",
 "THEY TYPE IT IN"). It must still make clear the topic (money / banks / markets) together with the picture. One highlighted key word.
 It must be true to the video: no false promises, no "get rich".
-Choose the single most striking visual that shows the topic at a glance. {THUMB_STYLE}
+Choose the single most striking visual that shows the topic at a glance. {FINN_THUMB if CFG.get('style') == 'finn' else THUMB_STYLE}
 Keep it SIMPLE and uncluttered like a top finance explainer channel: one main subject (or a clear 2-3 step change with arrows), no people's faces,
 no more than one small number badge besides the headline. Keep a small margin around the headline. Spell every word correctly.{note}"""
-        if not images.gen(prompt, raw, size='1536x1024', quality='high'): continue
+        if CFG.get('style') == 'finn':
+            from . import fox
+            ok = images.edit(prompt + "\nThe channel mascot FINN must be in the thumbnail, big and reacting with a strong emotion that fits the topic: "
+                             + fox.FINN + " Draw him in the same warm storybook style as the reference.", [fox._ref()], str(raw), size='1536x1024', quality='high')
+        else:
+            ok = images.gen(prompt, raw, size='1536x1024', quality='high')
+        if not ok: continue
         jpg = out / f'gpt{k}.jpg'; _to_16x9(raw, jpg)
         r = _check_thumb(jpg, title)
         print('thumb check', k, r)

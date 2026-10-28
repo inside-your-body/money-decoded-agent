@@ -171,6 +171,6 @@ def stage(ep_dir):
     src = pathlib.Path(ep_dir) / 'broll'
     if not src.exists(): return
     dst = ROOT / 'render/public/ep/broll'; dst.mkdir(parents=True, exist_ok=True)
-    for f in src.glob('*.mp4'):
+    for f in list(src.glob('*.mp4')) + list(src.glob('*.jpg')):
         t = dst / f.name
         if not t.exists(): t.write_bytes(f.read_bytes())
