@@ -21,10 +21,22 @@
    "format": "tl",
    "music": "clean_soul",
    "built_at": "2026-10-28T20:40:18"
+  },
+  {
+   "topic": "What Happens to Your Savings After 10 Years of Inflation",
+   "video_id": "rn-FqWG3x4I",
+   "short_ids": [
+    "NKozJzb99us"
+   ],
+   "publish_at": null,
+   "format": "tl",
+   "music": "fluidscape",
+   "built_at": "2026-10-28T21:33:48"
   }
  ],
  "used_music": [
   "deliberate_thought",
-  "clean_soul"
+  "clean_soul",
+  "fluidscape"
  ]
 }
