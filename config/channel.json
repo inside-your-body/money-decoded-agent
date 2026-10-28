@@ -15,8 +15,8 @@
   "audience": "Owner (Oct 24): every day, long video 23:00 Istanbul (20:00 UTC = 4 PM US Eastern / 8-9 PM UK), ONE Short at 23:30 Istanbul. Both are uploaded earlier as scheduled (private + publishAt).",
   "mode": "auto_public",
   "min_hours_between_episodes": 16,
-  "paused": true,
-  "paused_note": "Owner (Oct 28 night): no new videos until the Finn style is ready and tested. true = scheduled runs skip."
+  "paused": false,
+  "paused_note": "Owner (Oct 28 night): Finn style approved -> daily episodes ON. true = scheduled runs skip."
  },
  "voice": {
   "engine": "openai",
