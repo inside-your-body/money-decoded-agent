@@ -63,6 +63,7 @@ jobs:
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
         run: |
           if [ -z "$YT_TOKEN_JSON" ] && [ -f data/yt_token.enc ] && [ -n "$YT_CLIENT_SECRET" ]; then
             RT=$(openssl enc -d -aes-256-cbc -pbkdf2 -a -A -in data/yt_token.enc -pass env:YT_CLIENT_SECRET); echo "::add-mask::$RT"
