@@ -1,4 +1,4 @@
-"""Fixed narrator voice (locked in config). Primary: OpenAI gpt-4o-mini-tts, voice "ballad", storytelling instructions.
+"""Fixed narrator voice (locked in config). engine "elevenlabs" (needs ELEVENLABS_API_KEY) or OpenAI gpt-4o-mini-tts, voice "ballad", storytelling instructions.
 Fallback: Kokoro (am_michael 0.55 + am_fenrir 0.45)."""
 import os, re, io, difflib, requests
 import numpy as np, soundfile as sf, urllib.request, pathlib
@@ -59,6 +59,38 @@ def _openai_tts(text):
             print('tts error', e, getattr(e, 'response', None) is not None and e.response.text[:200]); import time; time.sleep(5 * (a + 1))
     raise RuntimeError('openai tts failed')
 
+# ---------------------------------------------------------------- ElevenLabs narrator
+def _eleven_tts(text, prev='', nxt=''):
+    """ElevenLabs TTS (owner Oct 28: a lively, engaging narrator). Raw 24 kHz PCM -> float32. prev/next text keep the
+    intonation continuous across chunks."""
+    el = V.get('elevenlabs', {})
+    vid = el.get('voice_id') or 'nPczCjzI2devNBz1zQrb'
+    body = {'text': text, 'model_id': el.get('model', 'eleven_multilingual_v2'),
+            'voice_settings': {'stability': el.get('stability', 0.4), 'similarity_boost': el.get('similarity', 0.8),
+                               'style': el.get('style', 0.35), 'use_speaker_boost': True, 'speed': el.get('speed', 1.0)}}
+    if prev: body['previous_text'] = prev[-600:]
+    if nxt: body['next_text'] = nxt[:600]
+    for a in range(4):
+        try:
+            r = requests.post(f'https://api.elevenlabs.io/v1/text-to-speech/{vid}', params={'output_format': 'pcm_24000'},
+                              headers={'xi-api-key': os.environ['ELEVENLABS_API_KEY'], 'accept': 'audio/pcm'}, json=body, timeout=300)
+            r.raise_for_status()
+            a_ = np.frombuffer(r.content, dtype='<i2').astype(np.float32) / 32768.0
+            try:
+                from . import cost; cost.tts(len(text) * 30)        # rough: ~$0.17-0.3 per 1k chars vs OpenAI
+            except Exception: pass
+            return a_, 24000
+        except Exception as e:
+            print('elevenlabs error', e, getattr(e, 'response', None) is not None and e.response.text[:300]); import time; time.sleep(5 * (a + 1))
+    raise RuntimeError('elevenlabs tts failed')
+
+
+def _engine():
+    if V.get('engine') == 'elevenlabs' and os.environ.get('ELEVENLABS_API_KEY'): return 'elevenlabs'
+    if os.environ.get('OPENAI_API_KEY'): return 'openai'
+    return 'kokoro'
+
+
 _n = lambda w: re.sub(r'[^a-z0-9]', '', w.lower())
 
 def _align(lines, words, t0):
@@ -95,8 +127,10 @@ def _align(lines, words, t0):
 
 def synth_lines(lines, out_wav, groups=None, gap=0.35, **kw):
     """lines: sentences; groups: list of line counts per paragraph (scene). Returns segs [{i,text,start,end}]."""
-    if V.get('engine') != 'openai' or not os.environ.get('OPENAI_API_KEY'):
+    eng = _engine()
+    if eng == 'kokoro':
         return synth_lines_kokoro(lines, out_wav, **kw)
+    print('narrator engine:', eng)
     from . import timing
     groups = groups or [len(lines)]
     # keep each request well under the API input limit
@@ -110,8 +144,17 @@ def synth_lines(lines, out_wav, groups=None, gap=0.35, **kw):
             chunks.append(take)
     audio, segs, t, li = [], [], 0.0, 0
     sr0 = 24000
-    for ch in chunks:
-        a, sr = _openai_tts(' '.join(ch)); sr0 = sr
+    for ci, ch in enumerate(chunks):
+        if eng == 'elevenlabs':
+            try:
+                a, sr = _eleven_tts(' '.join(ch), ' '.join(chunks[ci - 1]) if ci else '', ' '.join(chunks[ci + 1]) if ci + 1 < len(chunks) else '')
+            except Exception as e:
+                print('elevenlabs failed -> OpenAI voice for this chunk', e); a, sr = _openai_tts(' '.join(ch))
+                if sr != 24000:
+                    from scipy.signal import resample_poly; a = resample_poly(a, 24000, sr).astype(np.float32); sr = 24000
+        else:
+            a, sr = _openai_tts(' '.join(ch))
+        sr0 = sr
         a = _trim(a, sr)
         tmp = str(out_wav) + '.part.wav'; sf.write(tmp, a, sr)
         ws = timing.words(tmp)
