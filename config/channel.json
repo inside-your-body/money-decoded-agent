@@ -28,13 +28,13 @@
    "similarity": 0.8,
    "style": 0.35,
    "speed": 1.0,
-   "note": "Owner (Oct 28): lively, engaging finance narrator. Set engine to elevenlabs + voice_id after the audition."
+   "note": "Owner (Oct 28): ElevenLabs later, once the channel earns (free plan has no commercial licence). Now: OpenAI verse, 10% faster."
   },
   "openai": {
    "model": "gpt-4o-mini-tts",
-   "voice": "onyx",
-   "speed": 1.0,
-   "instructions": "Voice: a captivating documentary storyteller about money and power, like a top finance YouTuber. Tone: confident, curious and a little dramatic — build suspense, lean into surprising numbers, short pauses before reveals and after questions. Pace: lively but clear, never rushed. Never monotone, never salesy. American English."
+   "voice": "verse",
+   "speed": 1.1,
+   "instructions": "Voice: an energetic, captivating storyteller explaining money like a top finance YouTuber talking to a friend. Tone: confident, curious, a little dramatic and warm; clearly interested in what you say. Pace: brisk and lively — keep momentum, never slow or sleepy; short pauses only right before a reveal or after a question. Emphasis: punch the key numbers and the twist words. Never monotone, never salesy. American English."
   },
   "model_url": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx",
   "voices_url": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin",
