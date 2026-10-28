@@ -3,7 +3,7 @@
 // one code-drawn widget per sentence, kinetic key words. Everything is code — deterministic layout, nothing overlaps.
 // Long = 1920x1080, Short = 1080x1920.
 import React from 'react';
-import {AbsoluteFill, useCurrentFrame, spring, interpolate, OffthreadVideo, Sequence, staticFile} from 'remotion';
+import {AbsoluteFill, useCurrentFrame, spring, interpolate, OffthreadVideo, Sequence, staticFile, Img} from 'remotion';
 import {MoneyMap, MoneyNode, NODES} from './MoneyMap';
 import {TL, BigStamp, Words, TimeBar} from './Timeline';
 import {ICONS, iconPath} from './Icons';
@@ -29,8 +29,8 @@ export type Visual =
   | {type: 'question'; text: string}
   | {type: 'versus'; myth: string; fact: string};
 
-export type TLBeat = {start: number; end: number; stage: string | null; stageIdx: number; node: string; visual: Visual; words: string[]; clips?: string[]};
-export type TLEpProps = {beats: TLBeat[]; marks: string[]; frames: number; vertical?: boolean; title?: string};
+export type TLBeat = {start: number; end: number; stage: string | null; stageIdx: number; node: string; visual: Visual; words: string[]; clips?: string[]; img?: string; imgAt?: number};
+export type TLEpProps = {beats: TLBeat[]; marks: string[]; frames: number; vertical?: boolean; title?: string; finn?: boolean};
 
 const Label: React.FC<{y: number; text?: string; o?: number}> = ({y, text, o = 1}) => text ?
   <text x={0} y={y} textAnchor="middle" fontFamily="F_inter" fontWeight={800} fontSize={28} letterSpacing={5} fill={TL.mute} opacity={o}>{text.toUpperCase().slice(0, 34)}</text> : null;
@@ -286,6 +286,35 @@ export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
   const isB = clips.length > 0;
   const words = (b.words || []).slice(0, 4).map((w) => w.toUpperCase());
   const stampXY = vertical ? [80, 200, 120] : [90, 175, 130];
+  // FINN style (owner Oct 28): Finn the fox in a storybook drawing (slow push-in, crossfade between drawings) + the sentence's
+  // motion graphic in a dark card beside him (long: right 40 %, Short: top) + key words under the card.
+  if (b.img) {
+    const at = b.imgAt ?? b.start;
+    let end = b.end; for (let q = i + 1; q < beats.length && beats[q].img === b.img; q++) end = beats[q].end;
+    const prog = interpolate(f, [at, end], [0, 1], cl);
+    const prevImg = i > 0 ? beats.slice(0, i).reverse().find((x) => x.img && x.img !== b.img)?.img : undefined;
+    const xf = interpolate(f, [at, at + 9], [0, 1], cl);
+    const C = vertical ? {x: 540, y: 400, w: 980, h: 560, s: 1.05, map: 0.62, wy: 790, ws: 80, wm: 960}
+                       : {x: 1530, y: 430, w: 690, h: 500, s: 0.84, map: 0.52, wy: 830, ws: 66, wm: 650};
+    const k = sp(f, b.start, 14, 160);
+    const isMapF = b.visual?.type === 'node';
+    return <AbsoluteFill style={{background: '#F6EEDC'}}>
+      {prevImg && xf < 1 && <Img src={staticFile(prevImg)} style={{position: 'absolute', width: W, height: H, objectFit: 'cover', transform: 'scale(1.06)', transformOrigin: vertical ? '50% 80%' : '25% 55%'}} />}
+      <Img src={staticFile(b.img)} style={{position: 'absolute', width: W, height: H, objectFit: 'cover', opacity: prevImg ? xf : 1,
+        transform: `scale(${1 + 0.06 * prog})`, transformOrigin: vertical ? '50% 80%' : '25% 55%'}} />
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{position: 'absolute'}}>
+        <g key={'c' + i} opacity={Math.min(fadeIn, out)} transform={`translate(${C.x} ${C.y}) scale(${0.92 + 0.08 * Math.min(1, k)})`}>
+          <rect x={-C.w / 2 + 8} y={-C.h / 2 + 12} width={C.w} height={C.h} rx={30} fill="rgba(60,40,20,0.18)" />
+          <rect x={-C.w / 2} y={-C.h / 2} width={C.w} height={C.h} rx={30} fill="#0F2036" stroke="#2EE6A6" strokeOpacity={0.35} strokeWidth={3} />
+          {isMapF
+            ? <MoneyMap x={0} y={0} s={C.map} focus={normNode((b.visual as any).name || b.node)} from={prev} f={f} at={b.start} />
+            : <g transform={`scale(${C.s})`}><Widget v={b.visual} f={f} at={b.start + 2} dur={dur} /></g>}
+        </g>
+        <g opacity={out}><CWords key={'w' + i} words={words} at={b.start + 8} f={f} x={C.x} y={C.wy} size={C.ws} maxW={C.wm} shadow /></g>
+        {!vertical && <text x={1860} y={62} textAnchor="end" fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill="#0F2036" opacity={0.55}>MONEY DECODED</text>}
+      </svg>
+    </AbsoluteFill>;
+  }
   // B-roll: real footage full screen, dark gradient for legibility, big centred words at the bottom
   if (isB) {
     const half = Math.round(dur / clips.length);
