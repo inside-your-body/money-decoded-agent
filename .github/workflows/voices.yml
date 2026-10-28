@@ -2,6 +2,10 @@ name: Voice samples
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'all = audition of many voices; channel = only the current channel narrator'
+        default: channel
 
 permissions:
   contents: write
@@ -22,7 +26,8 @@ jobs:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          if [ -z "$ELEVENLABS_API_KEY" ]; then echo "ELEVENLABS_API_KEY secret is missing"; exit 1; fi
+          export MODE="${{ inputs.mode }}"
+          if [ "$MODE" != channel ] && [ -z "$ELEVENLABS_API_KEY" ]; then echo "ELEVENLABS_API_KEY secret is missing"; exit 1; fi
           python -m agent.voice_samples
       - name: Commit samples
         run: |
