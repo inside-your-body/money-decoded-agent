@@ -19,7 +19,7 @@
   "angle": "stamps: 9:00 AM > NOON > MIDNIGHT > YEAR 1",
   "hook": "You deposit $1,000 at nine in the morning. By lunch, most of it is already gone.",
   "format": "timeline",
-  "status": "next",
+  "status": "done",
   "source": "owner",
   "ref": {
    "note": "Playbook lesson: hidden-process angles perform best"
@@ -32,7 +32,7 @@
   "angle": "stamps: DAY 1 > YEAR 1 > YEAR 5 > YEAR 10",
   "hook": "Your $10,000 is still sitting in the bank. Every number on the screen is exactly the same. And yet it is quietly shrinking.",
   "format": "timeline",
-  "status": "todo",
+  "status": "next",
   "source": "owner",
   "ref": {
    "note": "Primate Economics \"Inflation Explained with Bananas\" 1.7M (2× median); How Money Works \"How Is Everything Outpacing Inflation…\" 1.5M"

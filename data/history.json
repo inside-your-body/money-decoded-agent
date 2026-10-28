@@ -10,9 +10,21 @@
    "format": "tl",
    "music": "deliberate_thought",
    "built_at": "2026-10-25T18:10:11"
+  },
+  {
+   "topic": "Where Your Money Actually Goes After You Deposit It",
+   "video_id": "qDMSa4CBxbk",
+   "short_ids": [
+    "keczPhjDGBA"
+   ],
+   "publish_at": null,
+   "format": "tl",
+   "music": "clean_soul",
+   "built_at": "2026-10-28T20:40:18"
   }
  ],
  "used_music": [
-  "deliberate_thought"
+  "deliberate_thought",
+  "clean_soul"
  ]
 }
