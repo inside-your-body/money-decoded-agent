@@ -15,8 +15,8 @@
   "audience": "Owner (Oct 24): every day, long video 23:00 Istanbul (20:00 UTC = 4 PM US Eastern / 8-9 PM UK), ONE Short at 23:30 Istanbul. Both are uploaded earlier as scheduled (private + publishAt).",
   "mode": "auto_public",
   "min_hours_between_episodes": 16,
-  "paused": false,
-  "paused_note": "Owner (Oct 28): daily episodes ON in the current style while the new cartoon style is built. true = scheduled runs skip."
+  "paused": true,
+  "paused_note": "Owner (Oct 28 night): no new videos until the Finn style is ready and tested. true = scheduled runs skip."
  },
  "voice": {
   "engine": "openai",
@@ -67,5 +67,7 @@
   "target_lufs": -14
  },
  "repo": "inside-your-body/money-decoded-agent",
- "format": "tl"
+ "format": "tl",
+ "style": "finn",
+ "style_note": "Owner (Oct 28): Finn the fox (storybook style B) + motion graphics beside him. \"documentary\" = old stock-footage style."
 }
