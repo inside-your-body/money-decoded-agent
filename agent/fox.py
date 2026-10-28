@@ -46,7 +46,10 @@ def _prompts(texts, context):
     r = llm.ask_json(f"""You direct the drawings of "Money Decoded", a finance explainer whose mascot is Finn, a clever red fox.
 Video: {context}
 For every scene below (a few narration sentences) describe ONE storybook drawing that shows what the narration says, acted out by Finn:
-a concrete everyday situation with a clear emotion (curious, shocked, worried, proud, sneaky, laughing, thinking…), 1-4 simple props
+a concrete everyday situation with a STRONG, exaggerated cartoon emotion that matches what the sentence feels like (shock and jaw-drop at a
+scary number, panic when money disappears, anger at a hidden fee, sneaky grin when he finds a trick, joy and celebration at a win, fear
+in a crash, sadness when savings shrink, smug confidence when he explains the answer) - big eyes, big mouth, whole-body acting, never a
+neutral face; 1-4 simple props
 (a bank building, a loan contract, coins, a laptop with a banking app, a house, a piggy bank, a chart on paper, a vault, a crowd queue…),
 and a fresh pose every time. Finn must DO something physical in most scenes (walking into a bank, carrying a heavy bag of coins,
 running after flying banknotes, typing on a laptop, signing a contract, pushing a shopping trolley, counting coins, reading a very long
