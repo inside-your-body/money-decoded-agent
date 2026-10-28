@@ -15,12 +15,21 @@
   "audience": "Owner (Oct 24): every day, long video 23:00 Istanbul (20:00 UTC = 4 PM US Eastern / 8-9 PM UK), ONE Short at 23:30 Istanbul. Both are uploaded earlier as scheduled (private + publishAt).",
   "mode": "auto_public",
   "min_hours_between_episodes": 16,
-  "paused": true,
-  "paused_note": "Owner (Oct 25): new B-roll style is being tested -> scheduled runs skip until this is false."
+  "paused": false,
+  "paused_note": "Owner (Oct 28): daily episodes ON in the current style while the new cartoon style is built. true = scheduled runs skip."
  },
  "voice": {
   "engine": "openai",
   "locked": true,
+  "elevenlabs": {
+   "voice_id": "",
+   "model": "eleven_multilingual_v2",
+   "stability": 0.4,
+   "similarity": 0.8,
+   "style": 0.35,
+   "speed": 1.0,
+   "note": "Owner (Oct 28): lively, engaging finance narrator. Set engine to elevenlabs + voice_id after the audition."
+  },
   "openai": {
    "model": "gpt-4o-mini-tts",
    "voice": "onyx",
