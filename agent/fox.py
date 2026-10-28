@@ -7,7 +7,7 @@ from .common import ROOT, CFG
 from . import llm, images
 
 FPS = 30
-SHEET = ROOT / 'assets/finn/finn_sheet.jpg'
+SHEET = ROOT / 'assets/finn_sheet.jpg'
 FINN = ("FINN, an original cartoon red fox: orange-red fur, white chest and white tail tip, mint-green vest, small round glasses, "
         "small gold coin pendant on a cord. Keep him EXACTLY like the reference character sheet (same colours, outfit, proportions).")
 STYLE = ("Warm hand-drawn storybook illustration with soft ink lines and light watercolour shading on cream paper texture "
