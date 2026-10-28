@@ -161,6 +161,16 @@ jobs:
           ARGS="--stage finish"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           eval python -m agent.run $ARGS
+      - name: Preview for review (dry runs only)
+        if: success() && github.event_name == 'workflow_dispatch' && inputs.dry_run
+        run: |
+          D=work/$(python -c "import json;print(json.load(open('work/current.json'))['dir'])")
+          P=samples/preview; rm -rf $P; mkdir -p $P
+          [ -f $D/final_short0.mp4 ] && ffmpeg -v error -y -i $D/final_short0.mp4 -vf scale=540:-2 -c:v libx264 -crf 30 -preset veryfast -c:a aac -b:a 96k $P/short.mp4
+          [ -f $D/final_long.mp4 ] && ffmpeg -v error -y -t 75 -i $D/final_long.mp4 -vf scale=854:-2 -c:v libx264 -crf 30 -preset veryfast -c:a aac -b:a 96k $P/long_first75s.mp4
+          cp $D/thumbnail.jpg $D/package.json $P/ 2>/dev/null || true
+          python -c "import json;e=json.load(open('$D/episode.json'));json.dump({'title_ideas':e.get('title_ideas',[]),'upload':e.get('upload',{}),'short':(e.get('shorts') or [{}])[0].get('title'),'caption':(e.get('shorts') or [{}])[0].get('caption')},open('$P/packaging.json','w'),indent=1,ensure_ascii=False)" || true
+          ls -la $P
       - name: Save outputs
         if: always()
         uses: actions/upload-artifact@v4
@@ -178,5 +188,5 @@ jobs:
         if: success()
         run: |
           git config user.name "money-decoded-agent"; git config user.email "agent@users.noreply.github.com"
-          git add data/ && git commit -m "episode: update topics/history/library [skip ci]" || echo "nothing to commit"
+          git add data/ samples/ && git commit -m "episode: update topics/history/library [skip ci]" || echo "nothing to commit"
           for i in 1 2 3; do git pull --rebase --autostash -q origin main && git push && break; sleep 5; done
