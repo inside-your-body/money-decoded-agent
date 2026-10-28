@@ -37,7 +37,17 @@ def candidates():
     return dict(list(out.items())[:12])
 
 
+def channel_voice():
+    """Just the configured channel narrator (current settings) -> samples/voices/channel_voice.mp3"""
+    from . import tts
+    d = ROOT / 'samples/voices'; d.mkdir(parents=True, exist_ok=True)
+    a, sr = tts._openai_tts(TEXT); _mp3(a, sr, d / 'channel_voice.mp3')
+    print('channel voice:', tts.V['openai'].get('voice'), 'speed', tts.V['openai'].get('speed'), f'{len(a) / sr:.1f}s')
+
+
 def main():
+    if os.environ.get('MODE') == 'channel':
+        return channel_voice()
     from . import tts
     d = ROOT / 'samples/voices'; d.mkdir(parents=True, exist_ok=True)
     rows = []
@@ -51,7 +61,7 @@ def main():
             print('sample failed', name, e)
     for j, voice in enumerate(['ash', 'verse'], len(rows) + 1):
         try:
-            tts.V.setdefault('openai', {})['voice'] = voice
+            tts.V.setdefault('openai', {})['voice'] = voice; tts.V['openai']['speed'] = 1.0
             a, sr = tts._openai_tts(TEXT)
             f = d / f'{j:02d}_openai_{voice}.mp3'; _mp3(a, sr, f)
             rows.append(f'| {j:02d} | OpenAI — {voice} | — | cheap option |')

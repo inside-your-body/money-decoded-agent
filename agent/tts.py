@@ -51,6 +51,8 @@ def _openai_tts(text):
             r.raise_for_status()
             a_, sr = sf.read(io.BytesIO(r.content), dtype='float32')
             if a_.ndim > 1: a_ = a_.mean(1)
+            sp = float(oa.get('speed', 1.0))
+            if abs(sp - 1.0) > 0.01: a_ = _tempo(a_, sr, sp)     # owner Oct 28: a bit faster, same pitch
             try:
                 from . import cost; cost.tts(len(text))
             except Exception: pass
@@ -89,6 +91,16 @@ def _engine():
     if V.get('engine') == 'elevenlabs' and os.environ.get('ELEVENLABS_API_KEY'): return 'elevenlabs'
     if os.environ.get('OPENAI_API_KEY'): return 'openai'
     return 'kokoro'
+
+
+def _tempo(a, sr, sp):
+    """Speed up/down without changing the pitch (ffmpeg atempo)."""
+    import subprocess, tempfile
+    with tempfile.TemporaryDirectory() as d:
+        i, o = f'{d}/i.wav', f'{d}/o.wav'; sf.write(i, a, sr)
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', i, '-filter:a', f'atempo={sp:.3f}', o], check=True)
+        b, _ = sf.read(o, dtype='float32')
+    return b.mean(1) if b.ndim > 1 else b
 
 
 _n = lambda w: re.sub(r'[^a-z0-9]', '', w.lower())
