@@ -48,7 +48,11 @@ Video: {context}
 For every scene below (a few narration sentences) describe ONE storybook drawing that shows what the narration says, acted out by Finn:
 a concrete everyday situation with a clear emotion (curious, shocked, worried, proud, sneaky, laughing, thinking…), 1-4 simple props
 (a bank building, a loan contract, coins, a laptop with a banking app, a house, a piggy bank, a chart on paper, a vault, a crowd queue…),
-and a fresh pose every time (never the same pose twice in a row, not always pointing). Other characters may appear as simple generic
+and a fresh pose every time. Finn must DO something physical in most scenes (walking into a bank, carrying a heavy bag of coins,
+running after flying banknotes, typing on a laptop, signing a contract, pushing a shopping trolley, counting coins, reading a very long
+receipt, hiding money under a mattress, celebrating, slipping on a banana peel of debt…). The "hand on chin, thinking" pose and
+thought bubbles may be used at most twice in the whole video; never the same pose or camera angle twice in a row; vary the setting
+(home, street, bank hall, shop, office, park) and sometimes show a close-up of his face or of the prop. Other characters may appear as simple generic
 cartoon people or animals in the same style (never real or famous people). No text, signs, numbers or logos in the drawing.
 One or two sentences per scene, concrete and drawable.
 Scenes: {json.dumps({i: t for i, t in enumerate(texts)}, ensure_ascii=False)}
