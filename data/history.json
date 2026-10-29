@@ -32,11 +32,23 @@
    "format": "tl",
    "music": "fluidscape",
    "built_at": "2026-10-28T21:33:48"
+  },
+  {
+   "topic": "What Happens If You Invest $100 a Month From Age 20",
+   "video_id": "ZM3omxS7Krw",
+   "short_ids": [
+    "6Ep-p_h9sWw"
+   ],
+   "publish_at": "2026-10-29T20:00:00Z",
+   "format": "tl",
+   "music": "floating_cities",
+   "built_at": "2026-10-29T17:49:44"
   }
  ],
  "used_music": [
   "deliberate_thought",
   "clean_soul",
-  "fluidscape"
+  "fluidscape",
+  "floating_cities"
  ]
 }
