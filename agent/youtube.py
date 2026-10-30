@@ -29,6 +29,14 @@ def publish_time(hhmm):
     t = now.replace(hour=h, minute=m, second=0, microsecond=0)
     return None if t < now + dt.timedelta(minutes=15) else t.isoformat() + 'Z'
 
+def publish_next(hhmm):
+    """The next hh:mm UTC that is at least 6 h away (tomorrow afternoon for a build that finishes in the evening)."""
+    h, m = map(int, hhmm.split(':'))
+    now = dt.datetime.utcnow()
+    t = now.replace(hour=h, minute=m, second=0, microsecond=0)
+    while t < now + dt.timedelta(hours=6): t += dt.timedelta(days=1)
+    return t.isoformat() + 'Z'
+
 def upload(yt, video, title, description, tags, thumb=None, publish_at=None, synthetic=False):
     from googleapiclient.http import MediaFileUpload
     status = {'selfDeclaredMadeForKids': False, 'containsSyntheticMedia': synthetic}

@@ -99,15 +99,17 @@ def run_tl(a, topic, ep_dir):
     sids = []
     for s in spk:
         try:
+            # Short #1 30 min after the long video, Short #2 the next afternoon (US morning) so the channel gets a fresh upload every half day
+            when = youtube.publish_time(CFG['schedule']['publish_short_utc']) if s['k'] == 0 else youtube.publish_next(CFG['schedule'].get('publish_short2_utc', '14:00'))
             svid = youtube.upload(yt, s['file'], s['title'], s['description'].replace('{FULL_URL}', 'https://youtu.be/' + vid), pkg['tags'][:10],
-                                  publish_at=youtube.publish_time(CFG['schedule']['publish_short_utc']), synthetic=True)
+                                  publish_at=when, synthetic=True)
             sids.append(svid)
             try: youtube.pin_comment_text(yt, svid, 'The full story is here: https://youtu.be/' + vid)
             except Exception as e: print('short comment not posted:', e)
         except Exception as e: print('short upload failed', e)
     try: youtube.pin_comment_text(yt, vid, pkg['pinned_comment'])
     except Exception as e: print('comment not posted (will work once public):', e)
-    mark_done(topic['id'], {'topic': topic['title'], 'video_id': vid, 'short_ids': sids, 'publish_at': at, 'format': 'tl', 'music': track,
+    mark_done(topic['id'], {'topic': topic['title'], 'video_id': vid, 'short_ids': sids, 'publish_at': at, 'format': 'tl', 'fmt': ep.get('fmt'), 'music': track,
                             'built_at': dt.datetime.utcnow().isoformat(timespec='seconds')})
     save(ep_dir / 'result.json', {'video': vid, 'shorts': sids, 'publish_at': at, 'pinned_comment': pkg['pinned_comment']})
     print('DONE', vid, sids, at)

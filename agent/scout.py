@@ -68,9 +68,8 @@ def run_viral(force=False, want=4):
     vids = _viral(yt, queries)[:80]
     existing = [t['title'] for t in topics]
     res = llm.ask_json(f"""You find topics for "Money Decoded" (English, adults; US/UK/Canada viewers): educational stories about how money, banks, markets,
-debt, inflation, taxes, scams and fortunes REALLY work. FORMAT for every video: a money story told on a TIMELINE of time stamps
-(hours of a crash, days of a bank run, years of investing, the decades of a fortune, the months of a bubble) with a glowing hologram
-money map. Strongest angle: hidden / silent processes. The owner's strategy: take topics that ALREADY went viral on YouTube and make our own version.
+debt, inflation, taxes, scams and fortunes REALLY work, explained by our mascot Finn the fox. The channel rotates formats (timeline story,
+countdown list, myth busting, true case story, what-if experiment) so topics of every shape are welcome. Strongest angle: hidden / silent processes. The owner's strategy: take topics that ALREADY went viral on YouTube and make our own version.
 
 Viral videos found (title, channel, views, subscribers, outlier = views / subscribers, multiple = views / that channel's median views of its last 15 videos — THE signal: a video at 3x+ its own channel's median proves the IDEA worked, not the channel size; minutes):
 {json.dumps(vids, ensure_ascii=False)}

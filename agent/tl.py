@@ -8,7 +8,7 @@ from .common import ROOT, WORK, CFG, load, save, sh
 from . import llm, tts
 
 FPS = 30
-N_SHORTS = 1          # owner (Oct 24): one Short per day, 30 min after the long video
+N_SHORTS = 2          # owner (Oct 30): two Shorts per day cut from the long video (#1 30 min after it, #2 the next afternoon)
 ICONS = ['coin', 'cash', 'bank', 'chartup', 'chartdown', 'house', 'card', 'wallet', 'piggy', 'gold', 'vault', 'briefcase', 'factory',
          'capitol', 'phone', 'clock', 'calendar', 'percent', 'scale', 'warning', 'check', 'cross', 'person', 'people', 'barrel', 'flower',
          'ship', 'laptop', 'crypto', 'rocket', 'fire', 'lock', 'receipt', 'gavel', 'globe', 'printer', 'cart', 'car', 'cap', 'ticket', 'bomb',
@@ -54,18 +54,42 @@ def long_words(ep): return _wc([ln['text'] for ln in long_lines(ep)])
 
 
 # ---------------- script ----------------
+# Owner (Oct 30): vary the format so the channel never looks mass-produced (YouTube's "inauthentic content" rule). The writer picks
+# the format that fits the topic best, never one of the last two used. "stage" = the section label of the format (<=10 chars).
+FORMATS = {
+    'timeline': "TIMELINE STORY — the story moves through time stamps that fit the topic (9:30 AM → NOON → DAY 2, AGE 20 → 45 → 65, 1634 → 1637); "
+                "at each stamp we see where the money goes and what changes. stage = the time stamp ('DAY 3', '1929', 'AGE 45').",
+    'countdown': "COUNTDOWN LIST — 5 to 7 surprising points counted down to the most surprising one (#1), each point a mini story with its own "
+                 "twist; tease #1 in the hook. stage = '#7' … '#1'.",
+    'myths': "MYTH BUSTING — 4 to 6 beliefs most people hold about the topic, each one shown, then broken with the real mechanism and a number; "
+             "the last myth is the one that costs viewers the most. stage = 'MYTH 1' … 'MYTH 6'.",
+    'case': "TRUE CASE STORY — one real, well-documented event or person (a bank collapse, a famous fortune or scam, a bubble) told like a "
+            "thriller in acts: the setup, the warning signs, the moment it breaks, the aftermath, the lesson for you. stage = 'ACT 1' … 'ACT 5' or a date.",
+    'whatif': "WHAT-IF EXPERIMENT — follow one concrete scenario step by step (you put $1,000 here, you skip this, you do this every month) "
+              "and show what happens at each step with real numbers, then compare it with the alternative. stage = 'STEP 1' … or 'MONTH 6', 'YEAR 10'.",
+}
+
+
+def pick_formats():
+    """Formats allowed for this episode = all but the last two used (data/history.json)."""
+    used = [e.get('fmt') for e in load(ROOT / 'data/history.json', {'episodes': []}).get('episodes', []) if e.get('fmt')][-2:]
+    return {k: v for k, v in FORMATS.items() if k not in used} or FORMATS
+
+
 def write(topic, notes):
     ref = topic.get('ref') or {}
+    fmts = pick_formats()
     return llm.ask_json(f"""You are the head writer of the YouTube channel "Money Decoded" (English, adults, US/UK/Canada audience).
-FORMAT (every video): a money story told as a TIMELINE — the story moves through time stamps that fit the topic
-(e.g. 9:30 AM → NOON → 4 PM → DAY 2 → YEAR 1, or AGE 20 → 30 → 45 → 65, or 1634 → 1636 → FEB 1637) and at each stamp we see
-where the money goes and what changes. Visual identity: a glowing hologram MONEY MAP (you, bank, market, central bank, government,
-company, home, debt, gold) where the place we talk about lights up and money flows into it, big time stamps, big numbers, simple icons.
+FORMAT: choose the ONE format below that tells THIS topic best (the channel rotates formats so no two episodes in a row feel the
+same) and return its key as "fmt":
+{chr(10).join('- ' + k + ': ' + v for k, v in fmts.items())}
+Visual identity: Finn the clever fox acts the story out in storybook drawings, next to him a card with the number / chart / myth-vs-fact
+of each sentence, big numbers, simple icons.
 Channel rules:
 {llm.RULES}
 
 Topic: "{topic['title']}"
-{('This topic is our own version of a proven viral idea: ' + (('"' + str(ref.get('title')) + '" (' + str(ref.get('views', '')) + ' views)') if ref.get('title') else str(ref.get('note', ''))) + '. Same curiosity, our timeline format, our own words and facts — never a copy.') if ref else ''}
+{('This topic is our own version of a proven viral idea: ' + (('"' + str(ref.get('title')) + '" (' + str(ref.get('views', '')) + ' views)') if ref.get('title') else str(ref.get('note', ''))) + '. Same curiosity, our own format, our own words and facts — never a copy.') if ref else ''}
 {('Angle: ' + topic['angle']) if topic.get('angle') else ''}
 {('Opening idea (verify every number against the notes; change it if the notes disagree): ' + topic['hook']) if topic.get('hook') else ''}
 Research notes (use only facts from here; round numbers; be accurate; never investment advice, predictions or get-rich promises):
@@ -77,13 +101,14 @@ Write the long video: {llm.WORDS_MIN}–{llm.WORDS_MAX} words of narration in to
 {llm.SEO_RULES}
 WORDPLAY: hook the viewer with intriguing wording, reversals ("the bank didn't lend your money — it created new money"), concrete
 everyday images and tension — never with false hope or exaggeration. Every claim must be true.
-STRUCTURE: scene 1 = hook (stage null). Then 5–8 timeline scenes, each = one time stamp ("stage", ≤10 chars, UPPERCASE, e.g. "DAY 3", "1929", "AGE 45"),
-in chronological order, 8–16 sentences each, each with its own surprise. Plant an open loop in the hook and pay it off at the last stamp.
+STRUCTURE: scene 1 = hook (stage null). Then 5–8 scenes in the chosen format, each with its "stage" label (≤10 chars, UPPERCASE, as the
+format says), 8–16 sentences each, each with its own surprise. Plant an open loop in the hook and pay it off in the last section.
 Final scene (stage null): the big picture + one question for the comments. Short spoken sentences, one idea each, every sentence SHOWABLE
 with a number, a place in the money map, an object, a flow of money or a change. Max 12 numbers in total. Explain — never advise.
 
-Then write {N_SHORTS} SHORT (95–115 words, ≈ 40–50 s — never longer): the single most surprising slice of the timeline, self-contained:
-line 1 = a curiosity question or shocking claim that works in the first second; one continuous mini timeline (2–3 stamps);
+Then write {N_SHORTS} SHORTS (each 95–115 words, ≈ 40–50 s — never longer), each a DIFFERENT self-contained moment of the video
+(different fact, different twist — never the same point twice), each survives without the long video:
+line 1 = a curiosity question or shocking claim that works in the first second; one continuous mini story with a turn in it;
 second-to-last line sends viewers to the full video ("the full story is in the video linked above"); last line loops into the first.
 
 Thumbnail fallback (only used if the main thumbnail fails): 1 variant = "number" (big number/time on the thumbnail, ≤8 chars, e.g. "$65B", "24H", "-90%"),
@@ -92,7 +117,7 @@ described for a photo-real image, e.g. "a heavy steel bank vault door half open 
 
 The upload description must end with the line: Educational content only — not financial advice.
 Return JSON (comments are explanations, do not output them):
-{{"title": str, "main_keyword": str,
+{{"fmt": str, "title": str, "main_keyword": str,
  "scenes": [{{"title": "chapter title 2-5 words", "stage": str|null, "node": NODE, "lines": [str, ...]}}],
  "shorts": [{{"title": str, "lines": [str, ...]}}],
  "upload": {{"main_keyword": str, "title": str, "description": str, "tags": [str], "hashtags": [str], "pinned_comment": str}},
@@ -307,7 +332,6 @@ def polish(ep):
     and caption, and the pinned comment. Facts may only come from the script."""
     up = ep['upload']
     narr = ' '.join(_tx(l) for l in long_lines(ep))[:14000]
-    short = ep.get('shorts', [{}])[0] if ep.get('shorts') else {}
     r = llm.ask_json(f"""You are the packaging editor of the finance YouTube channel "Money Decoded" (English; US/UK/Canada adults).
 The video is finished. Write its packaging so that people who see it WANT to click — through curiosity, never false hope.
 Rules: every claim must be true to the script; no clickbait lies, no "get rich", no advice, no predictions, no ALL-CAPS sentences, max one emoji
@@ -316,7 +340,7 @@ in the Short caption and none elsewhere. Use concrete, surprising specifics from
 Main search keyword: "{up.get('main_keyword') or ep.get('main_keyword', '')}"
 Writer's title: "{up.get('title')}"
 Script: {narr}
-Short script: {' '.join(_tx(l) for l in short.get('lines', []))}
+Shorts: {json.dumps([' '.join(_tx(l) for l in x.get('lines', [])) for x in ep.get('shorts', [])], ensure_ascii=False)}
 
 0. "queries": the 3 search queries (what a real person types) this video should win.
 1. "title_ideas": 10 different PACKAGES, each = a title + the thumbnail text, written as ONE unit:
@@ -328,11 +352,11 @@ Short script: {' '.join(_tx(l) for l in short.get('lines', []))}
 2. "title": the best one of them (best mix of searchable + curiosity + honest).
 3. "hook": the first 2 lines of the description (≤ 220 characters total): they show under the video in search — keyword in sentence 1,
    then an open question or twist that makes people want to watch. No hashtags.
-4. "short_title": the Short's title (≤ 55 characters, no hashtags): a curiosity question or shocking true claim from the Short.
-5. "short_caption": the Short's caption, 2-3 short lines: line 1 the curiosity hook, line 2 what they'll understand, line 3 a question
-   that invites comments. No hashtags, no links (they are added later).
+4. "shorts": for EACH Short above, in order: "title" (≤ 55 characters, no hashtags, a curiosity question or shocking true claim from
+   that Short; every Short gets a different title) and "caption" (2-3 short lines: line 1 the curiosity hook, line 2 what they'll
+   understand, line 3 a question that invites comments; no hashtags, no links — they are added later).
 6. "pinned_comment": one friendly question to viewers about the video's idea (≤ 140 characters).
-Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str}}], "title": str, "hook": str, "short_title": str, "short_caption": str, "pinned_comment": str}}""",
+Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str}}], "title": str, "hook": str, "shorts": [{{"title": str, "caption": str}}], "pinned_comment": str}}""",
                          max_tokens=4000)
     # yt-package / yt-seo checks: lint every title+thumbnail pairing, reward titles whose words cover the search queries
     from . import craft
@@ -357,12 +381,13 @@ Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str}}]
         cut = d.find('\n\n')
         up['description'] = r['hook'].strip() + ('\n\n' + d[cut + 2:] if cut > 0 else '\n\n' + d)
     if r.get('pinned_comment'): up['pinned_comment'] = r['pinned_comment'].strip()
-    if short:
-        if r.get('short_title'): short['title'] = r['short_title'].strip()
-        if r.get('short_caption'): short['caption'] = r['short_caption'].strip()
+    for x, pk in zip(ep.get('shorts', []), r.get('shorts') or []):
+        if isinstance(pk, dict):
+            if pk.get('title'): x['title'] = pk['title'].strip()
+            if pk.get('caption'): x['caption'] = pk['caption'].strip()
     ep['title_ideas'] = r.get('title_ideas', [])
     ep['polished'] = True
-    print('packaging:', up['title'], '|', short.get('title'))
+    print('packaging:', up['title'], '|', [x.get('title') for x in ep.get('shorts', [])])
     return ep
 
 
@@ -373,26 +398,28 @@ def hook_pass(ep):
     from . import craft
     sc0 = ep['scenes'][0]
     cur = ' '.join(_tx(l) for l in sc0['lines'][:2])
-    short = (ep.get('shorts') or [{}])[0]
-    s_cur = _tx(short['lines'][0]) if short.get('lines') else ''
+    shorts = [x for x in ep.get('shorts', []) if x.get('lines')]
+    s_cur = ' | '.join(_tx(x['lines'][0]) for x in shorts)
     r = llm.ask_json(f"""Video title: "{ep['upload']['title']}". Current opening (first two sentences): "{cur}"
 Next sentences: "{' '.join(_tx(l) for l in sc0['lines'][2:6])}"
-Short's first line: "{s_cur}"
+First lines of the Shorts (separated by |): "{s_cur}"
 Write 5 alternative openings for the long video (each 1-2 short spoken sentences, 12-30 words) using different hook types: {'; '.join(craft.HOOK_TYPES)}.
 Every opening must: confirm what the title promises in the first sentence, open a question the viewer cannot close yet, say "you" early,
 name what is at stake (a concrete number/cost from the script), and flow naturally into the next sentences. Only facts from the script.
-Also write 5 alternative FIRST LINES for the Short (one sentence, 9-24 words) that work for someone who never saw the long video.
-Return JSON: {{"long": [str], "short": [str]}}""", max_tokens=3000)
+For EACH Short (same order) also write 4 alternative FIRST LINES (one sentence, 9-24 words) that work for someone who never saw the
+long video and fit that Short's own topic.
+Return JSON: {{"long": [str], "shorts": [[str]]}}""", max_tokens=3000)
     best, sc = craft.best_hook(cur, r.get('long', []))
     print('hook:', craft.hook_score(cur)['verdict'], '->', sc)
     if best != cur:
         parts = [x.strip() for x in re.split(r'(?<=[.?!])\s+', best) if x.strip()]
         sc0['lines'] = parts + [_tx(l) for l in sc0['lines'][2:]]
         ep['boarded'] = False
-    if s_cur:
-        sb, ss = craft.best_hook(s_cur, r.get('short', []))
-        if sb != s_cur:
-            short['lines'] = [sb] + [_tx(l) for l in short['lines'][1:]]
+    for x, opts in zip(shorts, r.get('shorts') or []):
+        cur1 = _tx(x['lines'][0])
+        sb, ss = craft.best_hook(cur1, opts if isinstance(opts, list) else [])
+        if sb != cur1:
+            x['lines'] = [sb] + [_tx(l) for l in x['lines'][1:]]
             ep['boarded'] = False
         print('short hook ->', ss)
     ep['hooked'] = True
