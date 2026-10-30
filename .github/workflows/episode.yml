@@ -28,7 +28,7 @@ concurrency: episode
 
 env:
   YT_CLIENT_ID: 284823645962-pk32li91jr26p2v8va7j8kric6evrqh6.apps.googleusercontent.com
-  SHARDS: 7          # 6 parallel parts of the long video + 1 Short
+  SHARDS: 8          # 6 parallel parts of the long video + 2 Shorts
 
 jobs:
   build:             # research, script, voice, storyboard, drawings, new animations, render props
@@ -106,7 +106,7 @@ jobs:
     timeout-minutes: 300
     strategy:
       fail-fast: false
-      matrix: {shard: [0, 1, 2, 3, 4, 5, 6]}
+      matrix: {shard: [0, 1, 2, 3, 4, 5, 6, 7]}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
