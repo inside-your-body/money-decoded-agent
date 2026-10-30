@@ -43,12 +43,26 @@
    "format": "tl",
    "music": "floating_cities",
    "built_at": "2026-10-29T17:49:44"
+  },
+  {
+   "topic": "Why People With the Same Salary End Up Rich or Broke",
+   "video_id": "3v8Xr4f4lLo",
+   "short_ids": [
+    "1u9CDj8FM3M",
+    "giGnEUGU59M"
+   ],
+   "publish_at": "2026-10-30T20:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "inspired",
+   "built_at": "2026-10-30T12:48:39"
   }
  ],
  "used_music": [
   "deliberate_thought",
   "clean_soul",
   "fluidscape",
-  "floating_cities"
+  "floating_cities",
+  "inspired"
  ]
 }
