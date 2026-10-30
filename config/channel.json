@@ -12,6 +12,7 @@
   "build_cron_utc": "7 11 * * * (+ backup 7 15 * * *)",
   "publish_long_utc": "20:00",
   "publish_short_utc": "20:30",
+  "publish_short2_utc": "14:00",
   "audience": "Owner (Oct 24): every day, long video 23:00 Istanbul (20:00 UTC = 4 PM US Eastern / 8-9 PM UK), ONE Short at 23:30 Istanbul. Both are uploaded earlier as scheduled (private + publishAt).",
   "mode": "auto_public",
   "min_hours_between_episodes": 16,
