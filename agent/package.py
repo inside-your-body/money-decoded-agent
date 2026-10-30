@@ -15,9 +15,13 @@ def build(ep, ep_dir):
             chapters.append((t, title))
         si += len(sc['narration'])
     chapters[0] = (0, chapters[0][1])
-    chap = '\n'.join(f'{_ts(t)} {name}' for t, name in chapters)
+    # yt-chapters rules (else YouTube silently ignores the list): first 00:00, at least 3, each at least 10 s
+    total = segs[-1]['end'] if segs else 0
+    chapters = [c for k, c in enumerate(chapters) if (chapters[k + 1][0] if k + 1 < len(chapters) else total) - c[0] >= 10 or k == 0]
+    chap = '\n'.join(f'{_ts(t)} {name}' for t, name in chapters) if len(chapters) >= 3 else ''
     desc = up['description']
-    desc = desc.replace('{CHAPTERS}', chap) if '{CHAPTERS}' in desc else desc + '\n\nChapters\n' + chap
+    if chap: desc = desc.replace('{CHAPTERS}', chap) if '{CHAPTERS}' in desc else desc + '\n\nChapters\n' + chap
+    else: desc = desc.replace('Chapters\n{CHAPTERS}', '').replace('{CHAPTERS}', '')
     if ep.get('sources') and 'Sources' not in desc:
         desc += '\n\nSources\n' + '\n'.join(f"- {s['title']}: {s['url']}" for s in ep['sources'][:8])
     tags = list(dict.fromkeys([t.strip() for t in up.get('tags', []) if t.strip()]))
@@ -26,10 +30,10 @@ def build(ep, ep_dir):
         tags = [kw] + [t for t in tags if t.lower() != kw]
     title_l = up['title'].lower()
     tags = tags[:1] + sorted(tags[1:], key=lambda t: 0 if t.lower() in title_l else 1)
-    total = 0; keep = []
-    for t in tags:
-        if total + len(t) + 2 > 480: break
-        keep.append(t); total += len(t) + 2
+    tl_ = 0; keep = []
+    for t in tags[:15]:                       # yt-seo: tags are a weak signal - 15 exact phrases are plenty
+        if tl_ + len(t) + 2 > 480: break
+        keep.append(t); tl_ += len(t) + 2
     # SEO (TubeBuddy/vidIQ check exact tag phrases in title + description): the main keyword tag must be inside the title, and the
     # top tags must appear word-for-word in the description -> add one natural 'In this video' line with the tags missing from it.
     tl = up['title'].lower()

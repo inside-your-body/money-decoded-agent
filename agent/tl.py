@@ -45,6 +45,9 @@ government = state, taxes, treasury, regulators, courts; company = businesses, e
 credit cards, IOUs; gold = gold, commodities, hard assets, collectibles; none = nothing specific)"""
 
 
+def _tx(l): return l['text'] if isinstance(l, dict) else l
+
+
 def _wc(lines): return sum(len(x.split()) for x in lines)
 def long_lines(ep): return [ln for sc in ep['scenes'] for ln in sc['lines']]
 def long_words(ep): return _wc([ln['text'] for ln in long_lines(ep)])
@@ -250,6 +253,12 @@ def build(topic, ep_dir, dry_run=False):
             w = _wc([l for s in ep['scenes'] for l in s['lines']])
             if w >= llm.WORDS_MIN - 60: break
             print('script too short:', w, '-> expanding'); ep = expand(ep, notes, llm.WORDS_MIN + 40); save(ep_dir / 'episode.json', ep)
+    if not ep.get('polished'):            # packaging first: the hook must confirm the final title
+        try: ep = polish(ep); save(ep_dir / 'episode.json', ep)
+        except Exception as e: print('packaging polish failed (keeping the writer\'s title/description):', e)
+    if not ep.get('hooked'):
+        try: ep = hook_pass(ep); save(ep_dir / 'episode.json', ep)
+        except Exception as e: print('hook pass failed:', e)
     if not ep.get('boarded'):
         ep = storyboard(ep); save(ep_dir / 'episode.json', ep)
     # voice: long (length guard) + Shorts
@@ -297,7 +306,7 @@ def polish(ep):
     script: 10 title ideas -> picks the best (search keyword + curiosity, honest), rewrites the description's opening, the Short's title
     and caption, and the pinned comment. Facts may only come from the script."""
     up = ep['upload']
-    narr = ' '.join(l['text'] for l in long_lines(ep))[:14000]
+    narr = ' '.join(_tx(l) for l in long_lines(ep))[:14000]
     short = ep.get('shorts', [{}])[0] if ep.get('shorts') else {}
     r = llm.ask_json(f"""You are the packaging editor of the finance YouTube channel "Money Decoded" (English; US/UK/Canada adults).
 The video is finished. Write its packaging so that people who see it WANT to click — through curiosity, never false hope.
@@ -307,10 +316,15 @@ in the Short caption and none elsewhere. Use concrete, surprising specifics from
 Main search keyword: "{up.get('main_keyword') or ep.get('main_keyword', '')}"
 Writer's title: "{up.get('title')}"
 Script: {narr}
-Short script: {' '.join(l['text'] for l in short.get('lines', []))}
+Short script: {' '.join(_tx(l) for l in short.get('lines', []))}
 
-1. "title_ideas": 10 different titles (≤ 60 characters each). Each contains the main keyword (or its most natural wording) near the start,
-   and adds a curiosity gap: a twist, a hidden truth, a surprising number, a "nobody tells you" angle — understandable at a glance.
+0. "queries": the 3 search queries (what a real person types) this video should win.
+1. "title_ideas": 10 different PACKAGES, each = a title + the thumbnail text, written as ONE unit:
+   - title ≤ 60 characters, the subject inside the first 40 (mobile feed), the main keyword (or its most natural wording) near the start,
+     a number, a name or a date from the script, a curiosity gap (twist, hidden truth, surprising number) — understandable at a glance;
+     max 2 ALL-CAPS words, no hype words (amazing, insane, secret, ultimate, best…).
+   - thumb: 1-3 words for the thumbnail that say what the title does NOT (never repeat a title word) — same promise, different words,
+     e.g. a shocking number "$7,200 LEFT", a verdict "IT'S GONE", a contrast "0.4% vs 38%".
 2. "title": the best one of them (best mix of searchable + curiosity + honest).
 3. "hook": the first 2 lines of the description (≤ 220 characters total): they show under the video in search — keyword in sentence 1,
    then an open question or twist that makes people want to watch. No hashtags.
@@ -318,10 +332,26 @@ Short script: {' '.join(l['text'] for l in short.get('lines', []))}
 5. "short_caption": the Short's caption, 2-3 short lines: line 1 the curiosity hook, line 2 what they'll understand, line 3 a question
    that invites comments. No hashtags, no links (they are added later).
 6. "pinned_comment": one friendly question to viewers about the video's idea (≤ 140 characters).
-Return JSON: {{"title_ideas": [str], "title": str, "hook": str, "short_title": str, "short_caption": str, "pinned_comment": str}}""",
+Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str}}], "title": str, "hook": str, "short_title": str, "short_caption": str, "pinned_comment": str}}""",
                          max_tokens=4000)
-    t = (r.get('title') or '').strip()
-    if 10 <= len(t) <= 70: up['title'] = t
+    # yt-package / yt-seo checks: lint every title+thumbnail pairing, reward titles whose words cover the search queries
+    from . import craft
+    queries = [q for q in r.get('queries', []) if isinstance(q, str)][:3]
+    cands = [c for c in r.get('title_ideas', []) if isinstance(c, dict) and c.get('title')]
+    pick = (r.get('title') or '').strip()
+    rows = []
+    for c in cands:
+        L = craft.title_lint(c['title'], c.get('thumb'))
+        gaps = craft.query_gaps(c['title'], r.get('hook', ''), queries)
+        rows.append((L['score'] - 6 * len(gaps) + (8 if c['title'].strip() == pick else 0), c, L))
+    if rows:
+        sc, c, L = max(rows, key=lambda x: x[0])
+        up['title'] = c['title'].strip()[:100]
+        th = (c.get('thumb') or '').strip()
+        if th and len(th.split()) <= 3: ep['thumb_text'] = th
+        print('packaging lint:', sc, L['issues'])
+    elif 10 <= len(pick) <= 70: up['title'] = pick
+    ep['queries'] = queries
     if r.get('hook'):
         d = up.get('description', '')
         cut = d.find('\n\n')
@@ -333,6 +363,39 @@ Return JSON: {{"title_ideas": [str], "title": str, "hook": str, "short_title": s
     ep['title_ideas'] = r.get('title_ideas', [])
     ep['polished'] = True
     print('packaging:', up['title'], '|', short.get('title'))
+    return ep
+
+
+def hook_pass(ep):
+    """yt-script / yt-shorts: the first ~15 s must confirm the title, open a question the viewer cannot close and prove the payoff.
+    5 alternative openings are written against proven hook types, scored with craft.hook_score, and the strongest one replaces the
+    first two sentences (only if it beats the current one). Same for line 1 of the Short (it must work without the long video)."""
+    from . import craft
+    sc0 = ep['scenes'][0]
+    cur = ' '.join(_tx(l) for l in sc0['lines'][:2])
+    short = (ep.get('shorts') or [{}])[0]
+    s_cur = _tx(short['lines'][0]) if short.get('lines') else ''
+    r = llm.ask_json(f"""Video title: "{ep['upload']['title']}". Current opening (first two sentences): "{cur}"
+Next sentences: "{' '.join(_tx(l) for l in sc0['lines'][2:6])}"
+Short's first line: "{s_cur}"
+Write 5 alternative openings for the long video (each 1-2 short spoken sentences, 12-30 words) using different hook types: {'; '.join(craft.HOOK_TYPES)}.
+Every opening must: confirm what the title promises in the first sentence, open a question the viewer cannot close yet, say "you" early,
+name what is at stake (a concrete number/cost from the script), and flow naturally into the next sentences. Only facts from the script.
+Also write 5 alternative FIRST LINES for the Short (one sentence, 9-24 words) that work for someone who never saw the long video.
+Return JSON: {{"long": [str], "short": [str]}}""", max_tokens=3000)
+    best, sc = craft.best_hook(cur, r.get('long', []))
+    print('hook:', craft.hook_score(cur)['verdict'], '->', sc)
+    if best != cur:
+        parts = [x.strip() for x in re.split(r'(?<=[.?!])\s+', best) if x.strip()]
+        sc0['lines'] = parts + [_tx(l) for l in sc0['lines'][2:]]
+        ep['boarded'] = False
+    if s_cur:
+        sb, ss = craft.best_hook(s_cur, r.get('short', []))
+        if sb != s_cur:
+            short['lines'] = [sb] + [_tx(l) for l in short['lines'][1:]]
+            ep['boarded'] = False
+        print('short hook ->', ss)
+    ep['hooked'] = True
     return ep
 
 
@@ -412,6 +475,9 @@ It must be true to the video: no false promises, no "get rich".
 Choose the single most striking visual that shows the topic at a glance. {FINN_THUMB if CFG.get('style') == 'finn' else THUMB_STYLE}
 Keep it SIMPLE and uncluttered like a top finance explainer channel: one main subject (or a clear 2-3 step change with arrows), no people's faces,
 no more than one small number badge besides the headline. Keep a small margin around the headline. Spell every word correctly.{note}"""
+        if ep.get('thumb_text'):
+            prompt += (f"\nThe ONLY text on the thumbnail is exactly: \"{ep['thumb_text']}\" (do not add the title or any other words; "
+                       "it complements the title instead of repeating it).")
         if CFG.get('style') == 'finn':
             from . import fox
             ok = images.edit(prompt + "\nThe channel mascot FINN must be in the thumbnail, big and reacting with a strong emotion that fits the topic: "

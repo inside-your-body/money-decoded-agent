@@ -30,13 +30,30 @@ def _viral(yt, queries):
             vids.append({'id': v['id'], 'title': v['snippet']['title'], 'channel': v['snippet']['channelTitle'], 'cid': v['snippet']['channelId'],
                          'views': int(v['statistics'].get('viewCount', 0)), 'minutes': round(sec / 60, 1)})
     cids = list({v['cid'] for v in vids})
+    uploads = {}
     for k in range(0, len(cids), 50):
-        for c in yt.channels().list(part='statistics', id=','.join(cids[k:k + 50])).execute().get('items', []):
+        for c in yt.channels().list(part='statistics,contentDetails', id=','.join(cids[k:k + 50])).execute().get('items', []):
             chans[c['id']] = int(c['statistics'].get('subscriberCount', 0) or 0)
+            uploads[c['id']] = (c.get('contentDetails', {}).get('relatedPlaylists') or {}).get('uploads')
+    # yt-viral: raw views rank channel SIZE, not ideas -> rank by how far a video beat its own channel's median (last 15 uploads)
+    med = {}
+    for cid in cids[:60]:
+        try:
+            pl = uploads.get(cid)
+            if not pl: continue
+            items = yt.playlistItems().list(part='contentDetails', playlistId=pl, maxResults=15).execute().get('items', [])
+            ids_ = [i['contentDetails']['videoId'] for i in items]
+            if len(ids_) < 4: continue
+            vs = sorted(int(x['statistics'].get('viewCount', 0)) for x in yt.videos().list(part='statistics', id=','.join(ids_)).execute().get('items', []))
+            if len(vs) >= 4: med[cid] = vs[len(vs) // 2]
+        except Exception as e: print('median failed', cid, e)
     for v in vids:
-        v['subs'] = chans.get(v.pop('cid'), 0); v['outlier'] = round(v['views'] / max(1000, v['subs']), 1)
+        cid = v.pop('cid')
+        v['subs'] = chans.get(cid, 0); v['outlier'] = round(v['views'] / max(1000, v['subs']), 1)
+        if cid in med: v['multiple'] = round(v['views'] / max(1000, med[cid]), 1)
     vids = [v for v in vids if v['views'] >= 200_000]
-    return sorted(vids, key=lambda x: -(x['views'] * min(20, x['outlier']) ** 0.5))
+    rank = lambda x: x['views'] * min(20, x.get('multiple') or x['outlier'] / 3) ** 0.7
+    return sorted(vids, key=lambda x: -rank(x))
 
 def run_viral(force=False, want=4):
     topics = load(ROOT / 'data/topics.json')
@@ -55,14 +72,14 @@ debt, inflation, taxes, scams and fortunes REALLY work. FORMAT for every video: 
 (hours of a crash, days of a bank run, years of investing, the decades of a fortune, the months of a bubble) with a glowing hologram
 money map. Strongest angle: hidden / silent processes. The owner's strategy: take topics that ALREADY went viral on YouTube and make our own version.
 
-Viral videos found (title, channel, views, subscribers, outlier = views / subscribers, minutes):
+Viral videos found (title, channel, views, subscribers, outlier = views / subscribers, multiple = views / that channel's median views of its last 15 videos — THE signal: a video at 3x+ its own channel's median proves the IDEA worked, not the channel size; minutes):
 {json.dumps(vids, ensure_ascii=False)}
 
 Our existing topics (never repeat or closely duplicate): {json.dumps(existing, ensure_ascii=False)}
 
 Pick the {want + 2} best proven ideas that fit our format (money over time: crashes, bubbles, bank runs, inflation, debt, compound growth,
 scams, famous fortunes, taxes, housing, how institutions make money; skip: stock/crypto picks, "get rich quick", trading signals,
-price predictions, gambling, MLM, politics-only topics, music, pranks, kids). Prefer huge view counts and high outlier scores.
+price predictions, gambling, MLM, politics-only topics, music, pranks, kids). Prefer high multiples (3x+) first, then big view counts. For each pick, name the hook formula of the original title in 'angle'.
 Phrase each title the way people SEARCH, broad and clear, ≤60 chars, main keyword front-loaded, e.g. "How Banks Create Money Out of Thin Air",
 "What Happens in the First 24 Hours of a Stock Market Crash", "Why Lottery Winners Go Broke". Not a copy of the original title.
 Return JSON: {{"topics": [{{"title": str, "angle": str, "stamps": "e.g. 9:30 AM > NOON > 4 PM > DAY 2 > YEAR 1",
