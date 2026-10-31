@@ -315,7 +315,9 @@ Lines: {json.dumps([l['text'] for l in s['lines']], ensure_ascii=False)}""", max
                 s['lines'] = [_line(t, b, stage=True) for t, b in zip(out['lines'], bs)]
                 save(ep_dir / 'episode.json', ep)
                 for f in (f'vo_short{k}.wav', f'segs_short{k}.json'): (ep_dir / f).unlink(missing_ok=True)
-        save(ep_dir / f'props_short{k}.json', _visuals(props(s['lines'], [l.get('stage') for l in s['lines']], sg, True), ep_dir, f'short{k}', ep['title'] + ' (vertical Short)'))
+        pr = props(s['lines'], [l.get('stage') for l in s['lines']], sg, True)
+        pr['cover'] = s.get('cover') or (s.get('title') or '').upper()[:40]
+        save(ep_dir / f'props_short{k}.json', _visuals(pr, ep_dir, f'short{k}', ep['title'] + ' (vertical Short)'))
     if not ep.get('polished'):
         try: ep = polish(ep); save(ep_dir / 'episode.json', ep)
         except Exception as e: print('packaging polish failed (keeping the writer\'s title/description):', e)
@@ -354,9 +356,11 @@ Shorts: {json.dumps([' '.join(_tx(l) for l in x.get('lines', [])) for x in ep.ge
    then an open question or twist that makes people want to watch. No hashtags.
 4. "shorts": for EACH Short above, in order: "title" (≤ 55 characters, no hashtags, a curiosity question or shocking true claim from
    that Short; every Short gets a different title) and "caption" (2-3 short lines: line 1 the curiosity hook, line 2 what they'll
-   understand, line 3 a question that invites comments; no hashtags, no links — they are added later).
+   understand, line 3 a question that invites comments; no hashtags, no links — they are added later) and "cover" (2-5 BIG words shown
+   on screen in the first 2 seconds and as the Short's cover frame: tells the topic at a glance AND opens a curiosity gap, different words
+   from the spoken first line, e.g. "SAME SALARY. $0 SAVED?", "YOUR BANK HAS NO VAULT").
 6. "pinned_comment": one friendly question to viewers about the video's idea (≤ 140 characters).
-Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str}}], "title": str, "hook": str, "shorts": [{{"title": str, "caption": str}}], "pinned_comment": str}}""",
+Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str}}], "title": str, "hook": str, "shorts": [{{"title": str, "caption": str, "cover": str}}], "pinned_comment": str}}""",
                          max_tokens=4000)
     # yt-package / yt-seo checks: lint every title+thumbnail pairing, reward titles whose words cover the search queries
     from . import craft
@@ -385,6 +389,7 @@ Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str}}]
         if isinstance(pk, dict):
             if pk.get('title'): x['title'] = pk['title'].strip()
             if pk.get('caption'): x['caption'] = pk['caption'].strip()
+            if pk.get('cover'): x['cover'] = pk['cover'].strip().upper()[:40]
     ep['title_ideas'] = r.get('title_ideas', [])
     ep['polished'] = True
     print('packaging:', up['title'], '|', [x.get('title') for x in ep.get('shorts', [])])
@@ -455,7 +460,8 @@ def _check_thumb(img, title):
                {'type': 'text', 'text': f"""YouTube thumbnail for the video "{title}". Check it strictly. Return JSON only:
 {{"text": "the exact words on it", "spelling_ok": bool, "readable": bool, "topic_clear": bool, "problem": str}}
 spelling_ok=false for any misspelled, garbled or made-up word or letters; readable=false if text is cut off, too small or covered;
-topic_clear=false if a viewer could not tell what the video is about."""}]
+topic_clear=false if a viewer who sees this thumbnail TOGETHER WITH the title above could not tell what the video is about
+(the thumbnail text is meant to complement the title, not repeat it)."""}]
     try:
         r = llm._repair(llm.ask(content, max_tokens=800, retries=2)) or {}
         return r
@@ -488,6 +494,7 @@ def thumbs(ep, ep_dir):
     summ = summary(ep); (out / 'summary.txt').write_text(summ)
     title = ep.get('upload', {}).get('title') or ep.get('title')
     note = ''
+    best = None
     for k in range(3):
         raw = out / f'gpt{k}.png'
         prompt = f"""Design ONE YouTube thumbnail (16:9 landscape) for this video.
@@ -517,7 +524,10 @@ no more than one small number badge besides the headline. Keep a small margin ar
         print('thumb check', k, r)
         if r.get('spelling_ok', True) and r.get('readable', True) and r.get('topic_clear', True):
             shutil.copy(jpg, ep_dir / 'thumbnail.jpg'); return
+        if r.get('spelling_ok', True) and r.get('readable', True) and not best: best = jpg   # correctly spelled -> usable fallback
         note = f"\nA previous attempt had this problem, avoid it: {r.get('problem') or 'misspelled text'}."
+    if best:          # keep the channel look (Finn) instead of the old code-made design
+        print('using the best correctly spelled ChatGPT thumbnail'); shutil.copy(best, ep_dir / 'thumbnail.jpg'); return
     print('ChatGPT thumbnail failed the checks -> code-made fallback')
     v = ((ep.get('thumbnail') or {}).get('variants') or [{}])[0]
     pub = ROOT / 'render/public/ep'; pub.mkdir(parents=True, exist_ok=True)
