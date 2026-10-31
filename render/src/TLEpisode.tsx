@@ -281,11 +281,12 @@ const ShortCover: React.FC<{text: string; f: number}> = ({text, f}) => {
   const lines: string[][] = [[]]; let w = 0;
   words.forEach((wd) => { const ww = wd.length * size * 0.52; if (w > 0 && w + ww > 940) { lines.push([]); w = 0; } lines[lines.length - 1].push(wd); w += ww + size * 0.3; });
   const h = lines.length * size * 1.05 + 90;
+  const CY = 640;              // centre of the cover box: middle-upper screen, clear of the Shorts UI
   const pop = f < 2 ? 1 : 1 + 0.03 * Math.sin(f / 5);
   return <svg width={1080} height={1920} viewBox="0 0 1080 1920" style={{position: 'absolute'}} opacity={o}>
-    <g transform={`translate(540 ${150 + h / 2}) scale(${pop}) translate(-540 ${-(150 + h / 2)})`}>
-      <rect x={40} y={150} width={1000} height={h} rx={40} fill="#0F2036" stroke="#FFD23F" strokeWidth={8} />
-      {lines.map((ln, li) => <text key={li} x={540} y={150 + 45 + (li + 0.82) * size * 1.05} textAnchor="middle" fontFamily="F_anton" fontSize={size}>
+    <g transform={`translate(540 ${CY}) scale(${pop}) translate(-540 ${-CY})`}>
+      <rect x={40} y={CY - h / 2} width={1000} height={h} rx={40} fill="#0F2036" stroke="#FFD23F" strokeWidth={8} />
+      {lines.map((ln, li) => <text key={li} x={540} y={CY - h / 2 + 45 + (li + 0.82) * size * 1.05} textAnchor="middle" fontFamily="F_anton" fontSize={size}>
         {ln.map((wd, k) => <tspan key={k} fill={li === lines.length - 1 && k === ln.length - 1 ? '#FFD23F' : '#FFFFFF'}>{wd + (k < ln.length - 1 ? ' ' : '')}</tspan>)}
       </text>)}
     </g>
@@ -322,7 +323,7 @@ const TLEpisodeInner: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
     const prog = interpolate(f, [at, end], [0, 1], cl);
     const prevImg = i > 0 ? beats.slice(0, i).reverse().find((x) => x.img && x.img !== b.img)?.img : undefined;
     const xf = interpolate(f, [at, at + 9], [0, 1], cl);
-    const C = vertical ? {x: 540, y: 400, w: 980, h: 560, s: 1.05, map: 0.62, wy: 790, ws: 80, wm: 960}
+    const C = vertical ? {x: 540, y: 610, w: 980, h: 520, s: 1.0, map: 0.6, wy: 975, ws: 80, wm: 960}   // owner: text lower, in the middle of the screen
                        : {x: 1530, y: 430, w: 690, h: 500, s: 0.84, map: 0.52, wy: 830, ws: 66, wm: 650};
     const k = sp(f, b.start, 14, 160);
     const isMapF = b.visual?.type === 'node';
