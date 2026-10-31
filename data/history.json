@@ -56,6 +56,19 @@
    "fmt": "timeline",
    "music": "inspired",
    "built_at": "2026-10-30T12:48:39"
+  },
+  {
+   "topic": "What Happens in the First 24 Hours of a Stock Market Crash",
+   "video_id": "V5dTbA-E9AM",
+   "short_ids": [
+    "gTjE2zG7h18",
+    "RvZbZiZ_BUI"
+   ],
+   "publish_at": "2026-10-31T20:00:00Z",
+   "format": "tl",
+   "fmt": "case",
+   "music": "deliberate_thought",
+   "built_at": "2026-10-31T16:24:11"
   }
  ],
  "used_music": [
@@ -63,6 +76,7 @@
   "clean_soul",
   "fluidscape",
   "floating_cities",
-  "inspired"
+  "inspired",
+  "deliberate_thought"
  ]
 }
