@@ -7,13 +7,17 @@ from .common import ROOT, CFG
 from . import llm, images
 
 FPS = 30
+SFX = ['bong', 'boom', 'bubble', 'click', 'drip', 'heartbeat', 'impact1', 'impact2', 'impact3', 'pop1', 'pop2', 'pop3', 'pop4', 'reveal', 'riser', 'shield', 'sparkle', 'tick', 'whoosh1', 'whoosh2', 'whoosh3']
 SHEET = ROOT / 'assets/finn_sheet.jpg'
 FINN = ("FINN, an original cartoon red fox: orange-red fur, white chest and white tail tip, mint-green vest, small round glasses, "
         "small gold coin pendant on a cord. Keep him EXACTLY like the reference character sheet (same colours, outfit, proportions).")
 STYLE = ("Warm hand-drawn storybook illustration with soft ink lines and light watercolour shading on cream paper texture "
-         "(background colour #F6EEDC), simple uncluttered scene, a few props only. No text, no letters, no numbers, no logos, no real people.")
+         "(background colour #F6EEDC). RESTRAINED PALETTE: everything in muted, soft beige / warm grey tones except Finn's own colours and "
+         "ONE accent colour (mint green #2EE6A6 or gold #FFD23F) on the single key object of the scene, so the eye goes straight to it. "
+         "ONE clear visual idea per drawing, uncluttered, 1-3 props, big readable shapes that still work on a small phone screen. "
+         "No text, no letters, no numbers, no logos, no real people.")
 LAYOUT = {False: "Composition: Finn and the scene stay in the LEFT 60% of the frame; the RIGHT 40% is EMPTY plain cream paper (graphics are added there later).",
-          True: "Composition: Finn and the scene stay in the BOTTOM 58% of the frame; the TOP 42% is EMPTY plain cream paper (graphics are added there later)."}
+          True: "Composition: Finn and the scene stay in the BOTTOM 50% of the frame, large; the TOP 50% is EMPTY plain cream paper (graphics are added there later)."}
 
 
 def _ref():
@@ -57,20 +61,25 @@ receipt, hiding money under a mattress, celebrating, slipping on a banana peel o
 thought bubbles may be used at most twice in the whole video; never the same pose or camera angle twice in a row; vary the setting
 (home, street, bank hall, shop, office, park) and sometimes show a close-up of his face or of the prop. Other characters may appear as simple generic
 cartoon people or animals in the same style (never real or famous people). No text, signs, numbers or logos in the drawing.
-One or two sentences per scene, concrete and drawable.
+One or two sentences per scene, concrete and drawable. Name the ONE key object that gets the accent colour.
+Also pick the sound effect that fits the moment best ("sfx", one of: {', '.join(SFX)} — e.g. sparkle = coins/money appears,
+whoosh = money flies away / disappears, boom or impact = a shock or a crash, heartbeat = fear/tension, reveal = the answer, riser = growth,
+tick/click = time, a button, a payment, drip = slowly losing money, bubble = a bubble, bong = a warning), or null for none.
 Scenes: {json.dumps({i: t for i, t in enumerate(texts)}, ensure_ascii=False)}
-Return JSON: {{"scenes": [{{"i": int, "draw": str}}]}} — one per scene, same order.""", max_tokens=8000)
-    out = {s.get('i'): s.get('draw') for s in r.get('scenes', []) if isinstance(s, dict)}
-    return [out.get(i) or f"Finn the fox thinking about money while this happens: {t[:200]}" for i, t in enumerate(texts)]
+Return JSON: {{"scenes": [{{"i": int, "draw": str, "sfx": str|null}}]}} — one per scene, same order.""", max_tokens=8000)
+    out = {s.get('i'): s for s in r.get('scenes', []) if isinstance(s, dict)}
+    draws = [(out.get(i) or {}).get('draw') or f"Finn the fox reacting to this: {t[:200]}" for i, t in enumerate(texts)]
+    sfx = [(out.get(i) or {}).get('sfx') if (out.get(i) or {}).get('sfx') in SFX else None for i in range(len(texts))]
+    return draws, sfx
 
 
 def attach(props, ep_dir, kind, context):
     """Adds 'img': 'ep/broll/<kind>_scene_NN.jpg' (+ 'imgAt' = first frame of its scene) to every beat."""
     vertical = bool(props.get('vertical'))
     beats = props['beats']
-    groups = _groups(beats)
+    groups = _groups(beats, 2.5, 5.0) if vertical else _groups(beats)    # Shorts: a new drawing for (almost) every sentence
     texts = [' '.join(beats[k].get('text', '') for k in g) for g in groups]
-    draws = _prompts(texts, context)
+    draws, sfx = _prompts(texts, context)
     out = pathlib.Path(ep_dir) / 'broll'; out.mkdir(exist_ok=True)
     ref = _ref()
 
@@ -94,6 +103,7 @@ def attach(props, ep_dir, kind, context):
         if res.get(n): ok += 1
         for k in g:
             if img: beats[k]['img'] = 'ep/broll/' + pathlib.Path(img).name; beats[k]['imgAt'] = beats[g[0]]['start']
+        if sfx[n]: beats[g[0]]['sfx'] = sfx[n]
         last = img or last
     print(f'finn {kind}: {ok}/{len(groups)} drawings for {len(beats)} beats')
     return props

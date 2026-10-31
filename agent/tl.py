@@ -439,10 +439,14 @@ HUGE bold condensed sans-serif headline at the top in white with the key word in
 perfectly spelled; high contrast, very clean, easy to read on a phone. No real people's faces, no logos or brand names."""
 
 
-FINN_THUMB = """Style (the channel's look): warm hand-drawn storybook illustration (soft ink lines, watercolour shading) on a warm cream /
-soft orange background, with Finn the fox big on one side showing a strong emotion and ONE clear prop that shows the topic (a bank, coins,
-a house, a credit card, a chart…). HUGE bold condensed sans-serif headline in dark navy or white with thick outline, the key word in bright
-yellow or mint, perfectly spelled; high contrast, very clean, readable on a phone. No real people's faces, no logos or brand names."""
+# Owner (Oct 31): our two best-performing videos had the DARK look (navy background, glossy objects, a clear before -> after with
+# an arrow, huge white/yellow headline on top); the cream cartoon thumbnails got almost no clicks -> dark look + Finn small as the brand.
+FINN_THUMB = """Style (the channel's best-performing look): dark navy-blue background with a soft teal/mint glow; ONE big, glossy, almost
+photo-real subject that shows the topic at a glance (a laptop with a bank screen, a stack of cash, a bank building, coins, a house, a credit
+card…), ideally as a clear before -> after or cause -> effect with ONE bright orange arrow; dramatic studio light and a glowing rim.
+HUGE bold condensed sans-serif headline across the top in white with the key word in bright yellow, thick dark outline, perfectly spelled.
+Finn the fox (the channel mascot) appears SMALL in a lower corner (about 25% of the height), reacting with a strong emotion, drawn as a
+clean cartoon so he pops off the dark background. High contrast, very clean, readable at phone size. No real people's faces, no logos."""
 
 
 def summary(ep):
@@ -514,8 +518,8 @@ no more than one small number badge besides the headline. Keep a small margin ar
                        "it complements the title instead of repeating it).")
         if CFG.get('style') == 'finn':
             from . import fox
-            ok = images.edit(prompt + "\nThe channel mascot FINN must be in the thumbnail, big and reacting with a strong emotion that fits the topic: "
-                             + fox.FINN + " Draw him in the same warm storybook style as the reference.", [fox._ref()], str(raw), size='1536x1024', quality='high')
+            ok = images.edit(prompt + "\nThe channel mascot FINN appears small in a lower corner, reacting with a strong emotion that fits the topic: "
+                             + fox.FINN, [fox._ref()], str(raw), size='1536x1024', quality='high')
         else:
             ok = images.gen(prompt, raw, size='1536x1024', quality='high')
         if not ok: continue
@@ -573,7 +577,9 @@ def mix(silent, wav, pr, out, track):
     for k, b in enumerate(pr['beats']):
         t = b['start'] / FPS
         try:
-            if b['stage'] and b['stage'] != prev_stage:
+            if b.get('sfx'):                     # Finn style: the sound chosen for this drawing (coins, crash, tension…)
+                audio.place(fx, snd(b['sfx']), t + 0.05, 0.3); last_t, last_n = t, b['sfx']
+            elif b['stage'] and b['stage'] != prev_stage:
                 audio.place(fx, snd('whoosh1' if k % 2 else 'whoosh2'), max(0, t - 0.15), 0.35)
                 audio.place(fx, snd('impact2' if k % 3 else 'impact3'), t + 0.1, 0.3); last_t = t
             elif t - last_t >= (2.5 if pr.get('vertical') else 4.5):
