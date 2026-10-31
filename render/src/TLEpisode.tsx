@@ -30,7 +30,7 @@ export type Visual =
   | {type: 'versus'; myth: string; fact: string};
 
 export type TLBeat = {start: number; end: number; stage: string | null; stageIdx: number; node: string; visual: Visual; words: string[]; clips?: string[]; img?: string; imgAt?: number};
-export type TLEpProps = {beats: TLBeat[]; marks: string[]; frames: number; vertical?: boolean; title?: string; finn?: boolean};
+export type TLEpProps = {beats: TLBeat[]; marks: string[]; frames: number; vertical?: boolean; title?: string; finn?: boolean; cover?: string};
 
 const Label: React.FC<{y: number; text?: string; o?: number}> = ({y, text, o = 1}) => text ?
   <text x={0} y={y} textAnchor="middle" fontFamily="F_inter" fontWeight={800} fontSize={28} letterSpacing={5} fill={TL.mute} opacity={o}>{text.toUpperCase().slice(0, 34)}</text> : null;
@@ -271,7 +271,35 @@ const CWords: React.FC<{words: string[]; at: number; f: number; x: number; y: nu
 const NODE_OK = new Set(['you', 'bank', 'market', 'central_bank', 'government', 'company', 'home', 'debt', 'gold', 'none']);
 const normNode = (o: string): MoneyNode => (NODE_OK.has(o) ? o : 'none') as MoneyNode;
 
-export const TLEpisode: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+// Short cover (owner Oct 31: "nobody can tell what a Short is about from its picture"): the first 2.5 s show 2-5 huge words that say
+// the topic + open a curiosity gap; frame 0 is fully drawn, so YouTube's cover frame and the first second of the feed both carry it.
+const ShortCover: React.FC<{text: string; f: number}> = ({text, f}) => {
+  const o = interpolate(f, [62, 76], [1, 0], cl);
+  if (o <= 0) return null;
+  const words = text.split(/\s+/).filter(Boolean).slice(0, 6);
+  const size = text.length > 22 ? 118 : 140;
+  const lines: string[][] = [[]]; let w = 0;
+  words.forEach((wd) => { const ww = wd.length * size * 0.52; if (w > 0 && w + ww > 940) { lines.push([]); w = 0; } lines[lines.length - 1].push(wd); w += ww + size * 0.3; });
+  const h = lines.length * size * 1.05 + 90;
+  const pop = f < 2 ? 1 : 1 + 0.03 * Math.sin(f / 5);
+  return <svg width={1080} height={1920} viewBox="0 0 1080 1920" style={{position: 'absolute'}} opacity={o}>
+    <g transform={`translate(540 ${150 + h / 2}) scale(${pop}) translate(-540 ${-(150 + h / 2)})`}>
+      <rect x={40} y={150} width={1000} height={h} rx={40} fill="#0F2036" stroke="#FFD23F" strokeWidth={8} />
+      {lines.map((ln, li) => <text key={li} x={540} y={150 + 45 + (li + 0.82) * size * 1.05} textAnchor="middle" fontFamily="F_anton" fontSize={size}>
+        {ln.map((wd, k) => <tspan key={k} fill={li === lines.length - 1 && k === ln.length - 1 ? '#FFD23F' : '#FFFFFF'}>{wd + (k < ln.length - 1 ? ' ' : '')}</tspan>)}
+      </text>)}
+    </g>
+  </svg>;
+};
+
+export const TLEpisode: React.FC<TLEpProps> = (props) => {
+  const {cover, vertical} = props;
+  const f = useCurrentFrame();
+  const main = <TLEpisodeInner {...props} />;
+  return vertical && cover && f < 80 ? <AbsoluteFill>{main}<ShortCover text={cover} f={f} /></AbsoluteFill> : main;
+};
+
+const TLEpisodeInner: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
   const f = useCurrentFrame();
   let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
   const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
