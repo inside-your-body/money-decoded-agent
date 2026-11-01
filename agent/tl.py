@@ -8,7 +8,7 @@ from .common import ROOT, WORK, CFG, load, save, sh
 from . import llm, tts
 
 FPS = 30
-N_SHORTS = 2          # owner (Oct 30): two Shorts per day cut from the long video (#1 30 min after it, #2 the next afternoon)
+N_SHORTS = 1          # owner (Nov 2): every other day ONE long video + ONE Short (30 min after it)
 ICONS = ['coin', 'cash', 'bank', 'chartup', 'chartdown', 'house', 'card', 'wallet', 'piggy', 'gold', 'vault', 'briefcase', 'factory',
          'capitol', 'phone', 'clock', 'calendar', 'percent', 'scale', 'warning', 'check', 'cross', 'person', 'people', 'barrel', 'flower',
          'ship', 'laptop', 'crypto', 'rocket', 'fire', 'lock', 'receipt', 'gavel', 'globe', 'printer', 'cart', 'car', 'cap', 'ticket', 'bomb',
