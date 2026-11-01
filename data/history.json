@@ -69,6 +69,19 @@
    "fmt": "case",
    "music": "deliberate_thought",
    "built_at": "2026-10-31T16:24:11"
+  },
+  {
+   "topic": "How the Real Wolf of Wall Street Fooled Thousands",
+   "video_id": "JxnclsoKR80",
+   "short_ids": [
+    "mt24VqWQAls",
+    "D_DWKLWLf-Q"
+   ],
+   "publish_at": "2026-11-01T20:00:00Z",
+   "format": "tl",
+   "fmt": "whatif",
+   "music": "clean_soul",
+   "built_at": "2026-11-01T17:32:12"
   }
  ],
  "used_music": [
@@ -77,6 +90,7 @@
   "fluidscape",
   "floating_cities",
   "inspired",
-  "deliberate_thought"
+  "deliberate_thought",
+  "clean_soul"
  ]
 }
