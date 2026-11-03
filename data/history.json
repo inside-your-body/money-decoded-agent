@@ -82,6 +82,18 @@
    "fmt": "whatif",
    "music": "clean_soul",
    "built_at": "2026-11-01T17:32:12"
+  },
+  {
+   "topic": "How Bernie Madoff's Ponzi Scheme Fooled Wall Street",
+   "video_id": "yEjJdHl6Iyk",
+   "short_ids": [
+    "V9kYiGJPhLM"
+   ],
+   "publish_at": "2026-11-03T20:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "fluidscape",
+   "built_at": "2026-11-03T18:50:01"
   }
  ],
  "used_music": [
@@ -91,6 +103,7 @@
   "floating_cities",
   "inspired",
   "deliberate_thought",
-  "clean_soul"
+  "clean_soul",
+  "fluidscape"
  ]
 }
