@@ -94,6 +94,18 @@
    "fmt": "timeline",
    "music": "fluidscape",
    "built_at": "2026-11-03T18:50:01"
+  },
+  {
+   "topic": "What Happens to Your Money When a Bank Collapses",
+   "video_id": "bx5B__7DhQ0",
+   "short_ids": [
+    "7QQ3bFeuJMc"
+   ],
+   "publish_at": "2026-11-05T20:00:00Z",
+   "format": "tl",
+   "fmt": "case",
+   "music": "floating_cities",
+   "built_at": "2026-11-05T19:18:31"
   }
  ],
  "used_music": [
@@ -104,6 +116,7 @@
   "inspired",
   "deliberate_thought",
   "clean_soul",
-  "fluidscape"
+  "fluidscape",
+  "floating_cities"
  ]
 }

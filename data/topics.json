@@ -110,7 +110,7 @@
   "angle": "stamps: DAY 1 > HOUR 10 > DAY 2 > WEEK 1",
   "hook": "On Thursday morning, the bank was fine. By Friday lunch, it no longer existed.",
   "format": "timeline",
-  "status": "next",
+  "status": "done",
   "source": "owner",
   "ref": {
    "note": "Economics Explained \"What Happens When No One Wants to Trade With You?\" 993K; casually finance \"World's Safest Market Is Breaking\" 1.7M"
@@ -123,7 +123,7 @@
   "angle": "stamps: AGE 16 > 1870 > 1882 > 1911 > TODAY",
   "hook": "He started as a 16-year-old clerk earning 50 cents a day. Forty years later, his company refined about nine out of every ten barrels of oil in America.",
   "format": "timeline",
-  "status": "todo",
+  "status": "next",
   "source": "owner",
   "ref": {
    "note": "Business Casual \"How Rockefeller Built His Trillion Dollar Oil Empire\" 5.6M"
