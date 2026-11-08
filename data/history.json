@@ -106,6 +106,18 @@
    "fmt": "case",
    "music": "floating_cities",
    "built_at": "2026-11-05T19:18:31"
+  },
+  {
+   "topic": "How Rockefeller Became the Richest Man in History",
+   "video_id": "pFkgrp3DPbQ",
+   "short_ids": [
+    "smX6YjZYHw0"
+   ],
+   "publish_at": "2026-11-08T20:00:00Z",
+   "format": "tl",
+   "fmt": "whatif",
+   "music": "inspired",
+   "built_at": "2026-11-08T11:27:01"
   }
  ],
  "used_music": [
@@ -117,6 +129,7 @@
   "deliberate_thought",
   "clean_soul",
   "fluidscape",
-  "floating_cities"
+  "floating_cities",
+  "inspired"
  ]
 }
