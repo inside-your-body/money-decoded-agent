@@ -17,8 +17,8 @@
   "mode": "auto_public",
   "min_hours_between_episodes": 40,
   "rhythm_note": "Owner (Nov 2): one long video + one Short every OTHER day (40 h gap guard; the daily cron skips the day in between).",
-  "paused": false,
-  "paused_note": "Owner (Oct 28 night): Finn style approved -> daily episodes ON. true = scheduled runs skip."
+  "paused": true,
+  "paused_note": "Owner (Nov 8): paused while the bot is switched to Persian; un-pause after the owner approves the first Persian preview. true = scheduled runs skip."
  },
  "voice": {
   "engine": "openai",
@@ -29,7 +29,7 @@
    "stability": 0.4,
    "similarity": 0.8,
    "style": 0.35,
-   "speed": 1.0,
+   "speed": 1,
    "note": "Owner (Oct 28): ElevenLabs later, once the channel earns (free plan has no commercial licence). Now: OpenAI verse, 10% faster."
   },
   "openai": {
