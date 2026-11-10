@@ -1,0 +1,14 @@
+{
+ "voice_id": "PEdcOLzbXYhL8IKOswXB",
+ "chars": 179,
+ "tier": null,
+ "used": null,
+ "limit": null,
+ "resets": null,
+ "voice_name": "Aran - Parsi",
+ "errors": {
+  "eleven_v4": "{\"detail\":{\"type\":\"payment_required\",\"code\":\"paid_plan_required\",\"message\":\"Free users cannot use library voices via the API. Please upgrade your subscription to use this voice.\",\"status\":\"payment_required\",\"request_id\":\"7d086d33fd030a3f70da26a5205e147e\"}}",
+  "eleven_v3": "{\"detail\":{\"type\":\"payment_required\",\"code\":\"paid_plan_required\",\"message\":\"Free users cannot use library voices via the API. Please upgrade your subscription to use this voice.\",\"status\":\"payment_required\",\"request_id\":\"39b5f9e045ac012113982b2b3efae384\"}}",
+  "eleven_multilingual_v2": "{\"detail\":{\"type\":\"payment_required\",\"code\":\"paid_plan_required\",\"message\":\"Free users cannot use library voices via the API. Please upgrade your subscription to use this voice.\",\"status\":\"payment_required\",\"request_id\":\"362f3960aa3fd59a88853968f57c1c85\"}}"
+ }
+}
