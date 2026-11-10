@@ -22,7 +22,7 @@
   "rhythm_note": "Owner (Nov 2): one long video + one Short every OTHER day (40 h gap guard; the daily cron skips the day in between).",
   "paused": true,
   "paused_note": "Owner (Nov 8): paused while the bot is switched to Persian; un-pause after the owner approves the first Persian preview. true = scheduled runs skip.",
-  "publish_time_note": "Proposed to owner: 20:30 Tehran (17:00 UTC) long video, Short 30 min later - waiting for his OK."
+  "publish_time_note": "Owner approved (Nov 10): long video 20:30 Tehran (17:00 UTC), Short 30 min later (17:30 UTC)."
  },
  "voice": {
   "engine": "elevenlabs",
@@ -83,5 +83,6 @@
   "regular": "B Yekan",
   "note": "Owner (Nov 9): his fonts; no Latin letters or Latin digits on screen"
  },
- "disclaimer": "این ویدیو فقط آموزشی است و توصیه‌ی مالی یا سرمایه‌گذاری نیست."
+ "disclaimer": "این ویدیو فقط آموزشی است و توصیه‌ی مالی یا سرمایه‌گذاری نیست.",
+ "visual_rule": "Owner (Nov 10): a new motion graphic about what the narrator says every ~4 seconds (sentences > 5.5 s are split into two/three beats)."
 }
