@@ -45,7 +45,40 @@ def channel_voice():
     print('channel voice:', tts.V['openai'].get('voice'), 'speed', tts.V['openai'].get('speed'), f'{len(a) / sr:.1f}s')
 
 
+# ---- Persian channel (owner Nov 9): ElevenLabs "Aran - Parsi", eleven_v4, stability 0.4, similarity 0.75, low style, speed 1.2 ----
+FA_VOICE = 'PEdcOLzbXYhL8IKOswXB'
+FA_TEXT = ("فکر کن یه روز صبح بیدار می‌شی و می‌بینی پولی که توی حسابته، دیگه نصف چیزایی که دیروز می‌خرید رو نمی‌خره. "
+           "هیچ‌کس ازت دزدی نکرده، ولی پولت آب شده. سؤال اینه: این پول دقیقاً کجا رفت؟")
+
+
+def fa_voice():
+    """Connection test with the Persian narrator -> samples/voices/fa_test.mp3 + credits left (samples/voices/fa_test.json)."""
+    key = os.environ['ELEVENLABS_API_KEY']; hdr = {'xi-api-key': key}
+    d = ROOT / 'samples/voices'; d.mkdir(parents=True, exist_ok=True)
+    info = {'voice_id': FA_VOICE, 'chars': len(FA_TEXT)}
+    try:
+        sub = requests.get('https://api.elevenlabs.io/v1/user/subscription', headers=hdr, timeout=60).json()
+        info.update(tier=sub.get('tier'), used=sub.get('character_count'), limit=sub.get('character_limit'),
+                    resets=sub.get('next_character_count_reset_unix'))
+    except Exception as e: info['subscription_error'] = str(e)
+    try:
+        v = requests.get(f'https://api.elevenlabs.io/v1/voices/{FA_VOICE}', headers=hdr, timeout=60).json()
+        info['voice_name'] = v.get('name')
+    except Exception as e: info['voice_error'] = str(e)
+    for model in ('eleven_v4', 'eleven_v3', 'eleven_multilingual_v2'):
+        body = {'text': FA_TEXT, 'model_id': model,
+                'voice_settings': {'stability': 0.4, 'similarity_boost': 0.75, 'style': 0.1, 'use_speaker_boost': True, 'speed': 1.2}}
+        r = requests.post(f'https://api.elevenlabs.io/v1/text-to-speech/{FA_VOICE}', params={'output_format': 'mp3_44100_128'},
+                          headers={**hdr, 'accept': 'audio/mpeg'}, json=body, timeout=300)
+        if r.ok:
+            (d / 'fa_test.mp3').write_bytes(r.content); info['model'] = model; break
+        info.setdefault('errors', {})[model] = r.text[:300]
+    (d / 'fa_test.json').write_text(json.dumps(info, ensure_ascii=False, indent=1))
+    print(json.dumps(info, ensure_ascii=False))
+
 def main():
+    if os.environ.get('MODE') == 'fa':
+        return fa_voice()
     if os.environ.get('MODE') == 'channel':
         return channel_voice()
     from . import tts
