@@ -2,9 +2,9 @@ name: Make episode
 
 on:
   schedule:
-    - cron: '7 11 * * *'       # daily 11:07 UTC = 14:07 Istanbul (GitHub often starts scheduled runs late, so start early)
-    - cron: '7 15 * * *'       # backup run 15:07 UTC; run.py makes at most one episode per day (16 h gap guard)
-                               # long video publishes 20:00 UTC (23:00 Istanbul), the Short 20:30 UTC (23:30 Istanbul)
+    - cron: '7 5 * * *'        # 05:07 UTC (GitHub often starts scheduled runs hours late, so start early)
+    - cron: '7 9 * * *'        # backup run 09:07 UTC; run.py makes one episode every other day (40 h gap guard)
+                               # Persian channel (Nov 8): long video publishes 17:00 UTC (20:30 Tehran), the Short 17:30 UTC
   workflow_dispatch:
     inputs:
       dry_run:
@@ -49,7 +49,7 @@ jobs:
       - name: Python deps
         run: pip install -r requirements.txt
       - name: Render deps
-        run: cd render && npm ci && npx remotion browser ensure
+        run: bash .github/scripts/fonts.sh && cd render && npm ci && npx remotion browser ensure
       - name: Reuse a finished build
         if: inputs.resume_run != ''
         uses: actions/download-artifact@v4
@@ -117,7 +117,7 @@ jobs:
         run: |
           bash .github/scripts/deps.sh
           pip install -r requirements.txt
-          cd render && npm ci && npx remotion browser ensure
+          bash .github/scripts/fonts.sh && cd render && npm ci && npx remotion browser ensure
       - uses: actions/download-artifact@v4
         with: {name: work, path: work}
       - name: Render part ${{ matrix.shard }}
