@@ -1,5 +1,6 @@
-"""Word-level timings with faster-whisper (base.en)."""
+"""Word-level timings with faster-whisper. English: base.en; Persian channel (owner Nov 8): the multilingual "small" model, language fa."""
 import numpy as np, soundfile as sf
+from .common import CFG
 from scipy.signal import resample_poly
 
 def words(wav):
@@ -9,8 +10,9 @@ def words(wav):
     if sr != 16000:
         from math import gcd
         g = gcd(sr, 16000); a = resample_poly(a, 16000 // g, sr // g).astype(np.float32)
-    m = WhisperModel('base.en', compute_type='int8')
-    segs, _ = m.transcribe(a, word_timestamps=True, language='en')
+    lang = CFG['channel'].get('language', 'en')
+    m = WhisperModel('base.en' if lang == 'en' else 'small', compute_type='int8')
+    segs, _ = m.transcribe(a, word_timestamps=True, language=lang)
     out = []
     for s in segs:
         for w in s.words:

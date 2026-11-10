@@ -62,33 +62,76 @@ def _openai_tts(text):
     raise RuntimeError('openai tts failed')
 
 # ---------------------------------------------------------------- ElevenLabs narrator
+USAGE = pathlib.Path(__file__).resolve().parents[1] / 'data/eleven_usage.json'
+
+
+def _usage():
+    import json, datetime as dt
+    m = dt.datetime.utcnow().strftime('%Y-%m')
+    try: u = json.loads(USAGE.read_text())
+    except Exception: u = {}
+    return u, m
+
+
+def _count(chars):
+    """Owner (Nov 9): the 600k monthly plan is shared with other channels -> this channel keeps its own monthly tally."""
+    import json            # counted per run in work/ (the build job's repo copy is thrown away); run.py adds it to data/ at the end
+    f = WORK / 'eleven_chars.json'
+    try: n = json.loads(f.read_text()).get('chars', 0)
+    except Exception: n = 0
+    f.parent.mkdir(parents=True, exist_ok=True); f.write_text(json.dumps({'chars': n + int(chars)}))
+
+
+def commit_usage():
+    import json
+    try: n = json.loads((WORK / 'eleven_chars.json').read_text()).get('chars', 0)
+    except Exception: return
+    u, m = _usage(); u[m] = u.get(m, 0) + n
+    USAGE.parent.mkdir(parents=True, exist_ok=True); USAGE.write_text(json.dumps(u, indent=1))
+    (WORK / 'eleven_chars.json').unlink(missing_ok=True); print('ElevenLabs credits this month:', u[m])
+
+
+def credits_left_this_month():
+    if V.get('engine') != 'elevenlabs': return None
+    u, m = _usage()
+    return int(V.get('elevenlabs', {}).get('monthly_credit_cap', 290000)) - u.get(m, 0)
+
+
+_MODEL = {}
+
+
 def _eleven_tts(text, prev='', nxt=''):
-    """ElevenLabs TTS (owner Oct 28: a lively, engaging narrator). Raw 24 kHz PCM -> float32. prev/next text keep the
-    intonation continuous across chunks."""
+    """ElevenLabs narrator «Aran - Parsi» (owner Nov 9). Tries the configured models in order (eleven_v4 first); raw 24 kHz PCM."""
     el = V.get('elevenlabs', {})
-    vid = el.get('voice_id') or 'nPczCjzI2devNBz1zQrb'
-    body = {'text': text, 'model_id': el.get('model', 'eleven_multilingual_v2'),
-            'voice_settings': {'stability': el.get('stability', 0.4), 'similarity_boost': el.get('similarity', 0.8),
-                               'style': el.get('style', 0.35), 'use_speaker_boost': True, 'speed': el.get('speed', 1.0)}}
-    if prev: body['previous_text'] = prev[-600:]
-    if nxt: body['next_text'] = nxt[:600]
-    for a in range(4):
-        try:
+    vid = el['voice_id']
+    models = ([_MODEL['ok']] if _MODEL.get('ok') else []) + [m for m in el.get('models', ['eleven_v4', 'eleven_v3', 'eleven_multilingual_v2']) if m != _MODEL.get('ok')]
+    last = None
+    for model in models:
+        body = {'text': text, 'model_id': model,
+                'voice_settings': {'stability': el.get('stability', 0.4), 'similarity_boost': el.get('similarity', 0.75),
+                                   'style': el.get('style', 0.1), 'use_speaker_boost': True, 'speed': el.get('speed', 1.2)}}
+        if prev and model != 'eleven_v3': body['previous_text'] = prev[-600:]
+        if nxt and model != 'eleven_v3': body['next_text'] = nxt[:600]
+        for a in range(3):
             r = requests.post(f'https://api.elevenlabs.io/v1/text-to-speech/{vid}', params={'output_format': 'pcm_24000'},
                               headers={'xi-api-key': os.environ['ELEVENLABS_API_KEY'], 'accept': 'audio/pcm'}, json=body, timeout=300)
-            r.raise_for_status()
-            a_ = np.frombuffer(r.content, dtype='<i2').astype(np.float32) / 32768.0
-            try:
-                from . import cost; cost.tts(len(text) * 30)        # rough: ~$0.17-0.3 per 1k chars vs OpenAI
-            except Exception: pass
-            return a_, 24000
-        except Exception as e:
-            print('elevenlabs error', e, getattr(e, 'response', None) is not None and e.response.text[:300]); import time; time.sleep(5 * (a + 1))
-    raise RuntimeError('elevenlabs tts failed')
+            if r.ok:
+                _MODEL['ok'] = model; _count(len(text))
+                try:
+                    from . import cost; cost.tts(len(text) * 30)
+                except Exception: pass
+                return np.frombuffer(r.content, dtype='<i2').astype(np.float32) / 32768.0, 24000
+            last = r.text[:300]
+            if r.status_code in (400, 404, 422) and ('model' in last.lower()): break       # model not available -> next model
+            if r.status_code in (401, 402, 403): raise RuntimeError('ElevenLabs refused: ' + last)   # plan/credits/key problem
+            import time; time.sleep(5 * (a + 1))
+    raise RuntimeError('ElevenLabs failed: ' + str(last))
 
 
 def _engine():
-    if V.get('engine') == 'elevenlabs' and os.environ.get('ELEVENLABS_API_KEY'): return 'elevenlabs'
+    if V.get('engine') == 'elevenlabs':
+        if not os.environ.get('ELEVENLABS_API_KEY'): raise RuntimeError('ELEVENLABS_API_KEY missing (owner: always the Aran - Parsi voice)')
+        return 'elevenlabs'
     if os.environ.get('OPENAI_API_KEY'): return 'openai'
     return 'kokoro'
 
@@ -103,7 +146,11 @@ def _tempo(a, sr, sp):
     return b.mean(1) if b.ndim > 1 else b
 
 
-_n = lambda w: re.sub(r'[^a-z0-9]', '', w.lower())
+_FA = str.maketrans({'ي': 'ی', 'ك': 'ک', 'ى': 'ی', 'ة': 'ه', 'ۀ': 'ه', 'أ': 'ا', 'إ': 'ا', 'آ': 'ا', '\u200c': '', '\u064b': '', '\u064c': '', '\u064d': '',
+                    '\u064e': '', '\u064f': '', '\u0650': '', '\u0651': '', '\u0652': '', '\u0654': '', '۰': '0', '۱': '1', '۲': '2', '۳': '3',
+                    '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'})
+# normalised token for matching script words with whisper words (Latin AND Persian letters; owner Nov 8: Persian channel)
+_n = lambda w: re.sub(r'[^\w]', '', w.lower().translate(_FA)).replace('_', '')
 
 def _align(lines, words, t0):
     """Map each script line to its start time using whisper words (difflib over normalised tokens)."""
@@ -133,7 +180,10 @@ def _align(lines, words, t0):
             nxt = next((j for j in range(i + 1, len(starts)) if starts[j] is not None), None)
             a = starts[prev] if prev is not None else 0.0
             b = starts[nxt] if nxt is not None else (words[-1]['e'] if words else a + 2)
-            starts[i] = a + (b - a) * ((i - (prev if prev is not None else -1)) / ((nxt if nxt is not None else len(starts)) - (prev if prev is not None else -1)))
+            lo = prev if prev is not None else -1; hi = nxt if nxt is not None else len(starts)
+            # spread by characters, not by line count
+            span = sum(len(lines[j]) for j in range(max(0, lo), hi)) or 1
+            starts[i] = a + (b - a) * (sum(len(lines[j]) for j in range(max(0, lo), i)) / span)
     starts[0] = 0.0
     return [s + t0 for s in starts]
 
@@ -151,26 +201,23 @@ def synth_lines(lines, out_wav, groups=None, gap=0.35, **kw):
         part = lines[i:i + g]; i += g
         while part:
             take, n = [], 0
-            while part and n + len(part[0]) < 3500: take.append(part.pop(0)); n += len(take[-1]) + 1
+            while part and n + len(part[0]) < 2400: take.append(part.pop(0)); n += len(take[-1]) + 1
             if not take: take = [part.pop(0)]
             chunks.append(take)
     audio, segs, t, li = [], [], 0.0, 0
     sr0 = 24000
     for ci, ch in enumerate(chunks):
-        if eng == 'elevenlabs':
-            try:
-                a, sr = _eleven_tts(' '.join(ch), ' '.join(chunks[ci - 1]) if ci else '', ' '.join(chunks[ci + 1]) if ci + 1 < len(chunks) else '')
-            except Exception as e:
-                print('elevenlabs failed -> OpenAI voice for this chunk', e); a, sr = _openai_tts(' '.join(ch))
-                if sr != 24000:
-                    from scipy.signal import resample_poly; a = resample_poly(a, 24000, sr).astype(np.float32); sr = 24000
+        from .fa_text import speakable
+        say = [speakable(x) for x in ch] if CFG['channel'].get('language') == 'fa' else ch     # numbers/symbols as words for the narrator
+        if eng == 'elevenlabs':     # owner: never another voice -> no fallback, a failure stops the episode
+            a, sr = _eleven_tts(' '.join(say), ' '.join(chunks[ci - 1]) if ci else '', ' '.join(chunks[ci + 1]) if ci + 1 < len(chunks) else '')
         else:
-            a, sr = _openai_tts(' '.join(ch))
+            a, sr = _openai_tts(' '.join(say))
         sr0 = sr
         a = _trim(a, sr)
         tmp = str(out_wav) + '.part.wav'; sf.write(tmp, a, sr)
         ws = timing.words(tmp)
-        st = _align(ch, ws, t)
+        st = _align(say, ws, t)
         dur = len(a) / sr
         for k, txt in enumerate(ch):
             end = (st[k + 1] - 0.05) if k + 1 < len(ch) else t + dur

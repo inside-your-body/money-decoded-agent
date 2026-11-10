@@ -11,12 +11,17 @@ VIRAL_SEEDS = ["what happens if you invest", "what happens to your money when", 
                "what happens if the dollar collapses", "why everyone is wrong about money", "how the richest man", "biggest financial scam",
                "stock market crash explained", "how money works", "hyperinflation explained", "how billionaires avoid taxes",
                "financial bubble explained", "why is everything so expensive", "how credit card companies make money"]
+# owner (Nov 8): the channel is Persian -> also look at what already works with Persian viewers (searched in Persian)
+VIRAL_SEEDS_FA = ["تورم چیست", "چرا دلار گران می شود", "طلا یا دلار", "کلاهبرداری پانزی", "بیت کوین چیست", "سقوط بورس",
+                  "ثروتمندان چطور پولدار شدند", "بانک ها چطور پول می سازند", "بزرگترین کلاهبرداری تاریخ", "ابرتورم",
+                  "چرا پول ارزش ندارد", "حذف صفر از پول ملی", "اقتصاد به زبان ساده", "سواد مالی"]
 
 def _viral(yt, queries):
     ids = {}
     for q in queries:
         for after in (None, (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=730)).strftime('%Y-%m-%dT%H:%M:%SZ')):
-            kw = dict(part='snippet', q=q, type='video', order='viewCount', maxResults=25, relevanceLanguage='en')
+            fa = bool(re.search(r'[\u0600-\u06FF]', q))
+            kw = dict(part='snippet', q=q, type='video', order='viewCount', maxResults=25, relevanceLanguage='fa' if fa else 'en')
             if after: kw['publishedAfter'] = after
             try:
                 for i in yt.search().list(**kw).execute().get('items', []): ids[i['id']['videoId']] = q
@@ -27,7 +32,7 @@ def _viral(yt, queries):
         for v in yt.videos().list(part='snippet,statistics,contentDetails', id=','.join(keys[k:k + 50])).execute().get('items', []):
             m = re.search(r'(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$', v['contentDetails'].get('duration', 'PT0S'))
             sec = int(m[1] or 0) * 3600 + int(m[2] or 0) * 60 + int(m[3] or 0)
-            vids.append({'id': v['id'], 'title': v['snippet']['title'], 'channel': v['snippet']['channelTitle'], 'cid': v['snippet']['channelId'],
+            vids.append({'id': v['id'], 'title': v['snippet']['title'], 'persian': bool(re.search(r'[\u0600-\u06FF]', v['snippet']['title'])), 'channel': v['snippet']['channelTitle'], 'cid': v['snippet']['channelId'],
                          'views': int(v['statistics'].get('viewCount', 0)), 'minutes': round(sec / 60, 1)})
     cids = list({v['cid'] for v in vids})
     uploads = {}
@@ -51,38 +56,44 @@ def _viral(yt, queries):
         cid = v.pop('cid')
         v['subs'] = chans.get(cid, 0); v['outlier'] = round(v['views'] / max(1000, v['subs']), 1)
         if cid in med: v['multiple'] = round(v['views'] / max(1000, med[cid]), 1)
-    vids = [v for v in vids if v['views'] >= 200_000]
+    vids = [v for v in vids if v['views'] >= (30_000 if v.get('persian') else 200_000)]   # the Persian YouTube market is smaller
     rank = lambda x: x['views'] * min(20, x.get('multiple') or x['outlier'] / 3) ** 0.7
     return sorted(vids, key=lambda x: -rank(x))
 
 def run_viral(force=False, want=4):
     topics = load(ROOT / 'data/topics.json')
     fresh = [t for t in topics if t['status'] in ('todo', 'next') and t.get('format') == 'timeline']
-    if len(fresh) >= want and not force:
+    state = load(ROOT / 'data/scout.json', {})
+    month = dt.datetime.utcnow().strftime('%Y-%m')
+    monthly = state.get('batch_month') != month          # owner (Nov 9): a batch of 30 topics at the start of every month
+    if not monthly and len(fresh) >= want and not force:
         return
+    if monthly: want = 30
     from .youtube import client
     yt = client()
-    state = load(ROOT / 'data/scout.json', {})
     n = state.get('viral_i', 0)
-    queries = [VIRAL_SEEDS[(n + i) % len(VIRAL_SEEDS)] for i in range(4)]       # 8 searches ≈ 800 quota units
-    vids = _viral(yt, queries)[:80]
+    k = 6 if monthly else 2                      # 2 searches per seed ≈ 100 quota units each
+    queries = [VIRAL_SEEDS[(n + i) % len(VIRAL_SEEDS)] for i in range(k)] + [VIRAL_SEEDS_FA[(n + i) % len(VIRAL_SEEDS_FA)] for i in range(k)]
+    vids = _viral(yt, queries)[:150 if monthly else 80]
     existing = [t['title'] for t in topics]
-    res = llm.ask_json(f"""You find topics for "Money Decoded" (English, adults; US/UK/Canada viewers): educational stories about how money, banks, markets,
-debt, inflation, taxes, scams and fortunes REALLY work, explained by our mascot Finn the fox. The channel rotates formats (timeline story,
+    res = llm.ask_json(f"""You find topics for the Persian YouTube channel "پول و قدرت" (Persian-speaking adults in Iran and abroad): educational
+stories about how money, banks, markets, debt, inflation, currencies, gold, crypto, taxes, scams and fortunes REALLY work, told with flat 2D
+motion graphics and Persian kinetic typography. Pick ideas that Persian speakers care about and search for (inflation and rising prices, the dollar, gold and coins,
+savings losing value, crypto, famous scams and fortunes, crashes and bubbles) - global stories told for a Persian audience are welcome. The channel rotates formats (timeline story,
 countdown list, myth busting, true case story, what-if experiment) so topics of every shape are welcome. Strongest angle: hidden / silent processes. The owner's strategy: take topics that ALREADY went viral on YouTube and make our own version.
 
-Viral videos found (title, channel, views, subscribers, outlier = views / subscribers, multiple = views / that channel's median views of its last 15 videos — THE signal: a video at 3x+ its own channel's median proves the IDEA worked, not the channel size; minutes):
+Viral videos found (English ones = proven ideas to remake in Persian; Persian ones = proof that Persian viewers want this; title, channel, views, subscribers, outlier = views / subscribers, multiple = views / that channel's median views of its last 15 videos — THE signal: a video at 3x+ its own channel's median proves the IDEA worked, not the channel size; minutes):
 {json.dumps(vids, ensure_ascii=False)}
 
 Our existing topics (never repeat or closely duplicate): {json.dumps(existing, ensure_ascii=False)}
 
 Pick the {want + 2} best proven ideas that fit our format (money over time: crashes, bubbles, bank runs, inflation, debt, compound growth,
 scams, famous fortunes, taxes, housing, how institutions make money; skip: stock/crypto picks, "get rich quick", trading signals,
-price predictions, gambling, MLM, politics-only topics, music, pranks, kids). Prefer high multiples (3x+) first, then big view counts. For each pick, name the hook formula of the original title in 'angle'.
-Phrase each title the way people SEARCH, broad and clear, ≤60 chars, main keyword front-loaded, e.g. "How Banks Create Money Out of Thin Air",
-"What Happens in the First 24 Hours of a Stock Market Crash", "Why Lottery Winners Go Broke". Not a copy of the original title.
-Return JSON: {{"topics": [{{"title": str, "angle": str, "stamps": "e.g. 9:30 AM > NOON > 4 PM > DAY 2 > YEAR 1",
-"ref_id": str, "ref_title": str, "ref_views": int}}]}}""", max_tokens=5000)
+price predictions, gambling, MLM, party politics, music, pranks, kids). Prefer high multiples (3x+) first, then big view counts. For each pick, name the hook formula of the original title in 'angle'.
+Phrase each title in PERSIAN the way Persian speakers SEARCH, broad and clear, ≤60 chars, main keyword front-loaded, e.g.
+"بانک‌ها چطور پول را از هیچ می‌سازند؟", "۲۴ ساعت اول سقوط بازار بورس", "چرا برندگان لاتاری ورشکست می‌شوند؟". Not a translation of the original title.
+Return JSON: {{"topics": [{{"title": str, "angle": str, "stamps": "e.g. ۹:۳۰ صبح > ظهر > روز دوم > سال اول",
+"ref_id": str, "ref_title": str, "ref_views": int}}]}}""", max_tokens=16000 if monthly else 5000)
     low = {t.lower() for t in existing}
     new = [t for t in res.get('topics', []) if t.get('title') and t['title'].lower() not in low]
     nid = max([t['id'] for t in topics if isinstance(t.get('id'), int)] + [0]) + 1
@@ -93,7 +104,8 @@ Return JSON: {{"topics": [{{"title": str, "angle": str, "stamps": "e.g. 9:30 AM 
                                 'format': 'timeline', 'status': 'todo', 'source': 'viral',
                                 'ref': {'title': t.get('ref_title'), 'views': t.get('ref_views'), 'url': 'https://youtu.be/' + str(t.get('ref_id', ''))}})
     save(ROOT / 'data/topics.json', topics)
-    state.update({'viral_i': (n + 4) % len(VIRAL_SEEDS), 'viral_last': dt.datetime.utcnow().isoformat(timespec='seconds'),
+    if monthly: state['batch_month'] = month
+    state.update({'viral_i': (n + k) % len(VIRAL_SEEDS), 'viral_last': dt.datetime.utcnow().isoformat(timespec='seconds'),
                   'viral_added': [t['title'] for t in new]})
     save(ROOT / 'data/scout.json', state)
     print('viral scout added:', [t['title'] for t in new])

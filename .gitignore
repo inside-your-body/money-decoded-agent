@@ -9,3 +9,5 @@ render/src/gen/a_*.tsx
 render/src/gen/g_*.tsx
 work/
 render/src/gen/t_*.tsx
+render/public/fonts/vazir*.woff2
+render/public/fonts/lalezar.woff2

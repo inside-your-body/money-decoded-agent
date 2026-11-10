@@ -16,10 +16,14 @@ export type Props = {
   channel: string; title: string;
 };
 
-const FONTS = ['anton', 'inter', 'spacemono', 'bebas', 'montserrat', 'playfair', 'poppins', 'archivoblack', 'dmserif', 'fredoka'];
+const FONTS = ['lalezar', 'titr', 'yekan', 'vazir', 'vazirb', 'anton', 'inter', 'spacemono', 'bebas', 'montserrat', 'playfair', 'poppins', 'archivoblack', 'dmserif', 'fredoka'];
 if (typeof document !== 'undefined') {
   const h = delayRender('fonts');
-  Promise.all(FONTS.map((f) => new FontFace('F_' + f, `url(${staticFile('fonts/' + f + '.woff2')})`, {weight: '100 900'})
+  // Vazirmatn (Farsi digits) also from the CDN, so a runner without the woff2 file in public/fonts still renders Persian correctly
+  const CDN: Record<string, string> = {vazir: 'Vazirmatn-FD-ExtraBold', vazirb: 'Vazirmatn-FD-Black'};
+  const EXTRA: Record<string, string> = {lalezar: 'https://raw.githubusercontent.com/google/fonts/main/ofl/lalezar/Lalezar-Regular.ttf'};
+  const src = (f: string) => `url(${staticFile('fonts/' + f + '.woff2')})` + (CDN[f] ? `, url(https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/misc/Farsi-Digits/fonts/webfonts/${CDN[f]}.woff2)` : '') + (EXTRA[f] ? `, url(${EXTRA[f]})` : '');
+  Promise.all(FONTS.map((f) => new FontFace('F_' + f, src(f), {weight: '100 900'})
     .load().then((x) => (document as any).fonts.add(x)).catch(() => null)))
     .then(() => continueRender(h));
 }

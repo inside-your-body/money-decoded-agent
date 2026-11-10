@@ -1,7 +1,7 @@
 """TIMELINE format for Money Decoded (owner approved Oct 24 2026): a money story told on a timeline of time stamps.
 Code-drawn only (hologram MONEY MAP + one widget per sentence), so the video itself costs only LLM + voice. One AI image per thumbnail.
 build stage: script -> storyboard -> voice (long + 1 Short) -> render props -> thumbnail.   finish: mix audio, QA, package, upload."""
-import json, re, shutil, datetime as dt
+import json, re, shutil, pathlib, datetime as dt
 import numpy as np, soundfile as sf
 from scipy.signal import resample_poly
 from .common import ROOT, WORK, CFG, load, save, sh
@@ -57,16 +57,16 @@ def long_words(ep): return _wc([ln['text'] for ln in long_lines(ep)])
 # Owner (Oct 30): vary the format so the channel never looks mass-produced (YouTube's "inauthentic content" rule). The writer picks
 # the format that fits the topic best, never one of the last two used. "stage" = the section label of the format (<=10 chars).
 FORMATS = {
-    'timeline': "TIMELINE STORY — the story moves through time stamps that fit the topic (9:30 AM → NOON → DAY 2, AGE 20 → 45 → 65, 1634 → 1637); "
-                "at each stamp we see where the money goes and what changes. stage = the time stamp ('DAY 3', '1929', 'AGE 45').",
+    'timeline': "TIMELINE STORY — the story moves through time stamps that fit the topic (۹:۳۰ صبح → ظهر → روز دوم, سن ۲۰ → ۴۵ → ۶۵, ۱۶۳۴ → ۱۶۳۷); "
+                "at each stamp we see where the money goes and what changes. stage = the time stamp in Persian ('روز سوم', 'سال ۱۹۲۹', 'سن ۴۵').",
     'countdown': "COUNTDOWN LIST — 5 to 7 surprising points counted down to the most surprising one (#1), each point a mini story with its own "
-                 "twist; tease #1 in the hook. stage = '#7' … '#1'.",
+                 "twist; tease #1 in the hook. stage = 'شماره ۷' … 'شماره ۱'.",
     'myths': "MYTH BUSTING — 4 to 6 beliefs most people hold about the topic, each one shown, then broken with the real mechanism and a number; "
-             "the last myth is the one that costs viewers the most. stage = 'MYTH 1' … 'MYTH 6'.",
+             "the last myth is the one that costs viewers the most. stage = 'باور ۱' … 'باور ۶'.",
     'case': "TRUE CASE STORY — one real, well-documented event or person (a bank collapse, a famous fortune or scam, a bubble) told like a "
-            "thriller in acts: the setup, the warning signs, the moment it breaks, the aftermath, the lesson for you. stage = 'ACT 1' … 'ACT 5' or a date.",
+            "thriller in acts: the setup, the warning signs, the moment it breaks, the aftermath, the lesson for you. stage = 'پرده ۱' … 'پرده ۵' or a date.",
     'whatif': "WHAT-IF EXPERIMENT — follow one concrete scenario step by step (you put $1,000 here, you skip this, you do this every month) "
-              "and show what happens at each step with real numbers, then compare it with the alternative. stage = 'STEP 1' … or 'MONTH 6', 'YEAR 10'.",
+              "and show what happens at each step with real numbers, then compare it with the alternative. stage = 'قدم ۱' … or 'ماه ۶', 'سال ۱۰'.",
 }
 
 
@@ -79,43 +79,46 @@ def pick_formats():
 def write(topic, notes):
     ref = topic.get('ref') or {}
     fmts = pick_formats()
-    return llm.ask_json(f"""You are the head writer of the YouTube channel "Money Decoded" (English, adults, US/UK/Canada audience).
+    return llm.ask_json(f"""You are the head writer of the Persian YouTube channel "پول و قدرت" (Persian-speaking adults in Iran and abroad). Write ALL narration
+and every viewer-facing field in natural spoken Persian (Farsi) — sentences a Persian narrator says easily, never translated-sounding.
 FORMAT: choose the ONE format below that tells THIS topic best (the channel rotates formats so no two episodes in a row feel the
 same) and return its key as "fmt":
 {chr(10).join('- ' + k + ': ' + v for k, v in fmts.items())}
-Visual identity: Finn the clever fox acts the story out in storybook drawings, next to him a card with the number / chart / myth-vs-fact
-of each sentence, big numbers, simple icons.
+Visual identity: flat 2D motion graphics with professional Persian kinetic typography — every sentence shows 1-4 key words rising
+on screen plus one flat graphic (a number, a chart, money flowing, icons, myth-vs-fact cards); each section has its own colour.
 Channel rules:
 {llm.RULES}
 
 Topic: "{topic['title']}"
-{('This topic is our own version of a proven viral idea: ' + (('"' + str(ref.get('title')) + '" (' + str(ref.get('views', '')) + ' views)') if ref.get('title') else str(ref.get('note', ''))) + '. Same curiosity, our own format, our own words and facts — never a copy.') if ref else ''}
+{('This topic is our own Persian version of a proven viral idea: ' + (('"' + str(ref.get('title')) + '" (' + str(ref.get('views', '')) + ' views)') if ref.get('title') else str(ref.get('note', ''))) + '. Same curiosity, our own format, our own words and facts — never a copy.') if ref else ''}
 {('Angle: ' + topic['angle']) if topic.get('angle') else ''}
 {('Opening idea (verify every number against the notes; change it if the notes disagree): ' + topic['hook']) if topic.get('hook') else ''}
 Research notes (use only facts from here; round numbers; be accurate; never investment advice, predictions or get-rich promises):
 {notes}
 
-Write the long video: {llm.WORDS_MIN}–{llm.WORDS_MAX} words of narration in total (≈ 8:30–9:15). Count carefully.
+Write the long video: {llm.WORDS_MIN}–{llm.WORDS_MAX} words of narration in total (≈ 8–9 minutes). Count carefully.
+Address the viewer as «تو» (friendly, warm spoken Persian). Keep sentences short (about 8–14 words ≈ 4–5 seconds each): the picture changes with every sentence.
+On-screen text (stage labels, titles) never contains English words or Latin letters; write foreign names in Persian letters.
 {llm.HOOK_RULES}
 {llm.STORY_CRAFT}
 {llm.SEO_RULES}
 WORDPLAY: hook the viewer with intriguing wording, reversals ("the bank didn't lend your money — it created new money"), concrete
 everyday images and tension — never with false hope or exaggeration. Every claim must be true.
-STRUCTURE: scene 1 = hook (stage null). Then 5–8 scenes in the chosen format, each with its "stage" label (≤10 chars, UPPERCASE, as the
+STRUCTURE: scene 1 = hook (stage null). Then 5–8 scenes in the chosen format, each with its "stage" label (≤14 chars, Persian, as the
 format says), 8–16 sentences each, each with its own surprise. Plant an open loop in the hook and pay it off in the last section.
 Final scene (stage null): the big picture + one question for the comments. Short spoken sentences, one idea each, every sentence SHOWABLE
 with a number, a place in the money map, an object, a flow of money or a change. Max 12 numbers in total. Explain — never advise.
 
-Then write {N_SHORTS} SHORTS (each 95–115 words, ≈ 40–50 s — never longer), each a DIFFERENT self-contained moment of the video
+Then write {N_SHORTS} SHORTS (each 70–90 words, ≈ 30–40 s — never longer), each a DIFFERENT self-contained moment of the video
 (different fact, different twist — never the same point twice), each survives without the long video:
 line 1 = a curiosity question or shocking claim that works in the first second; one continuous mini story with a turn in it;
-second-to-last line sends viewers to the full video ("the full story is in the video linked above"); last line loops into the first.
+second-to-last line sends viewers to the full video ("داستان کامل رو توی ویدیوی بالا گذاشتم"); last line loops into the first.
 
-Thumbnail fallback (only used if the main thumbnail fails): 1 variant = "number" (big number/time on the thumbnail, ≤8 chars, e.g. "$65B", "24H", "-90%"),
-"words" (2–3 words that name the topic, e.g. "BANK RUN"), "subject" (ONE striking, instantly recognisable object/scene that shows the topic,
-described for a photo-real image, e.g. "a heavy steel bank vault door half open with stacks of cash inside, dramatic light").
+Thumbnail fallback (only used if the main thumbnail fails): 1 variant = "number" (big number/time on the thumbnail, ≤8 chars, e.g. "$65B", "۲۴ ساعت", "-۹۰٪"),
+"words" (2–3 Persian words that name the topic, e.g. "هجوم به بانک"), "subject" (in ENGLISH: ONE striking, instantly recognisable object/scene
+that shows the topic, described for a photo-real image, e.g. "a heavy steel bank vault door half open with stacks of cash inside, dramatic light").
 
-The upload description must end with the line: Educational content only — not financial advice.
+The upload description must end with the line: این ویدیو فقط آموزشی است و توصیه‌ی مالی یا سرمایه‌گذاری نیست.
 Return JSON (comments are explanations, do not output them):
 {{"fmt": str, "title": str, "main_keyword": str,
  "scenes": [{{"title": "chapter title 2-5 words", "stage": str|null, "node": NODE, "lines": [str, ...]}}],
@@ -123,15 +126,15 @@ Return JSON (comments are explanations, do not output them):
  "upload": {{"main_keyword": str, "title": str, "description": str, "tags": [str], "hashtags": [str], "pinned_comment": str}},
  "thumbnail": {{"variants": [{{"number": str, "words": str, "subject": str}}]}},
  "sources": [{{"title": str, "url": str}}]}}
-The description must include a "Chapters" section with the placeholder {{CHAPTERS}}. NODE is one of: {', '.join(NODES)}.""", max_tokens=32000)
+The description must include a "فصل‌ها" section with the placeholder {{CHAPTERS}}. NODE is one of: {', '.join(NODES)}.""", max_tokens=32000)
 
 
 def expand(ep, notes, target):
     cur = long_words(ep) if ep['scenes'] and isinstance(ep['scenes'][0]['lines'][0], dict) else _wc([l for s in ep['scenes'] for l in s['lines']])
     plain = [{'title': s['title'], 'stage': s.get('stage'), 'node': s.get('node'), 'lines': [l['text'] if isinstance(l, dict) else l for l in s['lines']]} for s in ep['scenes']]
-    out = llm.ask_json(f"""This "Money Decoded" timeline script is too short: {cur} words. Rewrite it to {target}–{target + 80} words.
+    out = llm.ask_json(f"""This Persian "پول و قدرت" script is too short: {cur} words. Rewrite it to {target}–{target + 80} words.
 Keep the hook, the stamps (you may add one stamp), the story and the style; deepen each stamp with a concrete everyday example, where
-the money actually goes, and a surprising fact from the notes. Short spoken sentences. Never investment advice.
+the money actually goes, and a surprising fact from the notes. Short spoken Persian sentences. Never investment advice.
 Notes: {notes[:12000]}
 Scenes: {json.dumps(plain, ensure_ascii=False)}
 Return ONLY {{"scenes": [{{"title": str, "stage": str|null, "node": str, "lines": [str]}}]}}""", max_tokens=24000)
@@ -151,7 +154,7 @@ def board_lines(lines, context, recent=()):
 
 def _board_ask(lines, context):
     stage_key = ', "stage": str|null' if 'stage' in context else ''
-    return llm.ask_json(f"""You are the editor of a "Money Decoded" documentary video (like How Money Works / Economics Explained):
+    return llm.ask_json(f"""You are the editor of a Persian "پول و قدرت" documentary video (like How Money Works / Economics Explained):
 real stock-footage B-roll mixed with code-drawn motion graphics, kinetic typography and charts. Video: {context}
 For EVERY sentence decide what we SEE:
 - "broll": a stock-footage search query (2-5 plain English words) for a REAL video clip that literally shows the sentence — concrete,
@@ -166,9 +169,11 @@ Mix (very important, viewers leave when the screen is monotonous): about 55-65% 
 sentences in a row and never more than 2 graphic sentences in a row; the first sentence (the hook) gets the most striking footage.
 Sentences with a key number or a money flow are graphics (stat, chart, growth, compare, flow, stack, node = the money map).
 {VISUALS}
-Widget rules: the widget must literally show what the sentence says; use the sentence's real numbers; vary the widget types; "icon" at most
+Widget rules: all labels/texts/items are short PERSIAN text with no English words or Latin letters (numbers go in the numeric fields; currency as the word دلار/تومان in "unit"); the widget must literally show what the sentence says; use the sentence's real numbers; vary the widget types; "icon" at most
 1 in 4 graphic sentences; "question" only for real open questions; labels are short (≤30 chars).
-"words" = 1-3 punchy key words lifted from the sentence (max 3 items, e.g. ["BANK", "CREATES MONEY"]), never the whole sentence.
+"words" = 1-3 punchy Persian key words lifted from the sentence (max 3 items, e.g. ["بانک", "پول می‌سازد"]), never the whole sentence.
+All widget labels/texts/items/myth/fact/from/to are short Persian; "unit" may be a symbol (%, x) or a short Persian word (میلیارد, میلیون);
+"prefix" may be "$" for dollars.
 Sentences (index: text): {json.dumps({i: (t['text'] if isinstance(t, dict) else t) for i, t in enumerate(lines)}, ensure_ascii=False)}
 Return JSON: {{"beats": [{{"i": int, "broll": str|null, "node": NODE, "visual": {{...}}, "words": [str]{stage_key}}}]}} — one per sentence, same order.""", max_tokens=16000)
 
@@ -219,7 +224,7 @@ def _line(text, b, fallback_node='none', stage=False):
     return out
 
 
-SHORT_CTX = "vertical Short. Also give each sentence a 'stage': the time stamp it is about (≤10 chars UPPERCASE, e.g. 'DAY 3'; keep it the same for consecutive sentences about that moment; null only for the hook line)"
+SHORT_CTX = "vertical Short. Also give each sentence a 'stage': the time stamp it is about (≤14 chars Persian, e.g. 'روز سوم'; keep it the same for consecutive sentences about that moment; null only for the hook line)"
 
 
 def storyboard(ep):
@@ -237,6 +242,30 @@ def storyboard(ep):
 
 
 # ---------------- voice + render props ----------------
+def voice_text(ep):
+    """Owner (Nov 9): the text sent to ElevenLabs gets diacritics ONLY on words a narrator could misread, and every number/symbol
+    written out in Persian words; the on-screen text stays without diacritics."""
+    from .fa_text import speakable
+    groups = [sc['lines'] for sc in ep['scenes']] + [s['lines'] for s in ep.get('shorts', [])]
+    flat = [l for g in groups for l in g if isinstance(l, dict)]
+    for k in range(0, len(flat), 60):
+        part = flat[k:k + 60]
+        r = llm.ask_json(f"""Prepare these Persian narration sentences for a Persian text-to-speech voice.
+For each sentence return the SAME words and order, except: (1) add Arabic diacritics (اعراب: َ ِ ُ ّ) ONLY on words a reader could
+pronounce wrongly (e.g. کُرد/کَرد، مِلک/مُلک، the ezafe -ِ where it changes the meaning) - most words get none; (2) write every number,
+year, percent, currency symbol and abbreviation fully in Persian words as it should be spoken (۱۹۸۷ -> هزار و نهصد و هشتاد و هفت،
+۶۵٪ -> شصت و پنج درصد، $17B -> هفده میلیارد دلار); (3) foreign names in Persian letters. Do not add or remove anything else.
+Sentences: {json.dumps([l['text'] for l in part], ensure_ascii=False)}
+Return JSON: {{"say": [str]}} with exactly {len(part)} items.""", max_tokens=12000)
+        say = r.get('say') or []
+        if len(say) == len(part):
+            for l, x in zip(part, say): l['say'] = speakable(str(x))
+    for l in flat: l.setdefault('say', speakable(l['text']))
+    ep['voiced_text'] = True
+    return ep
+
+
+
 def _voice(lines, groups, wav, segs_p):
     if not wav.exists() or not segs_p.exists():
         segs = tts.synth_lines(lines, wav, groups=groups); save(segs_p, segs)
@@ -252,12 +281,17 @@ def props(lines, stages, segs, vertical):
                       'visual': ln['visual'], 'words': ln['words'], 'q': ln.get('broll'), 'text': ln['text']})
     total = int(round((segs[-1]['end'] + 1.5) * FPS))
     for k, b in enumerate(beats): b['end'] = beats[k + 1]['start'] if k + 1 < len(beats) else total
-    return {'beats': beats, 'marks': marks, 'frames': total, 'vertical': vertical}
+    # owner (Nov 9): every topic gets its own colour palette (rotates with the episode count, never the same twice in a row)
+    pal = len(load(ROOT / 'data/history.json', {'episodes': []}).get('episodes', []))
+    return {'beats': beats, 'marks': marks, 'frames': total, 'vertical': vertical, 'palette': pal,
+            'brand': CFG['channel'].get('name_fa') or CFG['channel']['name']}
 
 
 def _visuals(pr, ep_dir, kind, context):
     """Owner (Oct 28): style "finn" = Finn the fox in storybook drawings + the sentence's motion graphic beside him;
     otherwise the older documentary style (stock B-roll + full-screen graphics)."""
+    if CFG.get('style') == 'flat':        # owner (Nov 8): Persian channel = flat 2D motion graphics + kinetic type, no drawings
+        pr['flat'] = True; return pr
     if CFG.get('style') == 'finn':
         from . import fox
         pr['finn'] = True
@@ -286,11 +320,14 @@ def build(topic, ep_dir, dry_run=False):
         except Exception as e: print('hook pass failed:', e)
     if not ep.get('boarded'):
         ep = storyboard(ep); save(ep_dir / 'episode.json', ep)
+    if not ep.get('voiced_text'):
+        try: ep = voice_text(ep); save(ep_dir / 'episode.json', ep)
+        except Exception as e: print('voice text prep failed (numbers are still spelled out):', e)
     # voice: long (length guard) + Shorts
     need = CFG['long_video']['min_seconds'] + 3
     for attempt in range(3):
         lines = long_lines(ep)
-        segs = _voice([l['text'] for l in lines], [len(s['lines']) for s in ep['scenes']], ep_dir / 'vo_long.wav', ep_dir / 'segs_long.json')
+        segs = _voice([l.get('say') or l['text'] for l in lines], [len(s['lines']) for s in ep['scenes']], ep_dir / 'vo_long.wav', ep_dir / 'segs_long.json')
         print(f"voice long: {segs[-1]['end']:.0f}s (need {need}s), {long_words(ep)} words")
         if segs[-1]['end'] >= need or attempt == 2: break
         ep = expand(ep, notes, int(need * long_words(ep) / segs[-1]['end'] * 1.06)); ep = storyboard(ep); save(ep_dir / 'episode.json', ep)
@@ -303,11 +340,11 @@ def build(topic, ep_dir, dry_run=False):
     save(ep_dir / 'props_long.json', _visuals(props(long_lines(ep), stages, segs, False), ep_dir, 'long', ep['title']))
     for k, s in enumerate(ep.get('shorts', [])[:N_SHORTS]):
         for attempt in range(3):
-            sg = _voice([l['text'] for l in s['lines']], [len(s['lines'])], ep_dir / f'vo_short{k}.wav', ep_dir / f'segs_short{k}.json')
+            sg = _voice([l.get('say') or l['text'] for l in s['lines']], [len(s['lines'])], ep_dir / f'vo_short{k}.wav', ep_dir / f'segs_short{k}.json')
             print(f'voice short {k}: {sg[-1]["end"]:.0f}s')
-            if sg[-1]['end'] <= 57 or attempt == 2: break
-            target = int(_wc([l['text'] for l in s['lines']]) * 52 / sg[-1]['end'])
-            out = llm.ask_json(f"""Shorten this YouTube Short script to at most {target} words (it must stay under 55 seconds). Keep line 1 (the hook),
+            if sg[-1]['end'] <= 41 or attempt == 2: break          # owner (Nov 9): Shorts 30-40 s
+            target = int(_wc([l['text'] for l in s['lines']]) * 37 / sg[-1]['end'])
+            out = llm.ask_json(f"""Shorten this Persian YouTube Short script to at most {target} words (it must stay under 40 seconds). Keep line 1 (the hook),
 the mini timeline, the line that sends viewers to the full video and the loop. Return ONLY {{"lines": [str]}}.
 Lines: {json.dumps([l['text'] for l in s['lines']], ensure_ascii=False)}""", max_tokens=3000)
             if out.get('lines'):
@@ -316,7 +353,7 @@ Lines: {json.dumps([l['text'] for l in s['lines']], ensure_ascii=False)}""", max
                 save(ep_dir / 'episode.json', ep)
                 for f in (f'vo_short{k}.wav', f'segs_short{k}.json'): (ep_dir / f).unlink(missing_ok=True)
         pr = props(s['lines'], [l.get('stage') for l in s['lines']], sg, True)
-        pr['cover'] = s.get('cover') or (s.get('title') or '').upper()[:40]
+        pr['cover'] = s.get('cover') or (s.get('title') or '')[:44]
         save(ep_dir / f'props_short{k}.json', _visuals(pr, ep_dir, f'short{k}', ep['title'] + ' (vertical Short)'))
     if not ep.get('polished'):
         try: ep = polish(ep); save(ep_dir / 'episode.json', ep)
@@ -334,7 +371,8 @@ def polish(ep):
     and caption, and the pinned comment. Facts may only come from the script."""
     up = ep['upload']
     narr = ' '.join(_tx(l) for l in long_lines(ep))[:14000]
-    r = llm.ask_json(f"""You are the packaging editor of the finance YouTube channel "Money Decoded" (English; US/UK/Canada adults).
+    r = llm.ask_json(f"""You are the packaging editor of the Persian finance YouTube channel "پول و قدرت" (Persian-speaking adults in Iran and abroad).
+Everything you write is Persian, phrased the way Persian speakers search and talk on YouTube.
 The video is finished. Write its packaging so that people who see it WANT to click — through curiosity, never false hope.
 Rules: every claim must be true to the script; no clickbait lies, no "get rich", no advice, no predictions, no ALL-CAPS sentences, max one emoji
 in the Short caption and none elsewhere. Use concrete, surprising specifics from the script (a number, a twist, a reversal).
@@ -349,18 +387,19 @@ Shorts: {json.dumps([' '.join(_tx(l) for l in x.get('lines', [])) for x in ep.ge
    - title ≤ 60 characters, the subject inside the first 40 (mobile feed), the main keyword (or its most natural wording) near the start,
      a number, a name or a date from the script, a curiosity gap (twist, hidden truth, surprising number) — understandable at a glance;
      max 2 ALL-CAPS words, no hype words (amazing, insane, secret, ultimate, best…).
-   - thumb: 1-3 words for the thumbnail that say what the title does NOT (never repeat a title word) — same promise, different words,
-     e.g. a shocking number "$7,200 LEFT", a verdict "IT'S GONE", a contrast "0.4% vs 38%".
+   - thumb: 2-4 Persian words for the thumbnail that say what the title does NOT (never repeat a title word) — same promise, different
+     words, e.g. a shocking number "فقط ۷۲۰۰ دلار ماند", a verdict "همه‌اش دود شد", a contrast "۰٫۴٪ در برابر ۳۸٪". Put the ONE key word that
+     should be yellow in "key".
 2. "title": the best one of them (best mix of searchable + curiosity + honest).
 3. "hook": the first 2 lines of the description (≤ 220 characters total): they show under the video in search — keyword in sentence 1,
    then an open question or twist that makes people want to watch. No hashtags.
 4. "shorts": for EACH Short above, in order: "title" (≤ 55 characters, no hashtags, a curiosity question or shocking true claim from
    that Short; every Short gets a different title) and "caption" (2-3 short lines: line 1 the curiosity hook, line 2 what they'll
-   understand, line 3 a question that invites comments; no hashtags, no links — they are added later) and "cover" (2-5 BIG words shown
-   on screen in the first 2 seconds and as the Short's cover frame: tells the topic at a glance AND opens a curiosity gap, different words
-   from the spoken first line, e.g. "SAME SALARY. $0 SAVED?", "YOUR BANK HAS NO VAULT").
+   understand, line 3 a question that invites comments; no hashtags, no links — they are added later) and "cover" (2-5 BIG Persian words
+   shown on screen in the first 2 seconds and as the Short's cover frame: tells the topic at a glance AND opens a curiosity gap, different
+   words from the spoken first line, e.g. "حقوق یکسان، پس‌انداز صفر؟", "بانک تو گاوصندوق ندارد").
 6. "pinned_comment": one friendly question to viewers about the video's idea (≤ 140 characters).
-Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str}}], "title": str, "hook": str, "shorts": [{{"title": str, "caption": str, "cover": str}}], "pinned_comment": str}}""",
+Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str, "key": str}}], "title": str, "hook": str, "shorts": [{{"title": str, "caption": str, "cover": str}}], "pinned_comment": str}}""",
                          max_tokens=4000)
     # yt-package / yt-seo checks: lint every title+thumbnail pairing, reward titles whose words cover the search queries
     from . import craft
@@ -376,7 +415,7 @@ Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str}}]
         sc, c, L = max(rows, key=lambda x: x[0])
         up['title'] = c['title'].strip()[:100]
         th = (c.get('thumb') or '').strip()
-        if th and len(th.split()) <= 3: ep['thumb_text'] = th
+        if th and len(th.split()) <= 5: ep['thumb_text'] = th; ep['thumb_key'] = (c.get('key') or '').strip()
         print('packaging lint:', sc, L['issues'])
     elif 10 <= len(pick) <= 70: up['title'] = pick
     ep['queries'] = queries
@@ -389,7 +428,7 @@ Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str}}]
         if isinstance(pk, dict):
             if pk.get('title'): x['title'] = pk['title'].strip()
             if pk.get('caption'): x['caption'] = pk['caption'].strip()
-            if pk.get('cover'): x['cover'] = pk['cover'].strip().upper()[:40]
+            if pk.get('cover'): x['cover'] = pk['cover'].strip()[:44]
     ep['title_ideas'] = r.get('title_ideas', [])
     ep['polished'] = True
     print('packaging:', up['title'], '|', [x.get('title') for x in ep.get('shorts', [])])
@@ -408,16 +447,16 @@ def hook_pass(ep):
     r = llm.ask_json(f"""Video title: "{ep['upload']['title']}". Current opening (first two sentences): "{cur}"
 Next sentences: "{' '.join(_tx(l) for l in sc0['lines'][2:6])}"
 First lines of the Shorts (separated by |): "{s_cur}"
-Write 5 alternative openings for the long video (each 1-2 short spoken sentences, 12-30 words) using different hook types: {'; '.join(craft.HOOK_TYPES)}.
-Every opening must: confirm what the title promises in the first sentence, open a question the viewer cannot close yet, say "you" early,
+Write 5 alternative Persian openings for the long video (each 1-2 short spoken sentences, 12-30 words) using different hook types: {'; '.join(craft.HOOK_TYPES)}.
+Every opening must: confirm what the title promises in the first sentence, open a question the viewer cannot close yet, address the viewer ("تو"/"شما") early,
 name what is at stake (a concrete number/cost from the script), and flow naturally into the next sentences. Only facts from the script.
-For EACH Short (same order) also write 4 alternative FIRST LINES (one sentence, 9-24 words) that work for someone who never saw the
+For EACH Short (same order) also write 4 alternative Persian FIRST LINES (one sentence, 9-24 words) that work for someone who never saw the
 long video and fit that Short's own topic.
 Return JSON: {{"long": [str], "shorts": [[str]]}}""", max_tokens=3000)
     best, sc = craft.best_hook(cur, r.get('long', []))
     print('hook:', craft.hook_score(cur)['verdict'], '->', sc)
     if best != cur:
-        parts = [x.strip() for x in re.split(r'(?<=[.?!])\s+', best) if x.strip()]
+        parts = [x.strip() for x in re.split(r'(?<=[.?!؟])\s+', best) if x.strip()]
         sc0['lines'] = parts + [_tx(l) for l in sc0['lines'][2:]]
         ep['boarded'] = False
     for x, opts in zip(shorts, r.get('shorts') or []):
@@ -452,7 +491,8 @@ clean cartoon so he pops off the dark background. High contrast, very clean, rea
 def summary(ep):
     lines = [l['text'] for l in long_lines(ep)]
     return llm.ask(f"""Summarise this YouTube video for the person who designs its thumbnail, in 5-7 sentences: what the video is about,
-what the viewer will see happen (the timeline / stages), and the 2-3 most surprising moments. Plain English, no markdown.
+what the viewer will see happen (the timeline / stages), and the 2-3 most surprising moments. Write this summary in plain ENGLISH
+(it goes into an image prompt), no markdown.
 Title: {ep.get('upload', {}).get('title') or ep.get('title')}
 Narration: {' '.join(lines)[:14000]}""", max_tokens=1200).strip()
 
@@ -489,57 +529,73 @@ def _to_16x9(src, dst):
     Image.fromarray(bg.clip(0, 255).astype(np.uint8)).save(dst, quality=92)
 
 
+def _bg_check(img, title):
+    """Claude vision: the picture must carry NO text/letters (the Persian headline is typeset by us) and show the topic."""
+    import base64
+    content = [{'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': base64.b64encode(img.read_bytes()).decode()}},
+               {'type': 'text', 'text': f"""Background picture for a YouTube thumbnail of the video "{title}" (a Persian headline will be added on the
+empty top part later). Return JSON only: {{"has_text": bool, "top_clear": bool, "topic_clear": bool, "problem": str}}
+has_text=true if ANY letters, words, numbers or fake writing are visible anywhere (also on signs, papers, screens, banknotes' big labels);
+top_clear=false if important objects fill the top third (where the headline goes); topic_clear=false if the picture does not show the topic."""}]
+    try:
+        return llm._repair(llm.ask(content, max_tokens=600, retries=2)) or {}
+    except Exception as e:
+        print('bg check failed', e); return {}
+
+
+def _typeset(bg_jpg, text, key, dst):
+    """Persian headline set by code (Vazirmatn Black, RTL, key word yellow) on top of the text-free picture."""
+    pub = ROOT / 'render/public/ep'; pub.mkdir(parents=True, exist_ok=True)
+    shutil.copy(bg_jpg, pub / 'thumb_bg.jpg')
+    pf = pathlib.Path(dst).with_suffix('.json'); save(pf, {'bg': 'ep/thumb_bg.jpg', 'text': text, 'key_word': key or ''})
+    sh(['npx', 'remotion', 'still', 'src/index.ts', 'ThumbFa', str(dst), f'--props={pf}', '--log=warn'], cwd=ROOT / 'render')
+
+
 def thumbs(ep, ep_dir):
-    """Owner (Oct 25): ONE thumbnail made by ChatGPT (image API) from a summary of the video: the text on it must tell what the video
-    is about AND make people curious. Vision check for spelling; up to 3 tries; the old code-made design is only the fallback."""
+    """Owner (Nov 8): Persian channel. The image model cannot spell Persian, so it draws the picture WITHOUT any text (dark navy look,
+    one glossy subject, Finn small in a corner, empty top band) and our code typesets the Persian headline (ep['thumb_text'])."""
     from . import images
-    from PIL import Image
     out = ep_dir / 'thumbs'; out.mkdir(exist_ok=True)
     summ = summary(ep); (out / 'summary.txt').write_text(summ)
     title = ep.get('upload', {}).get('title') or ep.get('title')
-    note = ''
-    best = None
+    text = (ep.get('thumb_text') or ((ep.get('thumbnail') or {}).get('variants') or [{}])[0].get('words') or title).strip()
+    note, best = '', None
     for k in range(3):
-        raw = out / f'gpt{k}.png'
-        prompt = f"""Design ONE YouTube thumbnail (16:9 landscape) for this video.
-Video title: {title}
-What the video shows: {summ}
-
-Goal: the highest possible click-through rate from people scrolling YouTube — the thumbnail must create CURIOSITY.
-The text on the thumbnail: a few words only (2-5 words, never the title repeated) that hint at what the video is about AND open a
-curiosity gap — a twist, a secret, a shocking true number or a reversal the viewer wants explained (e.g. "IT WAS NEVER REAL", "$0 IN THE VAULT",
-"THEY TYPE IT IN"). It must still make clear the topic (money / banks / markets) together with the picture. One highlighted key word.
-It must be true to the video: no false promises, no "get rich".
-Choose the single most striking visual that shows the topic at a glance. {FINN_THUMB if CFG.get('style') == 'finn' else THUMB_STYLE}
-Keep it SIMPLE and uncluttered like a top finance explainer channel: one main subject (or a clear 2-3 step change with arrows), no people's faces,
-no more than one small number badge besides the headline. Keep a small margin around the headline. Spell every word correctly.{note}"""
-        if ep.get('thumb_text'):
-            prompt += (f"\nThe ONLY text on the thumbnail is exactly: \"{ep['thumb_text']}\" (do not add the title or any other words; "
-                       "it complements the title instead of repeating it).")
+        raw = out / f'bg{k}.png'
+        prompt = f"""Create the PICTURE for a YouTube thumbnail (16:9 landscape) of a finance explainer video. The headline will be added later
+by a designer, so the picture itself must contain ABSOLUTELY NO text: no letters, words, numbers, captions, labels, signs or fake writing anywhere
+(banknotes and screens without readable writing).
+What the video is about: {summ}
+Goal: the highest click-through rate - ONE striking, instantly understandable image of the topic that creates curiosity (a clear before -> after
+or cause -> effect with ONE bright orange arrow works best). {FINN_THUMB.split('HUGE bold')[0]}
+Leave the TOP 38% of the frame as calm dark navy background (only soft glow) - the headline goes there; the subject sits in the lower 62%.
+High contrast, very clean, readable at phone size. No real people's faces, no logos.{note}"""
         if CFG.get('style') == 'finn':
             from . import fox
-            ok = images.edit(prompt + "\nThe channel mascot FINN appears small in a lower corner, reacting with a strong emotion that fits the topic: "
-                             + fox.FINN, [fox._ref()], str(raw), size='1536x1024', quality='high')
+            ok = images.edit(prompt + '\nFinn the fox (the channel mascot) appears SMALL in a lower corner, reacting with a strong emotion: ' + fox.FINN,
+                             [fox._ref()], str(raw), size='1536x1024', quality='high')
         else:
             ok = images.gen(prompt, raw, size='1536x1024', quality='high')
         if not ok: continue
-        jpg = out / f'gpt{k}.jpg'; _to_16x9(raw, jpg)
-        r = _check_thumb(jpg, title)
-        print('thumb check', k, r)
-        if r.get('spelling_ok', True) and r.get('readable', True) and r.get('topic_clear', True):
-            shutil.copy(jpg, ep_dir / 'thumbnail.jpg'); return
-        if r.get('spelling_ok', True) and r.get('readable', True) and not best: best = jpg   # correctly spelled -> usable fallback
-        note = f"\nA previous attempt had this problem, avoid it: {r.get('problem') or 'misspelled text'}."
-    if best:          # keep the channel look (Finn) instead of the old code-made design
-        print('using the best correctly spelled ChatGPT thumbnail'); shutil.copy(best, ep_dir / 'thumbnail.jpg'); return
-    print('ChatGPT thumbnail failed the checks -> code-made fallback')
+        jpg = out / f'bg{k}.jpg'; _to_16x9(raw, jpg)
+        r = _bg_check(jpg, title); print('thumb bg check', k, r)
+        if not r.get('has_text', False) and r.get('top_clear', True) and r.get('topic_clear', True):
+            best = jpg; break
+        if not r.get('has_text', False) and not best: best = jpg
+        note = f"\nA previous attempt had this problem, avoid it: {r.get('problem') or 'it contained text'}."
+    if best:
+        try:
+            _typeset(best, text, ep.get('thumb_key'), ep_dir / 'thumbnail.jpg'); print('thumbnail:', text); return
+        except Exception as e: print('typeset failed', e)
+    print('picture failed -> code-made fallback')
     v = ((ep.get('thumbnail') or {}).get('variants') or [{}])[0]
+    from PIL import Image
     pub = ROOT / 'render/public/ep'; pub.mkdir(parents=True, exist_ok=True)
     img = out / 'subject0.png'
     if v.get('subject') and not img.exists():
         images.gen(f"{v['subject']}. Photo-real, crisp, dramatic cinematic lighting, centred single subject, no text, isolated on a transparent background",
                    img, size='1024x1024', transparent=True, quality='high')
-    props = {'number': v.get('number', ''), 'words': v.get('words', title), 'v': 0}
+    props = {'number': v.get('number', ''), 'words': v.get('words') or text, 'v': 0}
     if img.exists():
         try:
             from . import cutout; cutout.trim(img, img)

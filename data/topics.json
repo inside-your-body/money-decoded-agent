@@ -136,11 +136,12 @@
   "angle": "stamps: AUG 1992 > SEPT 15 > 7:30 AM > 7 PM > SEPT 17",
   "hook": "In a single day, one man bet against an entire country — and the country lost.",
   "format": "timeline",
-  "status": "next",
+  "status": "skipped",
   "source": "owner",
   "ref": {
    "note": "Business Casual \"How Soros Made A Billion Dollars And Almost Broke Britain\" 2.9M"
-  }
+  },
+  "skip_note": "Nov 8: channel switched to Persian; English topic not used"
  },
  {
   "id": 12,
@@ -149,11 +150,12 @@
   "angle": "stamps: JAN 1923 > JULY > OCT > NOV 1923",
   "hook": "In November 1923, one US dollar was worth 4.2 trillion German marks. Bread cost a wheelbarrow of cash.",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "owner",
   "ref": {
    "note": "Economics Explained \"How the World's Richest Country Lost 90% of its GDP\" 5.2M; \"Why Türkiye Is Not Fixing Its Hyperinflation\" 3.7M"
-  }
+  },
+  "skip_note": "Nov 8: channel switched to Persian; English topic not used"
  },
  {
   "id": 13,
@@ -162,11 +164,12 @@
   "angle": "stamps: 1634 > 1636 > FEB 3 1637 > FEB 7 1637",
   "hook": "In 1637, people in Amsterdam were reportedly trading a single flower bulb for a house.",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "owner",
   "ref": {
    "note": "Primate Economics \"Financial Bubbles Explained with Bananas\" 1.1M; How Money Works \"If Not Bubble… Why Bubble Shaped?\" 2.4M"
-  }
+  },
+  "skip_note": "Nov 8: channel switched to Persian; English topic not used"
  },
  {
   "id": 14,
@@ -175,11 +178,12 @@
   "angle": "stamps: AGE 30 > 45 > 60 > 85 > HEIRS",
   "hook": "Some billionaires report almost no income — and it's completely legal.",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "owner",
   "ref": {
    "note": "How Money Works \"If We Tax Rich People… They Will Just Leave!\" 1.7M; Primate \"Tax Explained with Bananas\" 1.5M; Economics Explained \"Finally a Country Is Taxing Its Billionaires\" 1.3M"
-  }
+  },
+  "skip_note": "Nov 8: channel switched to Persian; English topic not used"
  },
  {
   "id": 15,
@@ -188,11 +192,12 @@
   "angle": "stamps: SWIPE > MONTH 1 > MONTH 6 > YEAR 5",
   "hook": "The most profitable customer a credit card company can have is the one who never misses a payment.",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "owner",
   "ref": {
    "note": "Primate Economics \"Credit Cards Explained with Bananas\" 1.1M"
-  }
+  },
+  "skip_note": "Nov 8: channel switched to Persian; English topic not used"
  },
  {
   "id": 16,
@@ -201,11 +206,12 @@
   "angle": "stamps: DAY 1 > MONTH 1 > YEAR 1 > YEAR 5",
   "hook": "The ticket wins $10 million on a Tuesday. The first stranger calls on Wednesday.",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "owner",
   "ref": {
    "note": "Evergreen search topic (widely covered, e.g. CNBC) — no view count verified yet"
-  }
+  },
+  "skip_note": "Nov 8: channel switched to Persian; English topic not used"
  },
  {
   "id": 17,
@@ -214,11 +220,12 @@
   "angle": "stamps: DAY 1 > WEEK 1 > MONTH 1 > YEAR 1",
   "hook": "It has never happened. Not once in 230 years. Here's what the first morning would look like.",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "owner",
   "ref": {
    "note": "How Money Works \"Why A National Debt Default Now Looks Genuinely Possible…\" 3.0M"
-  }
+  },
+  "skip_note": "Nov 8: channel switched to Persian; English topic not used"
  },
  {
   "id": 18,
@@ -227,10 +234,11 @@
   "angle": "stamps: 1985 > 1995 > 2010 > 2025",
   "hook": "In 1985, a 25-year-old could buy a house with three years of salary. Today, it takes more than seven.\" *",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "owner",
   "ref": {
    "note": "Economics Explained \"Young Generations Are Now Poorer Than Their Parents…\" 7.5M; How Money Works \"If Nobody Can Afford A Home…\" 4.0M"
-  }
+  },
+  "skip_note": "Nov 8: channel switched to Persian; English topic not used"
  }
 ]

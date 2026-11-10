@@ -20,6 +20,17 @@ def model():
     print('claude model:', _MODEL)
     return _MODEL
 
+# Owner (Nov 8 2026): the channel is Persian now. Every Claude call gets this as its system prompt, so every viewer-facing word the
+# writers produce is fluent Persian, while machine fields (image prompts, stock queries, JSON keys/enums) stay English.
+LANG_SYSTEM = ("You work for the Persian-language YouTube channel 'پول و قدرت' (Money Decoded) for Persian-speaking adults in Iran and abroad. "
+    "Write EVERY viewer-facing text you produce (narration lines, titles, chapter/scene titles, stage labels, on-screen words, widget labels "
+    "and texts, descriptions, tags, hashtags, captions, covers, thumbnail text, comments, topic titles) in fluent, natural, modern spoken "
+    "Persian (Farsi) as a native Persian YouTuber would say it - never a word-for-word translation; correct orthography with ZWNJ "
+    "(نیم‌فاصله), Persian ی/ک and ؟. Even when the instructions, examples or research notes are in English, the viewer-facing output is Persian. "
+    "EXCEPTIONS that stay in English: drawing/image descriptions (e.g. 'draw', 'subject'), stock-footage search queries ('broll'), "
+    "JSON keys, enum values (formats, node names, widget types, shapes, icon names, sfx names), URLs, and anything a prompt explicitly asks "
+    "to be written in English.") if CFG['channel'].get('language') == 'fa' else ''
+
 def ask(prompt, system='', max_tokens=16000, web_search=False, retries=4, image_url=None, effort='medium'):
     headers = {'x-api-key': os.environ['ANTHROPIC_API_KEY'], 'anthropic-version': '2023-06-01', 'content-type': 'application/json'}
     content = prompt
@@ -30,6 +41,7 @@ def ask(prompt, system='', max_tokens=16000, web_search=False, retries=4, image_
         if mt not in ('image/jpeg', 'image/png', 'image/gif', 'image/webp'): mt = 'image/jpeg'
         content = [{'type': 'image', 'source': {'type': 'base64', 'media_type': mt, 'data': _b64.b64encode(ir.content).decode()}}, {'type': 'text', 'text': prompt}]
         retries = 1
+    if LANG_SYSTEM: system = (LANG_SYSTEM + '\n\n' + system).strip()
     body = {'model': model(), 'max_tokens': max_tokens, 'system': system, 'messages': [{'role': 'user', 'content': content}]}
     if web_search:
         body['tools'] = [{'type': 'web_search_20250305', 'name': 'web_search', 'max_uses': 8}]
@@ -93,15 +105,18 @@ def ask_json_image(url, prompt):
 RULES = (ROOT / 'config/rules.md').read_text()
 
 def research(topic):
-    return ask(f"""Research this topic for an English money/finance explainer video (educational, US/UK/Canada audience): "{topic}".
+    return ask(f"""Research this topic for a Persian-language money/finance explainer video (educational, Persian-speaking adults in Iran and abroad): "{topic}".
 Use web search. Collect 14–20 accurate, specific, surprising facts with numbers, dates and a clear TIMELINE (what happened / happens
 first, next, then…), each with its source URL. Prefer: central banks (Federal Reserve, Bank of England, ECB), IMF, World Bank, BIS,
 SEC/FINRA/FCA, FDIC, US Treasury, BLS/ONS, DOJ/court records for scams, Reuters, Bloomberg, FT, WSJ, The Economist, established history books.
 Cover: the mechanism step by step (how the money actually moves), the most surprising moments, the people involved (well-documented
 public facts only), common myths vs facts, and everyday situations the viewer recognises. If a figure is disputed, say so.
-No investment advice or predictions. Output a compact bullet list with URLs.""", web_search=True, max_tokens=7000)
+When the topic touches Iran (rial, Iranian inflation, gold coins, the Tehran stock exchange, Iranian scams) also use reliable data
+(Central Bank of Iran / Statistical Centre figures, IMF, World Bank, Reuters, BBC Persian) and note the dates of every figure.
+No investment advice or predictions, no party politics. Write the notes in English (they are internal), keep names and numbers exact.
+Output a compact bullet list with URLs.""", web_search=True, max_tokens=7000)
 
-WORDS_MIN, WORDS_MAX = 1200, 1320   # ≈ 8:30–9:15 with pauses (analytics: 10:50 was too long for our retention)
+WORDS_MIN, WORDS_MAX = 1300, 1450   # Persian at 1.2x narrator speed: ≈ 8:10–9:00 (owner: 8–9 min, ≥ 8 for mid-roll)
 
 HOOK_RULES = """OPENING = the first 30 seconds (analytics: this is where we lose 1/3 of viewers). The hook scene has 5–7 short sentences:
 - Sentence 1 is a COLD OPEN in the middle of the most surprising, most visual moment of the whole story (no "hi", no "in this video", no definition).

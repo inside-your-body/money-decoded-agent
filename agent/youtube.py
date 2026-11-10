@@ -43,7 +43,7 @@ def upload(yt, video, title, description, tags, thumb=None, publish_at=None, syn
     if publish_at: status.update(privacyStatus='private', publishAt=publish_at)
     else: status.update(privacyStatus='public')
     body = {'snippet': {'title': title[:100], 'description': description[:4900], 'tags': tags[:30],
-                        'categoryId': CFG['channel']['category_id'], 'defaultLanguage': 'en', 'defaultAudioLanguage': 'en'},
+                        'categoryId': CFG['channel']['category_id'], 'defaultLanguage': CFG['channel'].get('language', 'en'), 'defaultAudioLanguage': CFG['channel'].get('language', 'en')},
             'status': status}
     req = yt.videos().insert(part='snippet,status', body=body,
                              media_body=MediaFileUpload(str(video), chunksize=-1, resumable=True, mimetype='video/mp4'))

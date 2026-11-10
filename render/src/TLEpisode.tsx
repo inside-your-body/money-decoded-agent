@@ -8,6 +8,7 @@ import {MoneyMap, MoneyNode, NODES} from './MoneyMap';
 import {TL, BigStamp, Words, TimeBar} from './Timeline';
 import {ICONS, iconPath} from './Icons';
 import './theme';
+import {FaEpisode} from './FaEpisode';
 
 const cl = {extrapolateLeft: 'clamp' as const, extrapolateRight: 'clamp' as const};
 const sp = (f: number, at: number, d = 13, s = 170) => Math.min(1.08, spring({frame: f - at, fps: 30, config: {damping: d, stiffness: s}}));
@@ -30,10 +31,10 @@ export type Visual =
   | {type: 'versus'; myth: string; fact: string};
 
 export type TLBeat = {start: number; end: number; stage: string | null; stageIdx: number; node: string; visual: Visual; words: string[]; clips?: string[]; img?: string; imgAt?: number};
-export type TLEpProps = {beats: TLBeat[]; marks: string[]; frames: number; vertical?: boolean; title?: string; finn?: boolean; cover?: string};
+export type TLEpProps = {beats: TLBeat[]; marks: string[]; frames: number; vertical?: boolean; title?: string; finn?: boolean; cover?: string; brand?: string; flat?: boolean; palette?: number};
 
 const Label: React.FC<{y: number; text?: string; o?: number}> = ({y, text, o = 1}) => text ?
-  <text x={0} y={y} textAnchor="middle" fontFamily="F_inter" fontWeight={800} fontSize={28} letterSpacing={5} fill={TL.mute} opacity={o}>{text.toUpperCase().slice(0, 34)}</text> : null;
+  <text x={0} y={y} direction="rtl" textAnchor="middle" fontFamily="F_vazir" fontWeight={800} fontSize={30} fill={TL.mute} opacity={o}>{text.slice(0, 40)}</text> : null;
 
 const cur = (u?: string) => (/^[$£€¥]/.test(u || '') ? (u as string)[0] : '');
 const rest = (u?: string) => (u || '').replace(/^[$£€¥]/, '');
@@ -82,7 +83,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
         <line x1={-330} y1={170} x2={-330 + 640 * draw} y2={170 - 330 * draw * 0.35} stroke={TL.mute} strokeWidth={4} strokeDasharray="10 12" />
         <path d={d} stroke={GOOD} strokeWidth={9} fill="none" strokeLinecap="round" />
         <circle cx={last[0]} cy={last[1]} r={14 + 4 * pulse} fill={GOLD} />
-        <text x={330} y={225} textAnchor="end" fontFamily="F_anton" fontSize={44} fill={GOLD}>YEAR {Math.round(yrs * draw)}</text>
+        <text x={330} y={225} direction="rtl" textAnchor="start" fontFamily="F_vazirb" fontSize={44} fill={GOLD}>سال {Math.round(yrs * draw)}</text>
         <Label y={260} text={v.label} />
       </g>;
     }
@@ -91,7 +92,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
         <rect x={-130} y={-70} width={260} height={140} rx={22} fill={TL.bg2} stroke={col} strokeWidth={5} />
         <foreignObject x={-122} y={-62} width={244} height={124}>
           <div style={{width: 244, height: 124, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-            fontFamily: 'F_anton', fontSize: (txt || '').length > 10 ? 38 : 50, lineHeight: 1.05, color: TL.ink}}>{(txt || '').toUpperCase()}</div>
+            fontFamily: 'F_vazirb', fontSize: (txt || '').length > 10 ? 38 : 50, lineHeight: 1.2, color: TL.ink, direction: 'rtl'}}>{txt || ''}</div>
         </foreignObject>
       </g>;
       return <g opacity={Math.min(1, p * 1.5)}>
@@ -102,9 +103,9 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
           const x = -95 + 190 * q, y = -Math.sin(q * Math.PI) * 70;
           return <g key={j} transform={`translate(${x} ${y})`} opacity={Math.sin(q * Math.PI)}>
             <circle r={18} fill={GOLD} stroke="#FFF3B0" strokeWidth={3} />
-            <text y={8} textAnchor="middle" fontFamily="F_anton" fontSize={24} fill={TL.bg}>$</text></g>;
+            <text y={8} textAnchor="middle" fontFamily="F_vazirb" fontSize={24} fill={TL.bg}>$</text></g>;
         })}
-        {v.label && <text y={175} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={GOLD}>{v.label.toUpperCase().slice(0, 24)}</text>}
+        {v.label && <text y={175} direction="rtl" textAnchor="middle" fontFamily="F_vazirb" fontSize={60} fill={GOLD}>{v.label.slice(0, 28)}</text>}
       </g>;
     }
     case 'stack': {
@@ -121,7 +122,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
     }
     case 'node': {
       const key = (v.name in NODES ? v.name : 'bank') as keyof typeof NODES;
-      const nd = v.name === 'you' ? {label: 'YOU', icon: 'person', c: GOOD} : NODES[key];
+      const nd = v.name === 'you' ? {label: 'شما', icon: 'person', c: GOOD} : NODES[key];
       const st = v.state || 'glow';
       const sc = st === 'grow' ? 0.8 + 0.4 * t : st === 'shrink' ? 1.15 - 0.45 * t : 1;
       const col = st === 'crack' ? BAD : st === 'frozen' ? '#9FD8FF' : nd.c;
@@ -144,8 +145,8 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
       return <g opacity={Math.min(1, p * 1.5)}><Label y={275} text={v.label} /><g transform={`scale(${0.7 + 0.3 * p})`}>
         <circle r={210} fill="none" stroke={col} strokeOpacity={0.15} strokeWidth={30} />
         <circle r={210} fill="none" stroke={col} strokeWidth={6} pathLength={1} strokeDasharray={`${t} 1`} transform="rotate(-90)" strokeLinecap="round" />
-        <text y={40} textAnchor="middle" fontFamily="F_anton" fontSize={((n) => n > 9 ? 78 : n > 7 ? 96 : n > 5 ? 124 : 150)((v.prefix || '').length + val.length + (v.unit || '').length)} fill={col}>
-          {v.prefix || cur(v.unit)}{val}<tspan fontSize={60} dx={8}>{rest(v.unit)}</tspan></text>
+        <text y={40} direction="rtl" textAnchor="middle" fontFamily="F_vazirb" fontSize={((n) => n > 9 ? 78 : n > 7 ? 96 : n > 5 ? 124 : 150)((v.prefix || '').length + val.length + (v.unit || '').length)} fill={col}>
+          {v.prefix || cur(v.unit)}{val}{rest(v.unit) ? <tspan fontSize={/[a-z%]/i.test(rest(v.unit)) ? 60 : 46}>{' ' + rest(v.unit)}</tspan> : null}</text>
       </g></g>;
     }
     case 'meter': {
@@ -155,7 +156,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
         <rect x={-340} y={-40} width={680} height={80} rx={40} fill={TL.bg2} stroke={TL.mute} strokeWidth={3} />
         <rect x={-332} y={-32} width={Math.max(0, 664 * Math.min(1, Math.max(0, val)))} height={64} rx={32} fill={col} />
         {[0.25, 0.5, 0.75].map((k) => <line key={k} x1={-340 + 680 * k} x2={-340 + 680 * k} y1={50} y2={66} stroke={TL.mute} strokeWidth={3} />)}
-        <text y={150} textAnchor="middle" fontFamily="F_anton" fontSize={90} fill={col}>{Math.round(val * 100)}%</text>
+        <text y={150} textAnchor="middle" fontFamily="F_vazirb" fontSize={90} fill={col}>{Math.round(val * 100)}%</text>
       </g>;
     }
     case 'wave': {
@@ -177,9 +178,9 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
       const row = (r: {label: string; value: number}, y: number, col: string, d: number) => {
         const k = interpolate(f, [at + 8 + d, at + 50 + d], [0, 1], cl);
         return <g key={y}>
-          <text x={-340} y={y - 22} fontFamily="F_inter" fontWeight={800} fontSize={38} letterSpacing={3} fill={TL.ink}>{r.label.toUpperCase().slice(0, 26)}</text>
+          <text x={-340} y={y - 22} direction="rtl" textAnchor="end" fontFamily="F_vazir" fontWeight={800} fontSize={40} fill={TL.ink}>{r.label.slice(0, 30)}</text>
           <rect x={-340} y={y} width={520 * Math.abs(r.value) / mx * k} height={60} rx={12} fill={col} />
-          <text x={-340 + 520 * Math.abs(r.value) / mx * k + 20} y={y + 48} fontFamily="F_anton" fontSize={52} fill={col}>{cur(v.unit)}{fmt(r.value * k)}{rest(v.unit)}</text>
+          <text x={-340 + 520 * Math.abs(r.value) / mx * k + 20} y={y + 48} fontFamily="F_vazirb" fontSize={52} fill={col}>{cur(v.unit)}{fmt(r.value * k)}{rest(v.unit)}</text>
         </g>;
       };
       return <g opacity={Math.min(1, p * 1.5)}>{row(v.a, -110, BAD, 0)}{row(v.b, 70, GOOD, 14)}</g>;
@@ -213,7 +214,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
         <line x1={0} y1={0} x2={0} y2={-90} stroke={TL.ink} strokeWidth={10} strokeLinecap="round" transform={`rotate(${(cur / 60) * 30})`} />
         <line x1={0} y1={0} x2={0} y2={-130} stroke={GOLD} strokeWidth={6} strokeLinecap="round" transform={`rotate(${cur * 6})`} />
         <circle r={10} fill={GOLD} />
-        <text x={0} y={250} textAnchor="middle" fontFamily="F_anton" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
+        <text x={0} y={250} textAnchor="middle" fontFamily="F_vazirb" fontSize={60} fill={GOLD}>{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</text>
       </g>;
     }
     case 'checklist': {
@@ -224,16 +225,16 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
           <rect x={-370} y={y - 56} width={740} height={112} rx={20} fill={TL.bg2} stroke={v.bad ? BAD : GOOD} strokeOpacity={0.5} strokeWidth={3} />
           <g transform={`translate(-310 ${y}) scale(0.5) translate(-50 -50)`}>
             <path d={v.bad ? ICONS.cross : ICONS.check} fill="none" stroke={v.bad ? BAD : GOOD} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" /></g>
-          <text x={-240} y={y + 20} fontFamily="F_inter" fontWeight={800} fontSize={54} fill={TL.ink}>{it.slice(0, 26)}</text>
+          <text x={-240} y={y + 20} direction="rtl" textAnchor="end" fontFamily="F_vazir" fontWeight={800} fontSize={50} fill={TL.ink}>{it.slice(0, 30)}</text>
         </g>;
       })}</g>;
     }
     case 'question':
       return <g opacity={Math.min(1, p * 1.5)} transform={`scale(${0.8 + 0.2 * p})`}>
-        <text y={60} textAnchor="middle" fontFamily="F_anton" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
+        <text y={60} textAnchor="middle" fontFamily="F_vazirb" fontSize={300} fill={GOLD} opacity={0.15} transform={`rotate(${Math.sin(f / 15) * 6})`}>?</text>
         <foreignObject x={-360} y={-120} width={720} height={240}>
           <div style={{width: 720, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-            fontFamily: 'F_anton', fontSize: (v.text || '').length > 40 ? 52 : 66, lineHeight: 1.1, color: TL.ink}}>{v.text}</div>
+            fontFamily: 'F_vazirb', fontSize: (v.text || '').length > 40 ? 50 : 62, lineHeight: 1.35, color: TL.ink, direction: 'rtl'}}>{v.text}</div>
         </foreignObject>
       </g>;
     case 'versus': {
@@ -241,12 +242,12 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number}> = ({v, f
       const card = (x: number, title: string, txt: string, col: string, k: number) =>
         <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
           <rect x={-185} y={-210} width={370} height={420} rx={24} fill={TL.bg2} stroke={col} strokeWidth={4} />
-          <text y={-120} textAnchor="middle" fontFamily="F_anton" fontSize={64} fill={col}>{title}</text>
+          <text y={-120} direction="rtl" textAnchor="middle" fontFamily="F_vazirb" fontSize={58} fill={col}>{title}</text>
           <foreignObject x={-165} y={-90} width={330} height={290}>
-            <div style={{fontFamily: 'F_inter', fontWeight: 800, fontSize: txt.length > 60 ? 36 : 44, lineHeight: 1.2, color: TL.ink, textAlign: 'center'}}>{txt}</div>
+            <div style={{fontFamily: 'F_vazir', fontWeight: 800, fontSize: txt.length > 60 ? 34 : 42, lineHeight: 1.45, color: TL.ink, textAlign: 'center', direction: 'rtl'}}>{txt}</div>
           </foreignObject>
         </g>;
-      return <g>{card(-195, 'MYTH', v.myth || '', BAD, p)}{card(195, 'FACT', v.fact || '', GOOD, k2)}</g>;
+      return <g>{card(195, 'باور غلط', v.myth || '', BAD, p)}{card(-195, 'واقعیت', v.fact || '', GOOD, k2)}</g>;
     }
   }
   return null;
@@ -260,7 +261,7 @@ const CWords: React.FC<{words: string[]; at: number; f: number; x: number; y: nu
   return <g>{lines.map((ln, li) => {
     const p = sp(f, at + ln[0] * 5, 12, 200);
     const lw = ln.reduce((a, i) => a + words[i].length * size * 0.5 + size * 0.3, 0);
-    return <g key={li}>{shadow && <rect x={x - lw / 2 - size * 0.3} y={y + li * size * 1.08 - size * 0.95} width={lw + size * 0.6} height={size * 1.18} rx={size * 0.18} fill="rgba(5,12,24,0.6)" opacity={Math.min(1, p * 1.5)} />}<text x={x} y={y + li * size * 1.08 + (1 - Math.min(1, p)) * 30} textAnchor="middle" fontFamily="F_anton" fontSize={size} xmlSpace="preserve"
+    return <g key={li}>{shadow && <rect x={x - lw / 2 - size * 0.3} y={y + li * size * 1.08 - size * 0.95} width={lw + size * 0.6} height={size * 1.18} rx={size * 0.18} fill="rgba(5,12,24,0.6)" opacity={Math.min(1, p * 1.5)} />}<text x={x} y={y + li * size * 1.08 + (1 - Math.min(1, p)) * 30} direction="rtl" textAnchor="middle" fontFamily="F_vazirb" fontSize={size} xmlSpace="preserve"
       stroke={shadow ? 'rgba(0,0,0,0.55)' : 'none'} strokeWidth={shadow ? size * 0.08 : 0} paintOrder="stroke">
       {ln.map((i) => { const q = sp(f, at + i * 5, 12, 200);
         return <tspan key={i} fill={i === acc && words.length > 1 ? GOOD : '#FFFFFF'} fillOpacity={f < at + i * 5 ? 0 : Math.min(1, q * 1.6)}>{words[i] + (i === ln[ln.length - 1] ? '' : '  ')}</tspan>; })}
@@ -277,7 +278,7 @@ const ShortCover: React.FC<{text: string; f: number}> = ({text, f}) => {
   const o = interpolate(f, [62, 76], [1, 0], cl);
   if (o <= 0) return null;
   const words = text.split(/\s+/).filter(Boolean).slice(0, 6);
-  const size = text.length > 22 ? 118 : 140;
+  const size = text.length > 22 ? 110 : 132;
   const lines: string[][] = [[]]; let w = 0;
   words.forEach((wd) => { const ww = wd.length * size * 0.52; if (w > 0 && w + ww > 940) { lines.push([]); w = 0; } lines[lines.length - 1].push(wd); w += ww + size * 0.3; });
   const h = lines.length * size * 1.05 + 90;
@@ -286,7 +287,7 @@ const ShortCover: React.FC<{text: string; f: number}> = ({text, f}) => {
   return <svg width={1080} height={1920} viewBox="0 0 1080 1920" style={{position: 'absolute'}} opacity={o}>
     <g transform={`translate(540 ${CY}) scale(${pop}) translate(-540 ${-CY})`}>
       <rect x={40} y={CY - h / 2} width={1000} height={h} rx={40} fill="#0F2036" stroke="#FFD23F" strokeWidth={8} />
-      {lines.map((ln, li) => <text key={li} x={540} y={CY - h / 2 + 45 + (li + 0.82) * size * 1.05} textAnchor="middle" fontFamily="F_anton" fontSize={size}>
+      {lines.map((ln, li) => <text key={li} x={540} y={CY - h / 2 + 45 + (li + 0.82) * size * 1.05} direction="rtl" textAnchor="middle" fontFamily="F_vazirb" fontSize={size}>
         {ln.map((wd, k) => <tspan key={k} fill={li === lines.length - 1 && k === ln.length - 1 ? '#FFD23F' : '#FFFFFF'}>{wd + (k < ln.length - 1 ? ' ' : '')}</tspan>)}
       </text>)}
     </g>
@@ -294,13 +295,14 @@ const ShortCover: React.FC<{text: string; f: number}> = ({text, f}) => {
 };
 
 export const TLEpisode: React.FC<TLEpProps> = (props) => {
+  if (props.flat) return <FaEpisode {...props} />;     // owner (Nov 8): Persian channel = flat 2D motion graphics + kinetic type
   const {cover, vertical} = props;
   const f = useCurrentFrame();
   const main = <TLEpisodeInner {...props} />;
   return vertical && cover && f < 80 ? <AbsoluteFill>{main}<ShortCover text={cover} f={f} /></AbsoluteFill> : main;
 };
 
-const TLEpisodeInner: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
+const TLEpisodeInner: React.FC<TLEpProps> = ({beats, marks, vertical, brand = 'پول و قدرت'}) => {
   const f = useCurrentFrame();
   let i = beats.findIndex((b) => f >= b.start && f < b.end); if (i < 0) i = f < (beats[0]?.start || 0) ? 0 : beats.length - 1;
   const b = beats[i]; if (!b) return <AbsoluteFill style={{background: TL.bg}} />;
@@ -313,8 +315,8 @@ const TLEpisodeInner: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
   const hasMarks = false;   // owner (Oct 25): no day/month/year time bar on this channel (that was the health channel's idea)
   const clips = (b.clips || []).filter(Boolean);
   const isB = clips.length > 0;
-  const words = (b.words || []).slice(0, 4).map((w) => w.toUpperCase());
-  const stampXY = vertical ? [80, 200, 120] : [90, 175, 130];
+  const words = (b.words || []).slice(0, 4);
+  const stampXY = vertical ? [W - 80, 200, 110] : [W - 90, 175, 120];
   // FINN style (owner Oct 28): Finn the fox in a storybook drawing (slow push-in, crossfade between drawings) + the sentence's
   // motion graphic in a dark card beside him (long: right 40 %, Short: top) + key words under the card.
   if (b.img) {
@@ -340,7 +342,7 @@ const TLEpisodeInner: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
             : <g transform={`scale(${C.s})`}><Widget v={b.visual} f={f} at={b.start + 2} dur={dur} /></g>}
         </g>
         <g opacity={out}><CWords key={'w' + i} words={words} at={b.start + 8} f={f} x={C.x} y={C.wy} size={C.ws} maxW={C.wm} shadow /></g>
-        {!vertical && <text x={1860} y={62} textAnchor="end" fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill="#0F2036" opacity={0.55}>MONEY DECODED</text>}
+        {!vertical && <text x={60} y={62} direction="rtl" textAnchor="end" fontFamily="F_vazir" fontWeight={800} fontSize={26} fill="#0F2036" opacity={0.55}>{brand}</text>}
       </svg>
     </AbsoluteFill>;
   }
@@ -358,7 +360,7 @@ const TLEpisodeInner: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
         {b.stage && <BigStamp key={b.stage} text={b.stage} at={stAt} f={f} x={stampXY[0]} y={stampXY[1]} size={stampXY[2]} />}
         <g opacity={out}><CWords key={'w' + i} words={words} at={b.start + 6} f={f} x={W / 2} y={vertical ? 1330 : 905} size={vertical ? 96 : 104} maxW={vertical ? 940 : 1600} shadow /></g>
         {!vertical && hasMarks && <g opacity={0.9}><TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} /></g>}
-        {!vertical && <text x={1860} y={66} textAnchor="end" fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill="#FFFFFF" opacity={0.7}>MONEY DECODED</text>}
+        {!vertical && <text x={60} y={66} direction="rtl" textAnchor="end" fontFamily="F_vazir" fontWeight={800} fontSize={26} fill="#FFFFFF" opacity={0.7}>{brand}</text>}
       </svg>
     </AbsoluteFill>;
   }
@@ -379,7 +381,7 @@ const TLEpisodeInner: React.FC<TLEpProps> = ({beats, marks, vertical}) => {
       </g>
       <g opacity={out}><CWords key={'w' + i} words={words} at={b.start + 10} f={f} x={G.words[0]} y={G.words[1]} size={G.words[2]} maxW={G.words[3]} /></g>
       {!vertical && hasMarks && <TimeBar marks={marks} active={b.stageIdx} f={f} at={stAt} />}
-      {!vertical && <text x={1860} y={66} textAnchor="end" fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={6} fill={TL.mute}>MONEY DECODED</text>}
+      {!vertical && <text x={60} y={66} direction="rtl" textAnchor="end" fontFamily="F_vazir" fontWeight={800} fontSize={26} fill={TL.mute}>{brand}</text>}
     </svg>
   </AbsoluteFill>;
 };

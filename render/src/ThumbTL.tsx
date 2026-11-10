@@ -19,7 +19,7 @@ const fitText = (words: string[], w: number, h: number, max = 170, min = 56) => 
 const NUM = ['#FFD23F', '#FF5A4E', '#2EE6A6'];
 export const ThumbTL: React.FC<{number: string; words: string; subject?: string; ar?: number; v?: number}> = ({number, words, subject, ar = 1, v = 0}) => {
   const col = NUM[(v || 0) % 3];
-  const ws = (words || '').toUpperCase().split(/\s+/).filter(Boolean);
+  const ws = (words || '').split(/\s+/).filter(Boolean);
   const wSize = fitText(ws, 860, 330, 190, 90);
   const nSize = Math.min(330, Math.floor(860 / Math.max(2, (number || '').length * 0.5)));
   let h = 980, w = h * ar; if (w > 1000) { w = 1000; h = w / ar; }
@@ -28,10 +28,10 @@ export const ThumbTL: React.FC<{number: string; words: string; subject?: string;
       background: `radial-gradient(circle, ${col}55 0%, transparent 65%)`}} />
     {subject && <Img src={staticFile(subject)} style={{position: 'absolute', left: 1420 - w / 2, top: 540 - h / 2, width: w, height: h, objectFit: 'contain',
       filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))'}} />}
-    <div style={{position: 'absolute', left: 70, top: 70, width: 900, fontFamily: 'F_anton', fontSize: nSize, lineHeight: 1, color: col,
+    <div style={{position: 'absolute', left: 70, top: 70, width: 900, fontFamily: 'F_vazirb', fontSize: nSize, lineHeight: 1, color: col, direction: 'rtl', textAlign: 'right',
       textShadow: '0 8px 0 rgba(0,0,0,0.55), 0 0 40px rgba(0,0,0,0.6)', whiteSpace: 'nowrap'}}>{number}</div>
     <div style={{position: 'absolute', left: 70, top: 120 + nSize, width: 880, height: 330, display: 'flex', flexWrap: 'wrap', alignContent: 'flex-start',
-      gap: `0 ${wSize * 0.25}px`, fontFamily: 'F_anton', fontSize: wSize, lineHeight: 1.04}}>
+      gap: `0 ${wSize * 0.25}px`, fontFamily: 'F_vazirb', fontSize: wSize, lineHeight: 1.3, direction: 'rtl'}}>
       {ws.map((x, i) => <span key={i} style={{color: i === ws.length - 1 ? '#2EE6A6' : '#FFFFFF', textShadow: '0 6px 0 rgba(0,0,0,0.6)'}}>{x}</span>)}
     </div>
     <div style={{position: 'absolute', inset: 0, border: '14px solid #2EE6A6', opacity: 0.85}} />

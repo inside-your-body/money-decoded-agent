@@ -20,10 +20,10 @@ def build(ep, ep_dir):
     chapters = [c for k, c in enumerate(chapters) if (chapters[k + 1][0] if k + 1 < len(chapters) else total) - c[0] >= 10 or k == 0]
     chap = '\n'.join(f'{_ts(t)} {name}' for t, name in chapters) if len(chapters) >= 3 else ''
     desc = up['description']
-    if chap: desc = desc.replace('{CHAPTERS}', chap) if '{CHAPTERS}' in desc else desc + '\n\nChapters\n' + chap
-    else: desc = desc.replace('Chapters\n{CHAPTERS}', '').replace('{CHAPTERS}', '')
-    if ep.get('sources') and 'Sources' not in desc:
-        desc += '\n\nSources\n' + '\n'.join(f"- {s['title']}: {s['url']}" for s in ep['sources'][:8])
+    if chap: desc = desc.replace('{CHAPTERS}', chap) if '{CHAPTERS}' in desc else desc + '\n\nفصل‌ها\n' + chap
+    else: desc = desc.replace('فصل‌ها\n{CHAPTERS}', '').replace('Chapters\n{CHAPTERS}', '').replace('{CHAPTERS}', '')
+    if ep.get('sources') and 'منابع' not in desc and 'Sources' not in desc:
+        desc += '\n\nمنابع\n' + '\n'.join(f"- {s['title']}: {s['url']}" for s in ep['sources'][:8])
     tags = list(dict.fromkeys([t.strip() for t in up.get('tags', []) if t.strip()]))
     kw = (up.get('main_keyword') or '').strip().lower()
     if kw:   # SEO: main keyword is the first tag, and tags that appear in the title come right after it
@@ -43,14 +43,14 @@ def build(ep, ep_dir):
         if 3 <= len(core) <= 40: keep = [core] + keep[:-1] if len(keep) >= 20 else [core] + keep
     missing = [t for t in keep[:10] if t.lower() not in desc.lower()]
     if missing:
-        para = 'In this video: ' + ', '.join(missing) + '.'
+        para = 'در این ویدیو: ' + '، '.join(missing) + '.'
         cut = desc.find('\n\n')
         desc = (desc[:cut] + '\n\n' + para + desc[cut:]) if cut > 0 else desc + '\n\n' + para
-    hashtags = ' '.join('#' + h.lstrip('#') for h in up.get('hashtags', [])[:5])
+    hashtags = ' '.join('#' + h.lstrip('#').replace(' ', '_') for h in up.get('hashtags', [])[:5])
     if hashtags and not any(('#' + h.lstrip('#')).lower() in desc.lower() for h in up.get('hashtags', [])[:2]): desc += '\n\n' + hashtags
     pkg = {'title': up['title'][:100], 'description': desc[:4900], 'tags': keep,
            'short_title': (up.get('short_title') or up['title'])[:95] + ('' if '#Shorts' in up.get('short_title', '') else ' #Shorts'),
-           'short_description': (up.get('short_description') or '') + '\n\nFull episode: {FULL_URL}' + ('' if '#' in (up.get('short_description') or '') else '\n\n' + hashtags),
+           'short_description': (up.get('short_description') or '') + '\n\nویدیوی کامل: {FULL_URL}' + ('' if '#' in (up.get('short_description') or '') else '\n\n' + hashtags),
            'pinned_comment': up.get('pinned_comment', ''),
            'thumbnail_variants': [p.name for p in sorted(ep_dir.glob('thumbnail*.jpg'))],
            'manual_steps': 'Optional (Studio, 1 min): Details > Thumbnail > Test & compare with thumbnail.jpg + thumbnail_b.jpg + thumbnail_c.jpg; '

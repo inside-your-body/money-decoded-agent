@@ -10,9 +10,12 @@ import re
 
 DESKTOP, MOBILE = 60, 40
 VAGUE = {"amazing", "incredible", "insane", "crazy", "huge", "massive", "ultimate", "best", "powerful", "secret", "revolutionary",
-         "mindblowing", "epic", "perfect", "complete", "everything", "shocking", "unbelievable"}
+         "mindblowing", "epic", "perfect", "complete", "everything", "shocking", "unbelievable",
+         # Persian hype words (owner Nov 8: the channel is Persian)
+         "باورنکردنی", "شوکه‌کننده", "شوکه", "فوق‌العاده", "دیوانه‌کننده", "بهترین", "راز", "اسرار", "عجیب‌ترین", "وحشتناک", "انفجاری", "تضمینی"}
 STOP = {"the", "a", "an", "of", "for", "to", "in", "on", "and", "or", "is", "are", "with", "your", "you", "my", "i", "this", "that",
-        "it", "how", "what", "why", "does", "do", "when", "where", "after"}
+        "it", "how", "what", "why", "does", "do", "when", "where", "after",
+        "و", "در", "به", "از", "که", "این", "آن", "با", "را", "برای", "یک", "تا", "هم", "چه", "چرا", "چطور", "کجا", "است", "بود", "می‌شود", "شد"}
 HOOK_TYPES = ["the statistic (a number they did not know, then the consequence)", "the mistake (the error the viewer is making right now)",
               "contrarian flip (the accepted belief, then why it is wrong)", "the reveal (promise to show one specific thing, show it soon)",
               "the clock (bound the payoff in time)", "cold open in the middle of the most dramatic moment",
@@ -20,7 +23,7 @@ HOOK_TYPES = ["the statistic (a number they did not know, then the consequence)"
               "someone else's result (a real named case), then the mechanism", "the comparison (two numbers that should not differ, but do)"]
 
 
-def _w(t): return re.findall(r"[a-z0-9']+", (t or '').lower())
+def _w(t): return re.findall(r"[\w\u200c']+", (t or '').lower().replace('ي', 'ی').replace('ك', 'ک'))
 
 
 def title_lint(title, thumb=None):
@@ -34,22 +37,25 @@ def title_lint(title, thumb=None):
     if len(caps) > 2: issues.append('more than 2 ALL-CAPS words')
     v = [x for x in _w(t) if x in VAGUE]
     if v: issues.append('vague words: ' + ', '.join(sorted(set(v))))
-    if re.search(r'\d', t) or re.search(r'\b(19|20)\d\d\b', t): good.append('concrete number/date')
-    elif not any(x[:1].isupper() for x in t.split()[1:] if x.lower() not in STOP and len(x) > 3): issues.append('no number, name or date')
-    if t.endswith('?'): good.append('open question')
+    if re.search(r'[\d۰-۹]', t): good.append('concrete number/date')
+    elif re.search(r'[a-zA-Z]', t) and not any(x[:1].isupper() for x in t.split()[1:] if x.lower() not in STOP and len(x) > 3): issues.append('no number, name or date')
+    if t.endswith('?') or t.endswith('؟'): good.append('open question')
     if not [x for x in _w(t)[:3] if x not in STOP]: issues.append('first 3 words are filler')
     if thumb:
         shared = (set(_w(t)) - STOP) & (set(_w(thumb)) - STOP)
         if shared: issues.append('thumbnail repeats title words: ' + ', '.join(sorted(shared)))
         else: good.append('thumbnail adds new words')
-        if len(_w(thumb)) > 3: issues.append('thumbnail text > 3 words')
+        if len(_w(thumb)) > 4: issues.append('thumbnail text > 4 words')
     return {'title': t, 'thumb': thumb, 'score': max(0, min(100, 100 - 14 * len(issues) + 4 * len(good))), 'issues': issues}
 
 
-_CONCRETE = re.compile(r"(\$\d|\d[\d,.]*\s?(%|k|m|bn|x)?|\b\d+\s?(second|minute|hour|day|week|month|year)s?\b)", re.I)
-_YOU = re.compile(r"\b(you|your|you're|yourself)\b", re.I)
-_STAKE = re.compile(r"\b(lose|lost|losing|waste|cost|costs|risk|broke|debt|vanish\w*|disappear\w*|stolen|steal\w*|never|before|crash\w*|gone)\b", re.I)
-_CUR = re.compile(r"\b(why|how|what|which|until|but|nobody|almost|except|reason|actually|really|where|who)\b", re.I)
+_CONCRETE = re.compile(r"(\$\d|[\d۰-۹][\d۰-۹,.٫٬]*\s?(%|٪|k|m|bn|x|میلیارد|میلیون|هزار|درصد|برابر)?|\b\d+\s?(second|minute|hour|day|week|month|year)s?\b)", re.I)
+# English + Persian patterns (owner Nov 8: Persian channel). Persian has no \b-friendly word edges with ZWNJ, so match plain substrings.
+_YOU = re.compile(r"\b(you|your|you're|yourself)\b|(?:^|\s)(تو|شما|خودت|خودتون|پولت|پولتون|حسابت|جیبت|جیب\u200cات)(?=\s|$|[؟?!.،])", re.I)
+_STAKE = re.compile(r"\b(lose|lost|losing|waste|cost|costs|risk|broke|debt|vanish\w*|disappear\w*|stolen|steal\w*|never|before|crash\w*|gone)\b|"
+                    r"(از دست|ضرر|باخت|بدهی|ورشکست|نابود|سقوط|دزدید|غیب|دود |آب شد|هیچ‌وقت|هرگز|قبل از|سوخت|کلاهبردار)", re.I)
+_CUR = re.compile(r"\b(why|how|what|which|until|but|nobody|almost|except|reason|actually|really|where|who)\b|"
+                  r"(چرا|چطور|چگونه|چه چیزی|کجا|کی |کدام|ولی|اما|هیچ‌کس|تقریباً|جز |دلیل|در واقع|واقعاً|راستش)", re.I)
 
 
 def hook_score(t):
@@ -58,8 +64,8 @@ def hook_score(t):
     spec = max(0, min(100, 34 + 22 * len(_CONCRETE.findall(t)) - 16 * sum(x in VAGUE for x in w)))
     addr = max(0, min(100, 26 + 20 * len(_YOU.findall(t)) + (30 if _YOU.search(' '.join(t.split()[:6])) else 0)))
     stak = max(0, min(100, 22 + 26 * len(_STAKE.findall(t)) + (14 if _CONCRETE.search(t) else 0)))
-    cur = max(0, min(100, 24 + 17 * len(_CUR.findall(t)) + (18 if t.strip().endswith('?') else 0)
-                     - (18 if re.search(r'\b(because|so that|which means)\b', t, re.I) else 0)))
+    cur = max(0, min(100, 24 + 17 * len(_CUR.findall(t)) + (18 if t.strip().endswith(('?', '؟')) else 0)
+                     - (18 if re.search(r'\b(because|so that|which means)\b|چون|یعنی اینکه', t, re.I) else 0)))
     n = len(w); brev = 100 if 9 <= n <= 30 else (max(30, 100 - (9 - n) * 11) if n < 9 else max(10, 100 - (n - 30) * 6))
     parts = {'specificity': spec, 'address': addr, 'stakes': stak, 'curiosity': cur, 'brevity': brev}
     v = round(0.6 * sum(parts.values()) / 5 + 0.4 * min(parts.values()))

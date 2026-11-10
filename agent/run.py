@@ -46,6 +46,11 @@ def main():
         gap = (dt.datetime.utcnow() - dt.datetime.fromisoformat(last)).total_seconds() / 3600
         if gap < CFG['schedule']['min_hours_between_episodes']:
             print(f'last episode {gap:.0f} h ago -> skip'); return
+    if not a.dry_run:
+        from . import tts
+        left = tts.credits_left_this_month()
+        if left is not None and left < 12000:
+            print(f'ElevenLabs: only {left} of this channel\'s monthly credits left -> no new episode this month'); return
     if not a.topic:
         try:
             from . import scout
@@ -72,17 +77,17 @@ def run_tl(a, topic, ep_dir):
     shard.concat(ep_dir)
     long_final, shorts, track = tl.finish(ep, ep_dir)
     pkg = package.build(ep, ep_dir)
-    disclaimer = 'Educational content only — not financial advice.'
-    desc = '\n'.join(l for l in pkg['description'].split('\n') if not l.strip().lower().startswith('music:'))   # the real credit is added below
-    if 'not financial advice' not in desc.lower(): desc += '\n\n' + disclaimer
+    disclaimer = CFG.get('disclaimer') or 'این ویدیو فقط آموزشی است و توصیه‌ی مالی یا سرمایه‌گذاری نیست.'
+    desc = '\n'.join(l for l in pkg['description'].split('\n') if not l.strip().lower().startswith('music:') and 'توصیه‌ی مالی' not in l and 'توصیه مالی' not in l)
+    desc += '\n\n' + disclaimer          # owner's exact disclaimer line, always last before the music credit
     pkg['description'] = (desc + '\n\n' + audio.credit(track))[:4900]
-    tags = ' '.join('#' + h.lstrip('#') for h in ep['upload'].get('hashtags', [])[:3])
+    tags = ' '.join('#' + h.lstrip('#').replace(' ', '_') for h in ep['upload'].get('hashtags', [])[:3])
     spk = []
     for k, f, st in shorts:
         s = ep['shorts'][k]
         title = (s.get('title') or ep['upload']['title'])[:85]
         spk.append({'k': k, 'file': str(f), 'title': title + ' #Shorts',
-                    'description': (s.get('caption') or s['lines'][0]['text']) + '\n\nThe full story: {FULL_URL}\n\n' + tags + '\n\n' + disclaimer + '\n\n' + audio.credit(st)})
+                    'description': (s.get('caption') or s['lines'][0]['text']) + '\n\nداستان کامل: {FULL_URL}\n\n' + tags + '\n\n' + disclaimer + '\n\n' + audio.credit(st)})
     pkg['shorts'] = spk; save(ep_dir / 'package.json', pkg)
     if a.dry_run:
         print('dry run: outputs in', ep_dir); return
@@ -104,11 +109,13 @@ def run_tl(a, topic, ep_dir):
             svid = youtube.upload(yt, s['file'], s['title'], s['description'].replace('{FULL_URL}', 'https://youtu.be/' + vid), pkg['tags'][:10],
                                   publish_at=when, synthetic=True)
             sids.append(svid)
-            try: youtube.pin_comment_text(yt, svid, 'The full story is here: https://youtu.be/' + vid)
+            try: youtube.pin_comment_text(yt, svid, 'داستان کامل اینجاست: https://youtu.be/' + vid)
             except Exception as e: print('short comment not posted:', e)
         except Exception as e: print('short upload failed', e)
     try: youtube.pin_comment_text(yt, vid, pkg['pinned_comment'])
     except Exception as e: print('comment not posted (will work once public):', e)
+    try: from . import tts; tts.commit_usage()
+    except Exception as e: print('usage tally', e)
     mark_done(topic['id'], {'topic': topic['title'], 'video_id': vid, 'short_ids': sids, 'publish_at': at, 'format': 'tl', 'fmt': ep.get('fmt'), 'music': track,
                             'built_at': dt.datetime.utcnow().isoformat(timespec='seconds')})
     save(ep_dir / 'result.json', {'video': vid, 'shorts': sids, 'publish_at': at, 'pinned_comment': pkg['pinned_comment']})

@@ -13,14 +13,14 @@ const sp = (f: number, at: number, d = 14, s = 120) => spring({frame: f - at, fp
 const R = 300;
 type N = {label: string; icon: string; a: number; c: string};
 export const NODES: Record<Exclude<MoneyNode, 'you' | 'none'>, N> = {
-  central_bank: {label: 'CENTRAL BANK', icon: 'vault', a: -90, c: '#FFD23F'},
-  bank: {label: 'BANK', icon: 'bank', a: -45, c: '#2EE6A6'},
-  market: {label: 'MARKET', icon: 'chartup', a: 0, c: '#5CC8FF'},
-  company: {label: 'COMPANY', icon: 'factory', a: 45, c: '#B79CFF'},
-  home: {label: 'HOME', icon: 'house', a: 90, c: '#FF9F5A'},
-  debt: {label: 'DEBT', icon: 'card', a: 135, c: '#FF5A6E'},
-  government: {label: 'GOVERNMENT', icon: 'capitol', a: 180, c: '#7FA8FF'},
-  gold: {label: 'GOLD', icon: 'gold', a: -135, c: '#FFC34D'},
+  central_bank: {label: 'بانک مرکزی', icon: 'vault', a: -90, c: '#FFD23F'},
+  bank: {label: 'بانک', icon: 'bank', a: -45, c: '#2EE6A6'},
+  market: {label: 'بازار', icon: 'chartup', a: 0, c: '#5CC8FF'},
+  company: {label: 'شرکت‌ها', icon: 'factory', a: 45, c: '#B79CFF'},
+  home: {label: 'مسکن', icon: 'house', a: 90, c: '#FF9F5A'},
+  debt: {label: 'بدهی', icon: 'card', a: 135, c: '#FF5A6E'},
+  government: {label: 'دولت', icon: 'capitol', a: 180, c: '#7FA8FF'},
+  gold: {label: 'طلا', icon: 'gold', a: -135, c: '#FFC34D'},
 };
 export const nodePos = (n: MoneyNode): [number, number] => {
   if (n === 'you' || n === 'none' || !(n in NODES)) return [0, 0];
@@ -65,7 +65,7 @@ export const MoneyMap: React.FC<{x: number; y: number; s: number; focus: MoneyNo
       const cx = fx + (tx - fx) * t, cy = fy + (ty - fy) * t - Math.sin(t * Math.PI) * 70;
       return <g key={j} transform={`translate(${cx} ${cy})`}>
         <circle r={15} fill={TL.gold} stroke="#FFF3B0" strokeWidth={3} />
-        <text y={7} textAnchor="middle" fontFamily="F_anton" fontSize={20} fill={TL.bg}>$</text>
+        <text y={7} textAnchor="middle" fontFamily="F_vazirb" fontSize={20} fill={TL.bg}>$</text>
       </g>;
     })}
     {/* the 8 places */}
@@ -78,7 +78,7 @@ export const MoneyMap: React.FC<{x: number; y: number; s: number; focus: MoneyNo
         <circle cx={nx} cy={ny} r={r} fill={on ? nd.c : TL.bg2} fillOpacity={on ? 0.22 + 0.1 * pulse : 0.9}
           stroke={on ? nd.c : TL.mute} strokeWidth={on ? 6 : 3} />
         <Glyph name={nd.icon} x={nx} y={ny} s={on ? 0.62 + 0.12 * g : 0.6} color={on ? '#FFFFFF' : TL.mute} w={on ? 7 : 5} />
-        <text x={nx} y={ly} textAnchor="middle" fontFamily="F_inter" fontWeight={800} fontSize={on ? 30 : 24} letterSpacing={3}
+        <text x={nx} y={ly} direction="rtl" textAnchor="middle" fontFamily="F_vazir" fontWeight={800} fontSize={on ? 30 : 24}
           fill={on ? nd.c : TL.mute} opacity={on ? 1 : 0.85}>{nd.label}</text>
       </g>;
     })}
@@ -87,6 +87,6 @@ export const MoneyMap: React.FC<{x: number; y: number; s: number; focus: MoneyNo
       stroke={youOn ? TL.line : TL.line} strokeOpacity={youOn ? 1 : 0.55} strokeWidth={youOn ? 7 : 4} />
     <circle r={100 + 8 * pulse} fill="none" stroke={TL.line} strokeOpacity={youOn ? 0.35 : 0.12} strokeWidth={3} />
     <Glyph name="person" x={0} y={-8} s={youOn ? 0.95 : 0.85} color={youOn ? '#FFFFFF' : TL.line} w={youOn ? 8 : 6} />
-    <text y={60} textAnchor="middle" fontFamily="F_inter" fontWeight={800} fontSize={22} letterSpacing={4} fill={youOn ? '#FFFFFF' : TL.line}>YOU</text>
+    <text y={60} textAnchor="middle" fontFamily="F_vazir" fontWeight={800} fontSize={26} fill={youOn ? '#FFFFFF' : TL.line} direction="rtl">شما</text>
   </g>;
 };
