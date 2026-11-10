@@ -172,10 +172,12 @@ Sentences with a key number or a money flow are graphics (stat, chart, growth, c
 Widget rules: all labels/texts/items are short PERSIAN text with no English words or Latin letters (numbers go in the numeric fields; currency as the word دلار/تومان in "unit"); the widget must literally show what the sentence says; use the sentence's real numbers; vary the widget types; "icon" at most
 1 in 4 graphic sentences; "question" only for real open questions; labels are short (≤30 chars).
 "words" = 1-3 punchy Persian key words lifted from the sentence (max 3 items, e.g. ["بانک", "پول می‌سازد"]), never the whole sentence.
+Owner's rule: a NEW motion graphic about exactly what the narrator says every ~4 seconds. So for every sentence longer than ~10 words also
+give "visual2" + "words2": a second, different widget for the SECOND half of the sentence (what is said there), never a repeat of "visual".
 All widget labels/texts/items/myth/fact/from/to are short Persian; "unit" may be a symbol (%, x) or a short Persian word (میلیارد, میلیون);
 "prefix" may be "$" for dollars.
 Sentences (index: text): {json.dumps({i: (t['text'] if isinstance(t, dict) else t) for i, t in enumerate(lines)}, ensure_ascii=False)}
-Return JSON: {{"beats": [{{"i": int, "broll": str|null, "node": NODE, "visual": {{...}}, "words": [str]{stage_key}}}]}} — one per sentence, same order.""", max_tokens=16000)
+Return JSON: {{"beats": [{{"i": int, "broll": str|null, "node": NODE, "visual": {{...}}, "words": [str], "visual2": {{...}}|null, "words2": [str]|null{stage_key}}}]}} — one per sentence, same order.""", max_tokens=16000)
 
 
 def _num(x):
@@ -220,6 +222,8 @@ def _line(text, b, fallback_node='none', stage=False):
     words = [w for w in (b.get('words') or []) if isinstance(w, str)][:4] or text.split()[:3]
     q = b.get('broll'); q = q.strip()[:60] if isinstance(q, str) and q.strip() and q.strip().lower() not in ('null', 'none') else None
     out = {'text': text, 'node': nd, 'words': words, 'visual': _fix_visual(b.get('visual'), words, nd), 'broll': q}
+    w2 = [w for w in (b.get('words2') or []) if isinstance(w, str)][:4]
+    if isinstance(b.get('visual2'), dict) and w2: out['visual2'] = _fix_visual(b['visual2'], w2, nd); out['words2'] = w2
     if stage: out['stage'] = b.get('stage') or None
     return out
 
@@ -281,6 +285,23 @@ def props(lines, stages, segs, vertical):
                       'visual': ln['visual'], 'words': ln['words'], 'q': ln.get('broll'), 'text': ln['text']})
     total = int(round((segs[-1]['end'] + 1.5) * FPS))
     for k, b in enumerate(beats): b['end'] = beats[k + 1]['start'] if k + 1 < len(beats) else total
+    # owner (Nov 10): a new motion graphic every ~4 s -> a sentence that runs longer than 5.5 s is split in two beats; the second half
+    # gets its own visual (visual2/words2 from the storyboard) or, failing that, the next sentence's key words as a big type card.
+    out = []
+    for k, (b, ln) in enumerate(zip(beats, lines)):
+        d = b['end'] - b['start']
+        if d > 5.5 * FPS:
+            n = 3 if d > 11 * FPS else 2
+            step = d // n; v2 = ln.get('visual2'); w2 = ln.get('words2')
+            for j in range(n):
+                x = dict(b); x['start'] = b['start'] + j * step; x['end'] = b['start'] + (j + 1) * step if j < n - 1 else b['end']
+                if j == 1 and v2: x['visual'] = v2; x['words'] = w2
+                elif j >= 1:            # no second widget: the key words become a big type card (still a change of picture)
+                    x['visual'] = {'type': 'question', 'text': ' '.join(w2 or b['words'])[:60]}; x['words'] = []
+                out.append(x)
+        else:
+            out.append(b)
+    beats = out
     # owner (Nov 9): every topic gets its own colour palette (rotates with the episode count, never the same twice in a row)
     pal = len(load(ROOT / 'data/history.json', {'episodes': []}).get('episodes', []))
     return {'beats': beats, 'marks': marks, 'frames': total, 'vertical': vertical, 'palette': pal,
