@@ -37,7 +37,9 @@ Persian (محاوره‌ی روان و درست، نه کتابی و نه لات
 ## Formats (rotate; never the same as the last two episodes)
 Timeline story, countdown list, myth busting, true case story, what-if experiment. One open loop in the hook, paid off at the end.
 Fixed look: flat 2D — cream / navy / mint sections (the hook in orange), key words rising out of a mask with the key word on a coloured
-marker, flat badges and icons, white cards, orange/yellow/teal accents, red for losses, the flat MONEY MAP. No mascot, no AI images in the video.
+marker, flat badges and icons, white cards, orange/yellow/teal accents, red for losses, the flat MONEY MAP. No mascot.
+AI SCENE PICTURES (owner Nov 12): every ~6-10 s a cinematic picture shows WHO / WHAT / WHERE we talk about (the real company building, people, place, era);
+the flat graphics and Persian typography run on top of it. The thumbnail picture shows the real subject recognisably.
 
 ## Script (long video ≈ 8:10–8:50, 1120–1220 words)
 - Scene 1 = HOOK: cold open in the most surprising, most visual moment; a burning question; a concrete payoff promise by ~20 s;
