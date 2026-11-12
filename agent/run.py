@@ -7,7 +7,8 @@ from .common import ROOT, WORK, load, save, CFG
 def pick_topic():
     topics = load(ROOT / 'data/topics.json')
     tl_ = lambda x: x.get('format') == 'timeline'
-    return next((x for x in topics if x['status'] == 'next' and tl_(x)), None) \
+    prep = next((x for x in topics if x['status'] in ('next', 'todo') and x.get('prepared')), None)   # already voiced (owner Nov 12)
+    return prep or next((x for x in topics if x['status'] == 'next' and tl_(x)), None) \
         or next((x for x in topics if x['status'] == 'todo' and x.get('source') == 'user'), None) \
         or next((x for x in topics if x['status'] == 'todo' and tl_(x)), None) \
         or next(x for x in topics if x['status'] in ('next', 'todo'))
@@ -26,6 +27,20 @@ def mark_done(topic_id, entry):
     save(ROOT / 'data/history.json', h)
 
 
+def next_slot():
+    """Next free publish slot: every_days after the latest scheduled long video (never in the past), at publish_long_utc;
+    the Short publish_short_utc on the same day. Returns ISO strings for YouTube publishAt."""
+    sc = CFG['schedule']; every = int(sc.get('every_days', 2))
+    hh, mm = map(int, sc['publish_long_utc'].split(':')); sh, sm = map(int, sc['publish_short_utc'].split(':'))
+    now = dt.datetime.utcnow()
+    last = max((dt.datetime.fromisoformat(e['publish_at'].rstrip('Z')) for e in load(ROOT / 'data/history.json', {'episodes': []})['episodes']
+                if e.get('publish_at')), default=None)
+    day = (last + dt.timedelta(days=every)).date() if last else now.date()
+    t = dt.datetime.combine(day, dt.time(hh, mm))
+    while t < now + dt.timedelta(hours=1): t += dt.timedelta(days=every)
+    return t.isoformat() + 'Z', dt.datetime.combine(t.date(), dt.time(sh, sm)).isoformat() + 'Z'
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--dry-run', action='store_true', help='build everything, do not upload')
@@ -39,13 +54,15 @@ def main():
 
     if CFG['schedule'].get('paused') and os.environ.get('GITHUB_EVENT_NAME') == 'schedule':
         print('schedule paused in config/channel.json -> skip'); return
-    # cron runs twice a day (main + backup); only one episode per day
+    # owner (Nov 12): build as many episodes per day as the YouTube upload quota allows; each one is scheduled into the next free
+    # every-other-day slot (long 17:00 Istanbul, Short 17:30). A cap per day keeps us under the daily API quota.
     h = load(ROOT / 'data/history.json')
-    last = max((e.get('built_at') for e in h['episodes'] if e.get('built_at')), default=None)
-    if last and not a.topic and not a.dry_run:
-        gap = (dt.datetime.utcnow() - dt.datetime.fromisoformat(last)).total_seconds() / 3600
-        if gap < CFG['schedule']['min_hours_between_episodes']:
-            print(f'last episode {gap:.0f} h ago -> skip'); return
+    today = dt.datetime.utcnow().strftime('%Y-%m-%d')
+    built_today = sum(1 for e in h['episodes'] if (e.get('built_at') or '').startswith(today))
+    if not a.topic and not a.dry_run and built_today >= int(CFG['schedule'].get('max_episodes_per_day', 3)):
+        print(f'{built_today} episodes built today (daily upload quota) -> skip'); return
+    if not a.topic and not a.dry_run and not any(x['status'] in ('next', 'todo') and x.get('prepared') for x in load(ROOT / 'data/topics.json')):
+        print('no voiced episode waiting (run the Voice batch workflow) -> skip'); return
     if not a.dry_run:
         from . import tts
         left = tts.credits_left_this_month()
@@ -70,6 +87,9 @@ def run_tl(a, topic, ep_dir):
     from . import tl, package, audio, shard
     print('== topic:', topic['title'])
     if a.stage != 'finish':
+        try:
+            from . import batch; batch.restore(topic, ep_dir)        # voices made in the monthly batch
+        except Exception as e: print('restore failed:', e)
         tl.build(topic, ep_dir)
         if a.stage == 'build':
             print('build stage done:', ep_dir); return
@@ -96,7 +116,7 @@ def run_tl(a, topic, ep_dir):
     for old in [x for x in os.environ.get('REPLACE_IDS', '').replace(',', ' ').split() if x]:
         try: yt.videos().delete(id=old).execute(); print('deleted old upload', old)
         except Exception as e: print('could not delete', old, e)
-    at = youtube.publish_time(CFG['schedule']['publish_long_utc'])
+    at, short_at = next_slot()
     thumb = ep_dir / 'thumbnail.jpg'
     vid = youtube.upload(yt, long_final, pkg['title'], pkg['description'], pkg['tags'], thumb if thumb.exists() else None, publish_at=at, synthetic=True)
     try: youtube.add_to_playlist(yt, vid)
@@ -105,7 +125,7 @@ def run_tl(a, topic, ep_dir):
     for s in spk:
         try:
             # Short #1 30 min after the long video, Short #2 the next afternoon (US morning) so the channel gets a fresh upload every half day
-            when = youtube.publish_time(CFG['schedule']['publish_short_utc']) if s['k'] == 0 else youtube.publish_next(CFG['schedule'].get('publish_short2_utc', '14:00'))
+            when = short_at
             svid = youtube.upload(yt, s['file'], s['title'], s['description'].replace('{FULL_URL}', 'https://youtu.be/' + vid), pkg['tags'][:10],
                                   publish_at=when, synthetic=True)
             sids.append(svid)

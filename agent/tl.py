@@ -255,8 +255,11 @@ def voice_text(ep):
     for k in range(0, len(flat), 60):
         part = flat[k:k + 60]
         r = llm.ask_json(f"""Prepare these Persian narration sentences for a Persian text-to-speech voice.
-For each sentence return the SAME words and order, except: (1) add Arabic diacritics (اعراب: َ ِ ُ ّ) ONLY on words a reader could
-pronounce wrongly (e.g. کُرد/کَرد، مِلک/مُلک، the ezafe -ِ where it changes the meaning) - most words get none; (2) write every number,
+Owner (Nov 12): correct pronunciation is VERY important - a Persian TTS voice guesses every vowel that is not written.
+For each sentence return the SAME words and order, except: (1) add Persian diacritics (اعراب: َ ِ ُ ّ ْ) on EVERY word whose vowels a
+narrator could read in more than one way: homographs (کُرد/کَرد، مِلک/مُلک، شِکَر/شُکر), the ezafe kasra between linked words
+(بانکِ مرکزی، ارزشِ پول) wherever a reader could miss it, rare or Arabic-origin words, and every foreign name or loanword
+(مِدوف، لِمان بِرادِرز، بیت‌کوین stays as is when it is common). Common unambiguous words (است، که، این، پول، بانک) get none; (2) write every number,
 year, percent, currency symbol and abbreviation fully in Persian words as it should be spoken (۱۹۸۷ -> هزار و نهصد و هشتاد و هفت،
 ۶۵٪ -> شصت و پنج درصد، $17B -> هفده میلیارد دلار); (3) foreign names in Persian letters. Do not add or remove anything else.
 Sentences: {json.dumps([l['text'] for l in part], ensure_ascii=False)}
@@ -322,7 +325,7 @@ def _visuals(pr, ep_dir, kind, context):
     return broll.attach(pr, ep_dir, kind)
 
 
-def build(topic, ep_dir, dry_run=False):
+def build(topic, ep_dir, dry_run=False, voice_only=False):
     ep = load(ep_dir / 'episode.json')
     notes = (ep_dir / 'research.md').read_text() if (ep_dir / 'research.md').exists() else ''
     if not ep:
@@ -346,7 +349,25 @@ def build(topic, ep_dir, dry_run=False):
         except Exception as e: print('voice text prep failed (numbers are still spelled out):', e)
     # voice: long (length guard) + Shorts
     need = CFG['long_video']['min_seconds'] + 3
-    for attempt in range(3):
+    # owner (Nov 12): ElevenLabs credits are limited -> the text is made long enough BEFORE voicing and every line is voiced once
+    paid = CFG['voice'].get('engine') == 'elevenlabs'
+    if paid and long_words(ep) < llm.WORDS_MIN - 40 and not (ep_dir / 'vo_long.wav').exists():
+        ep = expand(ep, notes, llm.WORDS_MIN + 40); ep = storyboard(ep); ep.pop('voiced_text', None)
+        try: ep = voice_text(ep)
+        except Exception as e: print('voice text prep failed:', e)
+        save(ep_dir / 'episode.json', ep)
+    for s_ in ep.get('shorts', [])[:N_SHORTS]:
+        if paid and _wc([l['text'] for l in s_['lines']]) > 92 and not (ep_dir / 'vo_short0.wav').exists():
+            out = llm.ask_json(f"""Shorten this Persian YouTube Short script to 75-88 words (30-40 seconds). Keep line 1 (the hook), the turn,
+the line that sends viewers to the full video and the loop. Return ONLY {{"lines": [str]}}.
+Lines: {json.dumps([l['text'] for l in s_['lines']], ensure_ascii=False)}""", max_tokens=3000)
+            if out.get('lines'):
+                bs = board_lines(out['lines'], f"{ep['title']} — {SHORT_CTX}")
+                s_['lines'] = [_line(t, b, stage=True) for t, b in zip(out['lines'], bs)]
+                from .fa_text import speakable
+                for l in s_['lines']: l['say'] = speakable(l['text'])
+                save(ep_dir / 'episode.json', ep)
+    for attempt in range(1 if paid else 3):
         lines = long_lines(ep)
         segs = _voice([l.get('say') or l['text'] for l in lines], [len(s['lines']) for s in ep['scenes']], ep_dir / 'vo_long.wav', ep_dir / 'segs_long.json')
         print(f"voice long: {segs[-1]['end']:.0f}s (need {need}s), {long_words(ep)} words")
@@ -356,11 +377,15 @@ def build(topic, ep_dir, dry_run=False):
     # 'narration' view so package.py chapters work
     for sc in ep['scenes']: sc['narration'] = [l['text'] for l in sc['lines']]
     save(ep_dir / 'episode.json', ep)
+    if voice_only:                      # batch voicing (owner Nov 12): script + voices now, pictures/render on the build day
+        for k, s_ in enumerate(ep.get('shorts', [])[:N_SHORTS]):
+            _voice([l.get('say') or l['text'] for l in s_['lines']], [len(s_['lines'])], ep_dir / f'vo_short{k}.wav', ep_dir / f'segs_short{k}.json')
+        return ep
     stages = [sc.get('stage') for sc in ep['scenes'] for _ in sc['lines']]
     from . import broll
     save(ep_dir / 'props_long.json', _visuals(props(long_lines(ep), stages, segs, False), ep_dir, 'long', ep['title']))
     for k, s in enumerate(ep.get('shorts', [])[:N_SHORTS]):
-        for attempt in range(3):
+        for attempt in range(1 if paid else 3):
             sg = _voice([l.get('say') or l['text'] for l in s['lines']], [len(s['lines'])], ep_dir / f'vo_short{k}.wav', ep_dir / f'segs_short{k}.json')
             print(f'voice short {k}: {sg[-1]["end"]:.0f}s')
             if sg[-1]['end'] <= 41 or attempt == 2: break          # owner (Nov 9): Shorts 30-40 s
