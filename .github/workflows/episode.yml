@@ -2,9 +2,8 @@ name: Make episode
 
 on:
   schedule:
-    - cron: '7 5 * * *'        # 05:07 UTC (GitHub often starts scheduled runs hours late, so start early)
-    - cron: '7 9 * * *'        # backup run 09:07 UTC; run.py makes one episode every other day (40 h gap guard)
-                               # Persian channel (Nov 8): long video publishes 17:00 UTC (20:30 Tehran), the Short 17:30 UTC
+    - cron: '17 */4 * * *'     # owner (Nov 12): every 4 h one episode is built from the voiced batch (max 3 a day = YouTube quota);
+                               # each is scheduled into the next every-other-day slot: long 17:00 Istanbul (14:00 UTC), Short 17:30
   workflow_dispatch:
     inputs:
       dry_run:
@@ -64,6 +63,7 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -z "$YT_TOKEN_JSON" ] && [ -f data/yt_token.enc ] && [ -n "$YT_CLIENT_SECRET" ]; then
             RT=$(openssl enc -d -aes-256-cbc -pbkdf2 -a -A -in data/yt_token.enc -pass env:YT_CLIENT_SECRET); echo "::add-mask::$RT"

@@ -1,0 +1,52 @@
+name: Voice batch
+
+# Owner (Nov 12): write + voice the month's episodes in advance (ElevenLabs credits expire monthly).
+# Each voiced episode is stored as an asset of the GitHub release "prepared"; nothing goes to YouTube here.
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'How many episodes to voice in this run'
+        default: '30'
+
+permissions:
+  contents: write
+concurrency: voice-batch
+
+env:
+  YT_CLIENT_ID: 284823645962-pk32li91jr26p2v8va7j8kric6evrqh6.apps.googleusercontent.com
+
+jobs:
+  voices:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11', cache: 'pip'}
+      - name: Deps
+        timeout-minutes: 15
+        run: bash .github/scripts/deps.sh && pip install -r requirements.txt
+      - name: Write and voice episodes
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          YT_TOKEN_JSON: ${{ secrets.YT_TOKEN_JSON }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          GH_TOKEN: ${{ github.token }}
+          LIMIT: ${{ inputs.limit }}
+          BUDGET_MIN: '320'
+        run: |
+          if [ -z "$YT_TOKEN_JSON" ] && [ -f data/yt_token.enc ] && [ -n "$YT_CLIENT_SECRET" ]; then
+            RT=$(openssl enc -d -aes-256-cbc -pbkdf2 -a -A -in data/yt_token.enc -pass env:YT_CLIENT_SECRET); echo "::add-mask::$RT"
+            export YT_TOKEN_JSON=$(RT="$RT" python3 -c "import json,os;print(json.dumps({'client_id':os.environ['YT_CLIENT_ID'],'client_secret':os.environ['YT_CLIENT_SECRET'],'refresh_token':os.environ['RT'],'token_uri':'https://oauth2.googleapis.com/token'}))")
+          fi
+          python -m agent.batch
+      - name: Save progress
+        if: always()
+        run: |
+          git config user.name "money-decoded-agent"; git config user.email "agent@users.noreply.github.com"
+          git add data/ && git commit -m "voice batch: topics + voiced episodes [skip ci]" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase --autostash -q origin main && git push && break; sleep 5; done
