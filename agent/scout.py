@@ -87,6 +87,13 @@ Viral videos found (English ones = proven ideas to remake in Persian; Persian on
 
 Our existing topics (never repeat or closely duplicate): {json.dumps(existing, ensure_ascii=False)}
 
+OWNER'S TOPIC RULES (Nov 12): Persian viewers do not know foreign bank/finance names (e.g. Lehman Brothers) or jargon (bonds, mining,
+deflation, interest-rate policy) - such topics are OUT. Topics must touch the viewer's OWN life in simple everyday Persian: money in daily life
+(inflation, prices, savings losing value, gold/dollar/coins, banks, where money comes from), making money (income, side income, money mistakes,
+businesses that earn while you sleep), stories of famous BRANDS everyone knows (always write «برند» before the name, e.g. «برند زارا ...»),
+how the rich think and spend, scams, and the psychology of buying. Titles are a clear, curious question or claim that says exactly what the
+viewer will see, e.g. «چرا کازینوها همیشه برنده‌ان و ریاضی پشت باختِ ما چیه؟», «برند مک‌دونالد در اصل از همبرگر پول درنمیاره!».
+Never topics that tell people loans/debt are bad or good (opinions differ).
 Pick the {want + 2} best proven ideas that fit our format (money over time: crashes, bubbles, bank runs, inflation, debt, compound growth,
 scams, famous fortunes, taxes, housing, how institutions make money; skip: stock/crypto picks, "get rich quick", trading signals,
 price predictions, gambling, MLM, party politics, music, pranks, kids). Prefer high multiples (3x+) first, then big view counts. For each pick, name the hook formula of the original title in 'angle'.
