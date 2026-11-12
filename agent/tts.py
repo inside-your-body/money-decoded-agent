@@ -127,7 +127,7 @@ def pace(raw_wav, out_wav, words):
     metallic sound. The factor is computed for every file (never a fixed number):
         factor = raw duration / (words / 2.96), capped at 1.33 (never 1.4).
     If it is above 1.33 the long pauses are shortened first (silenceremove, 0.35 s) and the factor is computed again; still above
-    -> 1.33 and the video is a little longer. ONE speed-up only (rubberband with the formants kept if ffmpeg has it, else ONE atempo),
+    -> 1.33 and the video is a little longer. ONE speed-up only: ONE atempo (owner's choice by ear, Nov 12; rubberband sounded "in a hall"),
     44.1 kHz WAV out (no lossy step here). Returns the report."""
     import subprocess, shutil as _sh
     R = V.get('pace', {}); wps = float(R.get('words_per_second', 2.96)); cap = float(R.get('max_factor', 1.33))
@@ -147,7 +147,9 @@ def pace(raw_wav, out_wav, words):
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(src), '-ar', '44100', '-c:a', 'pcm_s16le', str(out_wav)], check=True)
         rep['filter'] = 'none'
     else:
-        flt = (f'rubberband=tempo={f:.4f}:pitchq=quality:formant=preserved' if _has_rubberband() else f'atempo={f:.4f}')
+        # owner (Nov 12, approved by ear): ONE atempo - rubberband made the voice sound like it was in a hall
+        use_rb = R.get('filter') == 'rubberband' and _has_rubberband()
+        flt = f'rubberband=tempo={f:.4f}:pitchq=quality:formant=preserved' if use_rb else f'atempo={f:.4f}'
         rep['filter'] = flt.split('=')[0]
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(src), '-af', flt, '-ar', '44100', '-c:a', 'pcm_s16le', str(out_wav)], check=True)
     rep['final_seconds'] = round(_dur(out_wav), 2)
