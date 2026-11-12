@@ -1,0 +1,13 @@
+{
+ "words": 176,
+ "raw_seconds": 74.7,
+ "factor_raw": 1.256,
+ "factor": 1.256,
+ "filter": "rubberband",
+ "final_seconds": 59.46,
+ "words_per_second": 2.96,
+ "ok": true,
+ "format_from_elevenlabs": "pcm_44100",
+ "model": "eleven_v4",
+ "sample_rate_raw": 44100
+}
