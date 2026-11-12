@@ -626,13 +626,14 @@ THUMB_TEMPLATE = """FIXED CHANNEL TEMPLATE (owner Nov 12, from his reference) - 
 
 # owner (Nov 12): a Short has no custom thumbnail -> its FIRST frames show the same template as a vertical cover
 VERTICAL_COVER = """
-VERTICAL SHORT COVER (9:16): the same template, re-arranged for a phone screen: PART A in huge black letters in the upper part, the subject
-in the middle, PART B on the red box just below the subject's face. YouTube draws buttons over a Short, so EVERY letter must stay inside the
+VERTICAL SHORT COVER (9:16): the same template, re-arranged for a phone screen: PART A in huge black letters in the upper part (starting
+below the top 16%), the subject in the middle, PART B on the red box right next to / just under the subject's face and ENDING ABOVE 70% of the
+height (the lower 30% of the picture shows only the subject's body or empty background). YouTube draws buttons over a Short, so EVERY letter must stay inside the
 safe area: at least 16% of the height away from the top, at least 26% of the height away from the bottom, and at least 10% of the width away
 from the left and right edges (the left and right 8% may be cropped). Nothing important in the bottom quarter."""
 
 
-def _text_check(img, text):
+def _text_check(img, text, vertical=False):
     """Claude vision: is the Persian headline in the AI thumbnail spelled exactly right and readable?"""
     import base64
     content = [{'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': base64.b64encode(pathlib.Path(img).read_bytes()).decode()}},
@@ -641,7 +642,9 @@ Read the Persian text in the picture letter by letter. Return JSON only: {{"read
 exact=true only if every word is spelled exactly right (all letters and dots correct, right-to-left, no missing/extra/garbled letters);
 readable=true if it is big and clear on a phone; margin_ok=false if any letter is closer than ~5% of the width/height to an edge
 or is cut off; extra_text=true if there is any OTHER text besides the headline and the real name/logo of
-the subject (e.g. a company name on its building is fine)."""}]
+the subject (e.g. a company name on its building is fine).""" + ("""
+This is the VERTICAL cover of a YouTube Short: YouTube covers the top 14% and the bottom 28% with buttons and captions. Add "safe_ok": false
+if ANY letter of the headline is in the top 14% or the bottom 28% of the image height, else true.""" if vertical else '')}]
     try:
         return llm._repair(llm.ask(content, max_tokens=500, retries=2)) or {}
     except Exception as e:
@@ -693,8 +696,8 @@ Typeset it yourself in the style of the most viral YouTube thumbnails.
         else:
             h = round(im.width * 9 / 16); y0 = (im.height - h) // 2
             jpg = out / f'full{k}.jpg'; im.crop((0, y0, im.width, y0 + h)).resize((1280, 720), Image.LANCZOS).save(jpg, quality=92)   # owner's template has no frame
-        r = _text_check(jpg, text); print('ai thumbnail check', k, r)
-        if r.get('exact') and r.get('readable', True) and r.get('margin_ok', True) and not r.get('extra_text'):
+        r = _text_check(jpg, text, vertical); print('ai thumbnail check', k, r)
+        if r.get('exact') and r.get('readable', True) and r.get('margin_ok', True) and r.get('safe_ok', True) and not r.get('extra_text'):
             shutil.copy(jpg, dst); return True
         note = (f"\nA previous attempt wrote the headline wrongly as «{r.get('read', '')}» ({r.get('problem') or 'misspelled'}). "
                 f"Copy every Persian letter of «{text}» exactly.")
