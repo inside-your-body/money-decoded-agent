@@ -130,395 +130,665 @@
   }
  },
  {
+  "id": 49,
+  "title": "چرا تورم هیچ‌وقت پایین نمیاد؟",
+  "angle": "owner-approved list (Nov 12) | money in daily life | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 50,
+  "title": "بانک‌ها با پول ما چی کار می‌کنن؟",
+  "angle": "owner-approved list (Nov 12) | money in daily life | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 51,
+  "title": "پول از کجا میاد و چه کسی چاپش می‌کنه؟",
+  "angle": "owner-approved list (Nov 12) | money in daily life | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 52,
+  "title": "چرا پس‌انداز ما هر سال کمتر می‌ارزه؟",
+  "angle": "owner-approved list (Nov 12) | money in daily life | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 53,
+  "title": "طلا، دلار یا سکه؛ مردم پولشون رو کجا نگه می‌دارن و چرا؟",
+  "angle": "owner-approved list (Nov 12) | money in daily life - educational only, no advice | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 54,
+  "title": "چرا قیمت‌ها بالا می‌رن ولی دیگه پایین نمیان؟",
+  "angle": "owner-approved list (Nov 12) | money in daily life | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 55,
+  "title": "لیر ترکیه چرا این‌قدر ارزش از دست داد؟",
+  "angle": "owner-approved list (Nov 12) | money in daily life - neutral economics | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 56,
+  "title": "شغل‌هایی که وقتی خوابی هم برات پول می‌سازن",
+  "angle": "owner-approved list (Nov 12) | making money - researched real examples, no get-rich-quick | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 57,
+  "title": "سود مرکب؛ معجزه‌ای که پولت رو چند برابر می‌کنه",
+  "angle": "owner-approved list (Nov 12) | making money | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 58,
+  "title": "چرا هر چی بیشتر درآمد داری، بازم پولت ته ماه تموم می‌شه؟",
+  "angle": "owner-approved list (Nov 12) | making money | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 59,
+  "title": "۵ اشتباه پولی که بیشتر مردم تا آخر عمر تکرار می‌کنن",
+  "angle": "owner-approved list (Nov 12) | making money - countdown list | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 60,
+  "title": "درآمد جانبی؛ آدم‌های معمولی چطور یه درآمد دوم ساختن؟",
+  "angle": "owner-approved list (Nov 12) | making money - true case stories | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 61,
+  "title": "برند مک‌دونالد در اصل از همبرگر پول درنمیاره!",
+  "angle": "owner-approved list (Nov 12) | business story | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 62,
+  "title": "برند زارا چطور هر هفته لباس جدید میاره و این‌قدر پولدار شد؟",
+  "angle": "owner-approved list (Nov 12) | business story | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 63,
+  "title": "برند آیکیا چطور با مبل ارزون یکی از پولدارترین شرکت‌های دنیا شد؟",
+  "angle": "owner-approved list (Nov 12) | business story | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 64,
+  "title": "چرا آیفونِ برند اپل این‌قدر گرونه ولی بازم همه می‌خرنش؟",
+  "angle": "owner-approved list (Nov 12) | business story | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 65,
+  "title": "برند کوکاکولا چطور فقط با آب و شکر یه امپراتوری ساخت؟",
+  "angle": "owner-approved list (Nov 12) | business story | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 66,
+  "title": "برند نوکیا که یه روز پادشاه موبایل بود، چطور سقوط کرد؟",
+  "angle": "owner-approved list (Nov 12) | business story | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 67,
+  "title": "برند استارباکس در اصل قهوه نمی‌فروشه!",
+  "angle": "owner-approved list (Nov 12) | business story | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 68,
+  "title": "برند سامسونگ چطور از یه مغازه‌ی کوچیک شروع شد؟",
+  "angle": "owner-approved list (Nov 12) | business story | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 69,
+  "title": "پولدارها چطور پولدارتر می‌شن؟",
+  "angle": "owner-approved list (Nov 12) | the rich | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 70,
+  "title": "پولدارها پولشون رو کجا خرج می‌کنن که ما نمی‌کنیم؟",
+  "angle": "owner-approved list (Nov 12) | the rich | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 71,
+  "title": "چرا بیشتر برنده‌های لاتاری دوباره فقیر می‌شن؟",
+  "angle": "owner-approved list (Nov 12) | the rich | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 72,
+  "title": "میلیاردرهایی که از صفر شروع کردن",
+  "angle": "owner-approved list (Nov 12) | the rich - true stories | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 73,
+  "title": "طرح پانزی؛ کلاهبرداری‌ای که همیشه برمی‌گرده",
+  "angle": "owner-approved list (Nov 12) | scams | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 74,
+  "title": "کلاهبرداری‌های ارز دیجیتال؛ مردم چطور همه‌ی پولشون رو باختن؟",
+  "angle": "owner-approved list (Nov 12) | scams | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 75,
+  "title": "«یک‌شبه پولدار شو»؛ چرا این تبلیغ‌ها دروغن؟",
+  "angle": "owner-approved list (Nov 12) | scams | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 76,
+  "title": "چرا خرید کردن این‌قدر حس خوبی داره؟ ترفندهای فروشگاه‌ها",
+  "angle": "owner-approved list (Nov 12) | shopping and the mind | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 77,
+  "title": "چرا کازینوها همیشه برنده‌ان و ریاضی پشت باختِ ما چیه؟",
+  "angle": "owner-approved list (Nov 12) | shopping and the mind - educational, never encourages gambling | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
+  "id": 78,
+  "title": "چرا خونه همیشه بهترین سرمایه‌گذاری نیست؟",
+  "angle": "owner-approved list (Nov 12) | shopping and the mind - educational only | simple everyday Persian, tied to the viewer's own life",
+  "format": "timeline",
+  "status": "todo",
+  "source": "user"
+ },
+ {
   "id": 19,
   "title": "بحران مالی ۲۰۰۸ چطور اتفاق افتاد؟",
   "angle": "Explainer 'how did X happen' + 'explained simply' hook; simple analogy for a complex collapse | stamps: ۲۰۰۰ وام مسکن > ۲۰۰۶ اوج حباب > ۲۰۰۸ ورشکستگی لیمن > ۲۰۰۹ بهبود",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "The 2008 Financial Crisis Explained Like You're 5",
    "views": 2371063,
    "url": "https://youtu.be/KE-WJevx-7c"
   },
-  "prepared": true
+  "prepared": true,
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 20,
   "title": "لیمن برادرز واقعاً چه کار کرد که سقوط کرد؟",
   "angle": "'WTF did X actually do?' curiosity hook on a famous collapse | stamps: ۱۸۵۰ تأسیس > ۲۰۰۴ وام‌های پرریسک > سپتامبر ۲۰۰۸ ورشکستگی > اثر دومینویی",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "WTF Did Lehman Brothers Actually Do?",
    "views": 2367900,
    "url": "https://youtu.be/7rKeXl9VJXI"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 21,
   "title": "سقوط بازار بورس ۲۰۰۸ روز به روز",
   "angle": "Short chronological replay of a famous crash; compressed timeline hook | stamps: صبح روز اول > ظهر > هفته اول > ماه سوم > سال بعد",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "Stock Market Crash of 2008",
    "views": 14481217,
    "url": "https://youtu.be/bluUxKIB4pA"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 22,
   "title": "بانک‌ها با پول سپرده شما چطور پول درمی‌آورند؟",
   "angle": "'The secret they don't want you to know' hidden-process hook on banks | stamps: روز واریز > همان هفته > ماه اول > سال اول",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "This is how banks make money from your deposits, and they don't want you to know about this.",
    "views": 1592257,
    "url": "https://youtu.be/Bed186DXE2M"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 23,
   "title": "چرا تورم هر سال بالا می‌رود و پایین نمی‌آید؟",
   "angle": "'Why won't X stop?' explainer on inflation with simple visuals | stamps: قیمت امروز > یک سال بعد > پنج سال بعد > ده سال بعد",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "Why Prices Won't Stop Rising? Inflation Explained",
    "views": 677242,
    "url": "https://youtu.be/np_M42Yi8jY"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 24,
   "title": "تورم با موز توضیح داده می‌شود",
   "angle": "Complex concept explained with a simple everyday object (bananas) | stamps: روز اول > ماه اول > سال اول > سال پنجم",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "Inflation Explained with Bananas",
    "views": 1792550,
    "url": "https://youtu.be/MAvHgmewRDM"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 25,
   "title": "چرا دولت‌ها نمی‌توانند هر قدر بخواهند پول چاپ کنند؟",
   "angle": "'Why can't we just...?' naive-question hook about money printing | stamps: روز اول چاپ پول > ماه اول > سال اول > سال پنجم",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "Why Can't We Just Print More Money?",
    "views": 1041297,
    "url": "https://youtu.be/8DlmFeFQ4yM"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 26,
   "title": "اگر تورم منفی شود چه می‌شود؟ (دیفلاسیون)",
   "angle": "'What if X reversed?' hypothetical about deflation | stamps: ماه اول > سال اول > سال سوم > دهه بعد",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "What If Inflation Goes Negative? Deflation Explained",
    "views": 624881,
    "url": "https://youtu.be/2Sr8jOBB8QI"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 27,
   "title": "اگر پولتان هر روز ۱۰ برابر شود چه می‌شود؟",
   "angle": "Absurd what-if experiment on exponential growth | stamps: روز اول > روز ۷ > روز ۳۰ > سال اول",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "What If Your Money Grew 10x Every Day?",
    "views": 1000043,
    "url": "https://youtu.be/ch7RZklvrjk"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 28,
   "title": "قدرت سود مرکب؛ سرمایه شما چطور بزرگ می‌شود؟",
   "angle": "Short 'power of X' hook on compounding with a clear visual curve | stamps: سال اول > سال ۱۰ > سال ۲۰ > سال ۴۰",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "The Power of Compounding",
    "views": 3393972,
    "url": "https://youtu.be/XDV8VuCYwLQ"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 29,
   "title": "چرا باید زودتر سرمایه‌گذاری را شروع کنید؟",
   "angle": "'Why you should do X early' compounding urgency hook | stamps: سن ۲۰ > سن ۳۰ > سن ۴۰ > سن ۶۰",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "Why You Should Invest Early",
    "views": 69860344,
    "url": "https://youtu.be/sU9SFT1nAOw"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 30,
   "title": "۶۵۰۰ دلار در ۲۱ سالگی بهتر از ۱۰۰۰۰ دلار در ۴۵ سالگی؟",
   "angle": "Surprising head-to-head number comparison on time vs amount | stamps: سن ۲۱ > سن ۳۵ > سن ۴۵ > سن ۶۵",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "$6500 invested at 21 vs. $10,000 invested at 45!",
    "views": 5210261,
    "url": "https://youtu.be/0m0-1jmfJF4"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 31,
   "title": "اگر هر ماه ۱۰۰ دلار بیت‌کوین بخرید چه می‌شود؟",
   "angle": "'What happens if you invest $X monthly' experiment hook | stamps: ماه اول > سال اول > سال سوم > سال پنجم",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "What Happens If You Invest $100 In Crypto Every Month?",
    "views": 2459865,
    "url": "https://youtu.be/hMd8psRC0po"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 32,
   "title": "قبل از هر سقوط بازار معمولاً چه اتفاقی می‌افتد؟",
   "angle": "'What always happens before X' pattern-revealing hook | stamps: دو سال قبل > شش ماه قبل > یک هفته قبل > روز سقوط",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "This is What \"Always\" Happens Before a Market Crash",
    "views": 1733883,
    "url": "https://youtu.be/iMUaIUqpd7Q"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 33,
   "title": "وقتی بازار سقوط می‌کند پول از دست رفته کجا می‌رود؟",
   "angle": "Curiosity-gap question about where lost money goes | stamps: صبح قبل از سقوط > ظهر > پایان روز > هفته بعد",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "When stock markets fall, where does all the money that was lost go?",
    "views": 1605354,
    "url": "https://youtu.be/zBJT6HnAzPY"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 34,
   "title": "اگر حباب هوش مصنوعی بترکد چه می‌شود؟",
   "angle": "Bubble-burst what-if tied to a trending topic | stamps: اوج رشد > اولین ترک > سقوط > سال بعد",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "The AI Bubble Is On The Verge Of Collapse",
    "views": 6298282,
    "url": "https://youtu.be/C6eXTvqdaro"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 35,
   "title": "اقتصاد ژاپن چرا به نقطه بحرانی رسیده؟",
   "angle": "'Why is X at a tipping point' economic-crisis explainer | stamps: ۱۹۸۹ اوج حباب > دهه گمشده > ۲۰۱۰ بدهی > امروز",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "Why Japan's Economy Is at a Tipping Point",
    "views": 1364622,
    "url": "https://youtu.be/R_LlRX299fQ"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 36,
   "title": "رکود اقتصادی چطور شروع می‌شود؟",
   "angle": "Classic 'what causes X' animated explainer | stamps: رونق > اولین نشانه‌ها > شروع رکود > بهبود",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "What causes an economic recession?",
    "views": 2312621,
    "url": "https://youtu.be/SwaCg7Gwtzw"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 37,
   "title": "بازار سهام اصلاً چطور کار می‌کند؟",
   "angle": "Evergreen 'how does X work' with simple visual story | stamps: تأسیس شرکت > عرضه سهام > معامله روزانه > سقوط و رشد",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "How does the stock market work?",
    "views": 13606248,
    "url": "https://youtu.be/p7HKvqRI_Bo"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 38,
   "title": "بیت‌کوین چرا ممکن است به صفر برسد؟",
   "angle": "Provocative 'why X could hit zero' risk hook | stamps: اوج قیمت > اولین ریزش > اعتماد از دست رفته > صفر؟",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "Why Bitcoin Could Hit $0",
    "views": 6150757,
    "url": "https://youtu.be/IXNUM4FMqNs"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 39,
   "title": "استخراج بیت‌کوین چطور کار می‌کند؟",
   "angle": "Short simple 'for beginners' explainer of a hidden process | stamps: تراکنش > شبکه > حل معما > پاداش بلوک",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "What is Bitcoin Mining for Beginners",
    "views": 3224390,
    "url": "https://youtu.be/mrtSAgcpack"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 40,
   "title": "چرا ثروتمندان مالیات کمتری می‌دهند؟",
   "angle": "'Why the rich don't pay X' injustice hook on taxes | stamps: درآمد > وام گرفتن > شرکت‌ها > ارث",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "Why the Rich Don't Pay Taxes",
    "views": 1423257,
    "url": "https://youtu.be/aLKacgW6YOI"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 41,
   "title": "ثروتمندان چطور قانونی مالیات کمتری می‌پردازند؟",
   "angle": "'How the rich LEGALLY do X' loophole-reveal hook | stamps: سال اول > سال پنجم > سال ده > نسل بعد",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "How the Rich LEGALLY Pay Less Property Tax",
    "views": 7675291,
    "url": "https://youtu.be/duso_o4ljkw"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 42,
   "title": "ثروتمندان ثروتشان را چطور نگه می‌دارند؟",
   "angle": "'How the rich keep their assets' hidden-strategy hook | stamps: سال اول > سال ۱۰ > سال ۳۰ > نسل بعد",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "How Rich people keep their Assets",
    "views": 11042618,
    "url": "https://youtu.be/BtWF_z8wPyk"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 43,
   "title": "چرا ثروتمندها ثروتمندتر می‌شوند؟",
   "angle": "Evergreen 'why the rich get richer' system explainer | stamps: سال اول > سال ۱۰ > سال ۲۰ > نسل بعد",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "How the rich get richer - Money in the world economy",
    "views": 11437430,
    "url": "https://youtu.be/t6m49vNjEGs"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 44,
   "title": "پول از کجا می‌آید؟ بانک مرکزی و چاپ پول",
   "angle": "'How money is created' hidden-process explainer | stamps: تصمیم بانک مرکزی > بانک‌ها > بازار > قیمت‌ها",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "How Money Is Created: Central Banks, Money Printing & Inflation",
    "views": 2101012,
    "url": "https://youtu.be/dNIef2fGLQY"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 45,
   "title": "افزایش نرخ بهره چطور تورم را مهار می‌کند؟",
   "angle": "'How does X control Y' mechanism explainer | stamps: تورم بالا > افزایش نرخ بهره > ماه سوم > سال بعد",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "How does raising interest rates control inflation?",
    "views": 3387989,
    "url": "https://youtu.be/R8VBRCs2jTU"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 46,
   "title": "اوراق قرضه چیست؟ بدون آن پول را نمی‌فهمید",
   "angle": "'If you don't understand X you don't understand money' hook | stamps: انتشار اوراق > سود سالانه > سررسید > بحران",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "If You Don't Understand Bonds, You Don't Understand Money",
    "views": 3087130,
    "url": "https://youtu.be/y0EcjtOB_uU"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 47,
   "title": "چرا خانه سرمایه‌گذاری بدی است؟",
   "angle": "Contrarian 'why X is a terrible investment' hook on housing | stamps: روز خرید > سال اول > سال ۱۰ > سال ۳۰",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "Why your house is a terrible investment",
    "views": 2733498,
    "url": "https://youtu.be/wdstqPqZI5k"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 48,
   "title": "اگر دولت دیگر نتواند بدهی‌اش را بدهد چه می‌شود؟",
   "angle": "Hypothetical sovereign-debt crash experiment | stamps: روز اول > هفته اول > ماه اول > سال اول",
   "format": "timeline",
-  "status": "todo",
+  "status": "skipped",
   "source": "viral",
   "ref": {
    "title": "Why Japan's Economy Is at a Tipping Point",
    "views": 1364622,
    "url": "https://youtu.be/R_LlRX299fQ"
-  }
+  },
+  "skip_reason": "owner (Nov 12): replaced by his approved list of 30 relatable topics"
  },
  {
   "id": 11,
