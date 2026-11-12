@@ -36,12 +36,12 @@
     "eleven_v3",
     "eleven_multilingual_v2"
    ],
-   "stability": 0.5,
+   "stability": 0.43,
    "similarity": 0.75,
    "style": 0.1,
    "speed": 1.0,
    "monthly_credit_cap": 290000,
-   "note": "Owner (Nov 9): always «Aran - Parsi», eleven_v4, no fallback voice; ~300k credits/month for this channel. Owner's FIXED VOICE RULE (Nov 12): stability 0.50, similarity 0.75, speed 1.0, best format (pcm_44100 / mp3_44100_192); then ONE speed-up of the whole file with a factor computed every time = duration / (words / 2.96), max 1.33 (never 1.4); long pauses trimmed first if needed; WAV until one final AAC 192k; music 0.30 with sidechain ducking, SFX 0.2-0.4, loudnorm -15/-1.5, 2.5 s music fade-out."
+   "note": "Owner (Nov 9): always «Aran - Parsi», eleven_v4, no fallback voice; ~300k credits/month for this channel. Owner's FIXED VOICE RULE (Nov 12): stability 0.43 (= his approved file «C»), similarity 0.75, speed 1.0, best format (pcm_44100 / mp3_44100_192); then ONE speed-up of the whole file with a factor computed every time = duration / (words / 2.96), max 1.33 (never 1.4); long pauses trimmed first if needed; WAV until one final AAC 192k; music 0.30 with sidechain ducking, SFX 0.2-0.4, loudnorm -15/-1.5, 2.5 s music fade-out."
   },
   "openai": {
    "model": "gpt-4o-mini-tts",
