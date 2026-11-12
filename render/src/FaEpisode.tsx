@@ -251,7 +251,7 @@ const Cover: React.FC<{text: string; f: number; bg?: string; hi?: string}> = ({t
   </AbsoluteFill>;
 };
 
-export const FaEpisode: React.FC<TLEpProps> = ({beats, vertical, cover, brand = 'پول و قدرت', palette = 0}) => {
+export const FaEpisode: React.FC<TLEpProps & {coverImg?: string}> = ({beats, vertical, cover, coverImg, brand = 'پول و قدرت', palette = 0}) => {
   const PAL = PALETTES[Math.abs(palette) % PALETTES.length]; const THEMES = PAL.slice(0, 3); const HOOK = PAL[3];
   const f = useCurrentFrame();
   const W = vertical ? 1080 : 1920, H = vertical ? 1920 : 1080;
@@ -296,6 +296,9 @@ export const FaEpisode: React.FC<TLEpProps> = ({beats, vertical, cover, brand = 
         <Widget v={b.visual} f={f} at={b.start + 6} dur={dur} th={wt} node={b.node} />
       </g>
     </svg>}
-    {vertical && cover && f < 80 && <Cover text={cover} f={f} bg={HOOK.bg} hi={HOOK.accent} />}
+    {vertical && cover && !coverImg && f < 80 && <Cover text={cover} f={f} bg={HOOK.bg} hi={HOOK.accent} />}
+    {/* owner (Nov 12): the Short opens on its cover in the approved thumbnail template; frame 0 fully drawn (YouTube cover frame) */}
+    {vertical && coverImg && f < 66 && <AbsoluteFill style={{opacity: interpolate(f, [50, 66], [1, 0], cl)}}>
+      <Img src={staticFile(coverImg)} style={{width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${1 + f * 0.0008})`}} /></AbsoluteFill>}
   </AbsoluteFill>;
 };
