@@ -7,7 +7,7 @@ Tone: confident, curious, a little dramatic, warm — a storyteller friend who r
 Persian (محاوره‌ی روان و درست، نه کتابی و نه لاتی). Never a translation feel: write like a native Persian YouTuber.
 
 ## Voice, look and length (owner, Nov 9)
-- Narrator: ElevenLabs «Aran - Parsi» only, speed 1.2. Speak to the viewer as «تو», warm and friendly, story-driven, strong hook in the first 30 s.
+- Narrator: ElevenLabs «Aran - Parsi» only, speed 1.4. Speak to the viewer as «تو», warm and friendly, story-driven, strong hook in the first 30 s.
 - Long video 8–9 minutes (at least 8 for mid-roll ads). One Short of 30–40 s per video.
 - The picture changes every 4–5 seconds; fonts: Lalezar (headlines), Titr (bold), Yekan (regular); a different colour palette per topic.
 - No English words, Latin letters or Latin digits on screen; digits are Persian.
@@ -39,13 +39,13 @@ Timeline story, countdown list, myth busting, true case story, what-if experimen
 Fixed look: flat 2D — cream / navy / mint sections (the hook in orange), key words rising out of a mask with the key word on a coloured
 marker, flat badges and icons, white cards, orange/yellow/teal accents, red for losses, the flat MONEY MAP. No mascot, no AI images in the video.
 
-## Script (long video ≈ 8:30–9:15)
+## Script (long video ≈ 8:10–8:50, 1120–1220 words)
 - Scene 1 = HOOK: cold open in the most surprising, most visual moment; a burning question; a concrete payoff promise by ~20 s;
   no background/definitions/statistics before 0:30.
 - 5–8 scenes, each with its own surprise. Final scene = the big picture + one question for the comments.
 - Short spoken sentences, one idea each; every sentence SHOWABLE (a number, an object, a flow of money, a change). Max ~12 numbers, rounded.
 
-## Short (ONE per long video) — 40–50 s, hard limit 57 s
+## Short (ONE per long video) — 30–40 s (70–86 words), hard limit 41 s
 - Line 1 works in the first second (curiosity question or shocking claim). One continuous mini story with a turn.
 - Second-to-last line sends viewers to the full video; the last line loops back into the first.
 
