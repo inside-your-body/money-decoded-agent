@@ -109,7 +109,7 @@ format says), 8–16 sentences each, each with its own surprise. Plant an open l
 Final scene (stage null): the big picture + one question for the comments. Short spoken sentences, one idea each, every sentence SHOWABLE
 with a number, a place in the money map, an object, a flow of money or a change. Max 12 numbers in total. Explain — never advise.
 
-Then write {N_SHORTS} SHORTS (each 70–86 words, ≈ 30–38 s at the fast narrator speed — never longer), each a DIFFERENT self-contained moment of the video
+Then write {N_SHORTS} SHORTS (each 62–74 words, ≈ 30–38 s at the fast narrator speed — never longer), each a DIFFERENT self-contained moment of the video
 (different fact, different twist — never the same point twice), each survives without the long video:
 line 1 = a curiosity question or shocking claim that works in the first second; one continuous mini story with a turn in it;
 second-to-last line sends viewers to the full video ("داستان کامل رو توی ویدیوی بالا گذاشتم"); last line loops into the first.
@@ -314,8 +314,13 @@ def props(lines, stages, segs, vertical):
 def _visuals(pr, ep_dir, kind, context):
     """Owner (Oct 28): style "finn" = Finn the fox in storybook drawings + the sentence's motion graphic beside him;
     otherwise the older documentary style (stock B-roll + full-screen graphics)."""
-    if CFG.get('style') == 'flat':        # owner (Nov 8): Persian channel = flat 2D motion graphics + kinetic type, no drawings
-        pr['flat'] = True; return pr
+    if CFG.get('style') == 'flat':        # owner (Nov 8): Persian channel = flat 2D motion graphics + kinetic type
+        pr['flat'] = True
+        if CFG.get('scene_pictures', True):   # owner (Nov 12): + AI pictures so the viewer SEES who/what we talk about
+            from . import scenes
+            try: return scenes.attach(pr, ep_dir, kind, context)
+            except Exception as e: print('scene pictures failed -> graphics only', e)
+        return pr
     if CFG.get('style') == 'finn':
         from . import fox
         pr['finn'] = True
@@ -357,8 +362,8 @@ def build(topic, ep_dir, dry_run=False, voice_only=False):
         except Exception as e: print('voice text prep failed:', e)
         save(ep_dir / 'episode.json', ep)
     for s_ in ep.get('shorts', [])[:N_SHORTS]:
-        if paid and _wc([l['text'] for l in s_['lines']]) > 90 and not (ep_dir / 'vo_short0.wav').exists():
-            out = llm.ask_json(f"""Shorten this Persian YouTube Short script to 72-84 words (30-38 seconds). Keep line 1 (the hook), the turn,
+        if paid and _wc([l['text'] for l in s_['lines']]) > 76 and not (ep_dir / 'vo_short0.wav').exists():
+            out = llm.ask_json(f"""Shorten this Persian YouTube Short script to 62-72 words (30-38 seconds). Keep line 1 (the hook), the turn,
 the line that sends viewers to the full video and the loop. Return ONLY {{"lines": [str]}}.
 Lines: {json.dumps([l['text'] for l in s_['lines']], ensure_ascii=False)}""", max_tokens=3000)
             if out.get('lines'):
@@ -434,8 +439,9 @@ Shorts: {json.dumps([' '.join(_tx(l) for l in x.get('lines', [])) for x in ep.ge
      a number, a name or a date from the script, a curiosity gap (twist, hidden truth, surprising number) — understandable at a glance;
      max 2 ALL-CAPS words, no hype words (amazing, insane, secret, ultimate, best…).
    - thumb: 2-4 Persian words for the thumbnail that say what the title does NOT (never repeat a title word) — same promise, different
-     words, e.g. a shocking number "فقط ۷۲۰۰ دلار ماند", a verdict "همه‌اش دود شد", a contrast "۰٫۴٪ در برابر ۳۸٪". Put the ONE key word that
-     should be yellow in "key".
+     words, e.g. a verdict "بانکی که یک‌شبه مُرد", "همه‌اش دود شد", a contrast "پولدار دیروز، ورشکسته امروز". Owner (Nov 12): an ordinary
+     Persian viewer who knows NOTHING about finance must understand it instantly — no jargon or technical terms (رپو، مشتقه، اوراق…),
+     no unexplained foreign names, no bare numbers without meaning. Put the ONE key word that should be yellow in "key".
 2. "title": the best one of them (best mix of searchable + curiosity + honest).
 3. "hook": the first 2 lines of the description (≤ 220 characters total): they show under the video in search — keyword in sentence 1,
    then an open question or twist that makes people want to watch. No hashtags.
@@ -581,7 +587,7 @@ def _bg_check(img, title):
     content = [{'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': base64.b64encode(img.read_bytes()).decode()}},
                {'type': 'text', 'text': f"""Background picture for a YouTube thumbnail of the video "{title}" (a Persian headline will be added on the
 empty top part later). Return JSON only: {{"has_text": bool, "top_clear": bool, "topic_clear": bool, "problem": str}}
-has_text=true if ANY letters, words, numbers or fake writing are visible anywhere (also on signs, papers, screens, banknotes' big labels);
+has_text=true if letters, words, numbers or fake writing are visible (the real name sign / logo of the video's subject itself does NOT count);
 top_clear=false if important objects fill the top third (where the headline goes); topic_clear=false if the picture does not show the topic."""}]
     try:
         return llm._repair(llm.ask(content, max_tokens=600, retries=2)) or {}
@@ -614,14 +620,17 @@ def thumbs(ep, ep_dir):
     note, best, last = '', None, None
     for k in range(3):
         raw = out / f'bg{k}.png'
-        prompt = f"""Create the PICTURE for a YouTube thumbnail (16:9 landscape) of a finance explainer video. The headline will be added later
-by a designer, so the picture itself must contain ABSOLUTELY NO text: no letters, words, numbers, captions, labels, signs or fake writing anywhere
-(banknotes and screens without readable writing).
+        prompt = f"""You are a top YouTube thumbnail designer. Design the PICTURE of the thumbnail (16:9) for this finance documentary video.
+Title: {title}
 What the video is about: {summ}
-Goal: the highest click-through rate - ONE striking, instantly understandable image of the topic that creates curiosity (a clear before -> after
-or cause -> effect with ONE bright orange arrow works best). {FINN_THUMB.split('HUGE bold')[0]}
-Leave the TOP 38% of the frame as calm dark navy background (only soft glow) - the headline goes there; the subject sits in the lower 62%.
-High contrast, very clean, readable at phone size. No real people's faces, no logos, no company names, no building signs, no newspapers.{note}"""
+The viewer must understand at ONE glance WHO or WHAT the video is about: show the real subject in a recognisable way (for a company: its real
+famous headquarters building with its real name sign or logo; for a person: a recognisable documentary portrait; for a country or currency:
+its famous landmark / real banknotes; for an event: its most iconic moment - e.g. employees carrying boxes out of the bank, a crashing market
+screen, people queueing at a bank), plus ONE dramatic element that creates curiosity (a crack through the building, money burning or
+flying away, a giant red down-arrow, a shocked face). Cinematic, high contrast, saturated, glossy, dramatic light, very clean, readable
+at phone size.
+Leave the TOP 35% of the frame calm and dark (a Persian headline is added there later by a designer). Apart from the subject's own real
+name/logo, NO text: no captions, no letters, no numbers, no fake writing.{note}"""
         if CFG.get('style') == 'finn':
             from . import fox
             ok = images.edit(prompt + '\nFinn the fox (the channel mascot) appears SMALL in a lower corner, reacting with a strong emotion: ' + fox.FINN,

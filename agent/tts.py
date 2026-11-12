@@ -140,11 +140,16 @@ def _engine():
 
 
 def _tempo(a, sr, sp):
-    """Speed up/down without changing the pitch (ffmpeg atempo)."""
+    """Speed up/down without changing the pitch. Owner (Nov 12): the voice sounded strange with ffmpeg atempo (phasey/metallic) ->
+    Rubber Band high-quality time-stretch with the voice formants preserved; atempo only if Rubber Band is missing."""
     import subprocess, tempfile
     with tempfile.TemporaryDirectory() as d:
         i, o = f'{d}/i.wav', f'{d}/o.wav'; sf.write(i, a, sr)
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', i, '-filter:a', f'atempo={sp:.3f}', o], check=True)
+        rb = f'rubberband=tempo={sp:.4f}:pitchq=quality:transients=smooth:formant=preserved:window=standard'
+        r = subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', i, '-filter:a', rb, o])
+        if r.returncode != 0:
+            print('rubberband missing -> atempo')
+            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', i, '-filter:a', f'atempo={sp:.3f}', o], check=True)
         b, _ = sf.read(o, dtype='float32')
     return b.mean(1) if b.ndim > 1 else b
 

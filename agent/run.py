@@ -1,6 +1,6 @@
 """Money Decoded episode pipeline (timeline format): topic -> research -> script -> storyboard -> voice -> render -> audio -> thumbnail -> upload.
 Owner (Oct 24 2026): every day one long video at 20:00 UTC (23:00 Istanbul) + ONE Short at 20:30 UTC, uploaded earlier as scheduled."""
-import argparse, datetime as dt, json, os
+import argparse, shutil, datetime as dt, json, os
 from .common import ROOT, WORK, load, save, CFG
 
 
@@ -47,8 +47,21 @@ def main():
     ap.add_argument('--topic', default=None)
     ap.add_argument('--stage', default='all', choices=['all', 'build', 'finish'],
                     help='build = everything up to the render (then shards render in parallel); finish = concat parts + audio + upload')
+    ap.add_argument('--reuse', action='store_true', help='reuse the downloaded work dir (script + voices); remake pictures, graphics, thumbnail')
     a = ap.parse_args()
     cur = load(WORK / 'current.json', {})
+    if a.reuse and cur:
+        ep_dir = WORK / cur['dir']
+        for f in list(ep_dir.glob('props_*.json')) + list(ep_dir.glob('thumbnail.*')) + list(ep_dir.glob('parts/*')):
+            f.unlink(missing_ok=True)
+        shutil.rmtree(ep_dir / 'thumbs', ignore_errors=True)
+        if os.environ.get('REVOICE') == 'true':      # same script, new voice files (e.g. after a voice-quality fix)
+            for f in list(ep_dir.glob('vo_*')) + list(ep_dir.glob('segs_*.json')): f.unlink(missing_ok=True)
+        sg = load(ep_dir / 'segs_short0.json', [])
+        if sg and sg[-1]['end'] > 41:                 # Short too long -> shortened text + voiced again (a few hundred credits)
+            for f in ('vo_short0.wav', 'segs_short0.json'): (ep_dir / f).unlink(missing_ok=True)
+        print('reusing script + voices of', ep_dir.name)
+        return run_tl(a, cur['topic'], ep_dir)
     if a.stage == 'finish' and cur:
         return run_tl(a, cur['topic'], WORK / cur['dir'])
 
