@@ -21,6 +21,8 @@ Return JSON: {{"headlines": [str]}}""", max_tokens=800)
     for n, t in enumerate(texts):
         d = out / f'v{n + 1}'; d.mkdir()
         ok = tl._ai_thumb(title, summ, t, d, out / f'thumbnail_{n + 1}.jpg')
+        okv = tl._ai_thumb(title, summ, t, d, out / f'short_cover_{n + 1}.jpg', vertical=True)     # owner (Nov 12): Short cover
+        print('short cover ok:', okv)
         for f in d.glob('*.png'): f.unlink()
         print('headline', t, '-> correct thumbnail:', ok)
 

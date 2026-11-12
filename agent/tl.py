@@ -624,6 +624,14 @@ THUMB_TEMPLATE = """FIXED CHANNEL TEMPLATE (owner Nov 12, from his reference) - 
 - No other text at all."""
 
 
+# owner (Nov 12): a Short has no custom thumbnail -> its FIRST frames show the same template as a vertical cover
+VERTICAL_COVER = """
+VERTICAL SHORT COVER (9:16): the same template, re-arranged for a phone screen: PART A in huge black letters in the upper part, the subject
+in the middle, PART B on the red box just below the subject's face. YouTube draws buttons over a Short, so EVERY letter must stay inside the
+safe area: at least 16% of the height away from the top, at least 26% of the height away from the bottom, and at least 10% of the width away
+from the left and right edges (the left and right 8% may be cropped). Nothing important in the bottom quarter."""
+
+
 def _text_check(img, text):
     """Claude vision: is the Persian headline in the AI thumbnail spelled exactly right and readable?"""
     import base64
@@ -648,7 +656,7 @@ def _frame(im):
     return im
 
 
-def _ai_thumb(title, summ, text, out, dst):
+def _ai_thumb(title, summ, text, out, dst, vertical=False):
     """Owner (Nov 12): ChatGPT designs the WHOLE thumbnail, including the Persian headline in its own viral thumbnail typography
     (no font given by us). Claude checks the spelling; up to 3 tries. Returns True when a correct one was saved to dst."""
     from . import images
@@ -657,8 +665,8 @@ def _ai_thumb(title, summ, text, out, dst):
     ta, tb = [x.strip() for x in text.split('|', 1)] if '|' in text else (text.split()[0], ' '.join(text.split()[1:]) or text)
     text = f'{ta} {tb}'
     for k in range(3):
-        raw = out / f'full{k}.png'
-        prompt = f"""Design a complete, professional, highly clickable YouTube thumbnail (16:9) for a Persian-language finance documentary.
+        raw = out / (f'vfull{k}.png' if vertical else f'full{k}.png')
+        prompt = f"""Design a complete, professional, highly clickable YouTube thumbnail ({'9:16 VERTICAL cover frame of a YouTube Short' if vertical else '16:9'}) for a Persian-language finance documentary.
 Video title: {title}
 What the video is about: {summ}
 1) The viewer must understand at ONE glance what the video is about from the subject + the accent element + the headline.
@@ -666,19 +674,25 @@ What the video is about: {summ}
    PART A (big black letters): «{ta}»
    PART B (white letters on the red box): «{tb}»
 Typeset it yourself in the style of the most viral YouTube thumbnails.
-{THUMB_TEMPLATE}{note}"""
+{THUMB_TEMPLATE}{VERTICAL_COVER if vertical else ''}{note}"""
+        size = '1024x1536' if vertical else '1536x1024'
         style = ROOT / 'assets/thumb_style.jpg'       # the owner-approved thumbnail = the fixed template for every next one
         if style.exists():
             ref = out / 'style_ref.png'; Image.open(style).convert('RGB').save(ref)
             ok = images.edit(prompt + "\nThe reference image is the channel's APPROVED thumbnail template: copy its layout, headline position, "
                              "typeface style, outline, colours and amount of detail exactly - only the subject and the headline text are new "
-                             "(never copy the reference's subject or words).", [str(ref)], str(raw), size='1536x1024', quality='high')
+                             "(never copy the reference's subject or words).", [str(ref)], str(raw), size=size, quality='high')
         else:
-            ok = images.gen(prompt, raw, size='1536x1024', quality='high')
+            ok = images.gen(prompt, raw, size=size, quality='high')
         if not ok:
             continue
-        im = Image.open(raw).convert('RGB'); h = round(im.width * 9 / 16); y0 = (im.height - h) // 2
-        jpg = out / f'full{k}.jpg'; im.crop((0, y0, im.width, y0 + h)).resize((1280, 720), Image.LANCZOS).save(jpg, quality=92)   # owner's template has no frame
+        im = Image.open(raw).convert('RGB')
+        if vertical:              # 1024x1536 -> 9:16 (the sides are cropped a little) -> 1080x1920
+            w = round(im.height * 9 / 16); x0 = (im.width - w) // 2
+            jpg = out / f'vfull{k}.jpg'; im.crop((x0, 0, x0 + w, im.height)).resize((1080, 1920), Image.LANCZOS).save(jpg, quality=92)
+        else:
+            h = round(im.width * 9 / 16); y0 = (im.height - h) // 2
+            jpg = out / f'full{k}.jpg'; im.crop((0, y0, im.width, y0 + h)).resize((1280, 720), Image.LANCZOS).save(jpg, quality=92)   # owner's template has no frame
         r = _text_check(jpg, text); print('ai thumbnail check', k, r)
         if r.get('exact') and r.get('readable', True) and r.get('margin_ok', True) and not r.get('extra_text'):
             shutil.copy(jpg, dst); return True
@@ -694,6 +708,31 @@ def _typeset_plain(text, key, dst):
 
 
 def thumbs(ep, ep_dir):
+    _thumbs_main(ep, ep_dir)
+    try: short_cover(ep, ep_dir)
+    except Exception as e: print('short cover failed', e)
+
+
+def short_cover(ep, ep_dir):
+    """Owner (Nov 12): the Short starts with the video's cover in the approved thumbnail template (vertical, safe margins), so the
+    viewer sees what it is about in the first second and YouTube can use it as the Short's cover frame."""
+    for k in range(N_SHORTS):
+        pf = ep_dir / f'props_short{k}.json'
+        if not pf.exists(): continue
+        text = (ep.get('thumb_text') or ep.get('title') or '').strip()
+        if '|' not in text and ep.get('thumb_key') and ep['thumb_key'] in text:
+            rest = ' '.join(text.replace(ep['thumb_key'], ' ').split())
+            if rest: text = ep['thumb_key'] + '|' + rest
+        out = ep_dir / 'thumbs'; out.mkdir(exist_ok=True)
+        (ep_dir / 'broll').mkdir(exist_ok=True)
+        dst = ep_dir / 'broll' / f'short{k}_cover.jpg'
+        title = ep.get('upload', {}).get('title') or ep.get('title')
+        summ = (out / 'summary.txt').read_text() if (out / 'summary.txt').exists() else summary(ep)
+        if dst.exists() or _ai_thumb(title, summ, text, out, dst, vertical=True):
+            pr = load(pf); pr['coverImg'] = f'ep/broll/short{k}_cover.jpg'; save(pf, pr); print('short cover:', text)
+
+
+def _thumbs_main(ep, ep_dir):
     """Owner (Nov 8): Persian channel. The image model cannot spell Persian, so it draws the picture WITHOUT any text (dark navy look,
     one glossy subject, Finn small in a corner, empty top band) and our code typesets the Persian headline (ep['thumb_text'])."""
     from . import images
