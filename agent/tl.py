@@ -109,7 +109,7 @@ format says), 8–16 sentences each, each with its own surprise. Plant an open l
 Final scene (stage null): the big picture + one question for the comments. Short spoken sentences, one idea each, every sentence SHOWABLE
 with a number, a place in the money map, an object, a flow of money or a change. Max 12 numbers in total. Explain — never advise.
 
-Then write {N_SHORTS} SHORTS (each 62–74 words, ≈ 30–38 s at the fast narrator speed — never longer), each a DIFFERENT self-contained moment of the video
+Then write {N_SHORTS} SHORTS (each 88–105 words, ≈ 30–36 s at about 3 words per second — never longer), each a DIFFERENT self-contained moment of the video
 (different fact, different twist — never the same point twice), each survives without the long video:
 line 1 = a curiosity question or shocking claim that works in the first second; one continuous mini story with a turn in it;
 second-to-last line sends viewers to the full video ("داستان کامل رو توی ویدیوی بالا گذاشتم"); last line loops into the first.
@@ -362,8 +362,8 @@ def build(topic, ep_dir, dry_run=False, voice_only=False):
         except Exception as e: print('voice text prep failed:', e)
         save(ep_dir / 'episode.json', ep)
     for s_ in ep.get('shorts', [])[:N_SHORTS]:
-        if paid and _wc([l['text'] for l in s_['lines']]) > 76 and not (ep_dir / 'vo_short0.wav').exists():
-            out = llm.ask_json(f"""Shorten this Persian YouTube Short script to 62-72 words (30-38 seconds). Keep line 1 (the hook), the turn,
+        if paid and _wc([l['text'] for l in s_['lines']]) > 112 and not (ep_dir / 'vo_short0.wav').exists():
+            out = llm.ask_json(f"""Shorten this Persian YouTube Short script to 90-104 words (30-36 seconds). Keep line 1 (the hook), the turn,
 the line that sends viewers to the full video and the loop. Return ONLY {{"lines": [str]}}.
 Lines: {json.dumps([l['text'] for l in s_['lines']], ensure_ascii=False)}""", max_tokens=3000)
             if out.get('lines'):
@@ -771,7 +771,7 @@ def mix(silent, wav, pr, out, track):
     vo, vsr = sf.read(wav)
     if vo.ndim > 1: vo = vo.mean(1)
     vo = resample_poly(vo, SR, vsr); v = np.zeros(N); v[:min(N, len(vo))] = vo[:N]
-    mus = audio.library_music(frames / FPS, track)[:N]
+    mus = np.zeros(N); m_ = audio.library_music(frames / FPS, track, fade_out=0)[:N]; mus[:len(m_)] = m_
     fx = np.zeros(N); last_t, last_n = -9, None
     cache = {}
     def snd(n):
@@ -796,12 +796,19 @@ def mix(silent, wav, pr, out, track):
                 last_t, last_n = t, n
         except Exception as e: print('sfx', e)
         prev_stage = b['stage']
-    env = np.convolve(np.abs(v), np.ones(int(0.25 * SR)) / int(0.25 * SR), 'same')
-    m = v + mus * 0.13 * (1 - 0.55 * np.clip(env / 0.04, 0, 1)) + fx * 0.5
-    m /= np.abs(m).max() / 0.95
-    tmp = out.with_suffix('.wav'); sf.write(tmp, np.stack([m, m], 1).astype(np.float32), SR)
-    sh(['ffmpeg', '-v', 'error', '-y', '-i', str(silent), '-i', str(tmp), '-map', '0:v', '-map', '1:a', '-af', f"loudnorm=I={CFG['audio']['target_lufs']}:TP=-1.5",
-        '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', str(out)])
+    # owner's fixed audio rule (Nov 12): voice untouched; music at 0.30 ducked under the voice by a sidechain compressor; soft sound
+    # effects (0.2-0.4); one loudness pass (I=-15, TP=-1.5); music fades out over the last 2.5 s; WAV until ONE final AAC 192k encode.
+    d = out.parent; dur = N / SR
+    vw, mw, fw = d / f'{out.stem}_vo.wav', d / f'{out.stem}_mus.wav', d / f'{out.stem}_fx.wav'
+    sf.write(vw, v.astype(np.float32), SR); sf.write(mw, mus.astype(np.float32), SR); sf.write(fw, fx.astype(np.float32), SR)
+    graph = (f"[1:a]volume=0.30[m];[0:a]asplit=2[v][vk];[m][vk]sidechaincompress=threshold=0.05:ratio=6:attack=20:release=300[md];"
+             f"[md]afade=t=out:st={max(0.0, dur - 2.5):.2f}:d=2.5[mf];[v][mf][2:a]amix=inputs=3:normalize=0:duration=first[mx];"
+             f"[mx]loudnorm=I=-15:TP=-1.5,aformat=channel_layouts=stereo[a]")
+    tmp = out.with_suffix('.wav')
+    sh(['ffmpeg', '-v', 'error', '-y', '-i', str(vw), '-i', str(mw), '-i', str(fw), '-filter_complex', graph, '-map', '[a]',
+        '-ar', '48000', '-c:a', 'pcm_s16le', str(tmp)])
+    sh(['ffmpeg', '-v', 'error', '-y', '-i', str(silent), '-i', str(tmp), '-map', '0:v', '-map', '1:a',
+        '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', str(out)])
     return out
 
 

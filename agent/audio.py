@@ -180,7 +180,7 @@ def pick_track(avoid=()):
     fresh = [k for k in keys if k not in list(avoid)[-4:]] or keys
     return fresh[int(rng.integers(len(fresh)))]
 
-def library_music(dur, key):
+def library_music(dur, key, fade_out=3.0):
     """Track looped with 3 s crossfades to `dur`, RMS-normalised, 2 s fade in / 3 s fade out. Returns mono float array at SR."""
     tmp = WORK / 'music_cache' / f'{key}.wav'; tmp.parent.mkdir(parents=True, exist_ok=True)
     if not tmp.exists():
@@ -196,5 +196,6 @@ def library_music(dur, key):
         pos += len(x) - xf
     out /= max(1e-6, np.sqrt(np.mean(out[:min(N, 60 * SR)] ** 2))) / 0.1
     out[:2 * SR] *= np.linspace(0, 1, 2 * SR)[:len(out[:2 * SR])]
-    out[-3 * SR:] *= np.linspace(1, 0, 3 * SR)[-len(out[-3 * SR:]):]
+    if fade_out:
+        F = int(fade_out * SR); out[-F:] *= np.linspace(1, 0, F)[-len(out[-F:]):]
     return out

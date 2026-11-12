@@ -98,6 +98,64 @@ def credits_left_this_month():
 
 
 _MODEL = {}
+_FMT = {}
+
+
+def _decode(mp3_bytes):
+    """mp3 -> float mono at its own 44.1 kHz (decoded once, losslessly kept as WAV afterwards)."""
+    import subprocess, tempfile
+    with tempfile.TemporaryDirectory() as d:
+        i, o = f'{d}/i.mp3', f'{d}/o.wav'; pathlib.Path(i).write_bytes(mp3_bytes)
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', i, '-ac', '1', '-ar', '44100', '-c:a', 'pcm_f32le', o], check=True)
+        a, sr = sf.read(o, dtype='float32')
+    return a, sr
+
+
+def _dur(path):
+    import subprocess
+    return float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', str(path)],
+                                capture_output=True, text=True).stdout.strip() or 0)
+
+
+def _has_rubberband():
+    import subprocess
+    return 'rubberband' in subprocess.run(['ffmpeg', '-hide_banner', '-filters'], capture_output=True, text=True).stdout
+
+
+def pace(raw_wav, out_wav, words):
+    """OWNER'S FIXED VOICE RULE (Nov 12, every video): like the «اتاق فرمان» channel - about 3 words/second, natural, no wobble, no
+    metallic sound. The factor is computed for every file (never a fixed number):
+        factor = raw duration / (words / 2.96), capped at 1.33 (never 1.4).
+    If it is above 1.33 the long pauses are shortened first (silenceremove, 0.35 s) and the factor is computed again; still above
+    -> 1.33 and the video is a little longer. ONE speed-up only (rubberband with the formants kept if ffmpeg has it, else ONE atempo),
+    44.1 kHz WAV out (no lossy step here). Returns the report."""
+    import subprocess, shutil as _sh
+    R = V.get('pace', {}); wps = float(R.get('words_per_second', 2.96)); cap = float(R.get('max_factor', 1.33))
+    rep = {'words': words, 'raw_seconds': round(_dur(raw_wav), 2)}
+    src = raw_wav
+    f = rep['raw_seconds'] / (words / wps) if words else 1.0
+    rep['factor_raw'] = round(f, 3)
+    if f > cap:
+        trim = str(out_wav) + '.trim.wav'
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(raw_wav), '-af',
+                        'silenceremove=stop_periods=-1:stop_duration=0.35:stop_threshold=-40dB', '-ar', '44100', trim], check=True)
+        src = trim; rep['trimmed_seconds'] = round(_dur(trim), 2)
+        f = rep['trimmed_seconds'] / (words / wps); rep['factor_after_trim'] = round(f, 3)
+    f = min(cap, f)
+    rep['factor'] = round(f, 3)
+    if f <= 1.005:
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(src), '-ar', '44100', '-c:a', 'pcm_s16le', str(out_wav)], check=True)
+        rep['filter'] = 'none'
+    else:
+        flt = (f'rubberband=tempo={f:.4f}:pitchq=quality:formant=preserved' if _has_rubberband() else f'atempo={f:.4f}')
+        rep['filter'] = flt.split('=')[0]
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(src), '-af', flt, '-ar', '44100', '-c:a', 'pcm_s16le', str(out_wav)], check=True)
+    rep['final_seconds'] = round(_dur(out_wav), 2)
+    rep['words_per_second'] = round(words / max(0.1, rep['final_seconds']), 2)
+    rep['ok'] = 2.85 <= rep['words_per_second'] <= 3.05 or f >= cap
+    print('VOICE REPORT:', rep)
+    if src != raw_wav: pathlib.Path(src).unlink(missing_ok=True)
+    return rep
 
 
 def _eleven_tts(text, prev='', nxt=''):
@@ -109,21 +167,24 @@ def _eleven_tts(text, prev='', nxt=''):
     for model in models:
         body = {'text': text, 'model_id': model,
                 'voice_settings': {'stability': el.get('stability', 0.4), 'similarity_boost': el.get('similarity', 0.75),
-                                   'style': el.get('style', 0.1), 'use_speaker_boost': True, 'speed': min(1.2, el.get('speed', 1.2))}}
+                                   'style': el.get('style', 0.1), 'use_speaker_boost': True, 'speed': float(el.get('speed', 1.0))}}
         if prev and model != 'eleven_v3': body['previous_text'] = prev[-600:]
         if nxt and model != 'eleven_v3': body['next_text'] = nxt[:600]
         for a in range(3):
-            r = requests.post(f'https://api.elevenlabs.io/v1/text-to-speech/{vid}', params={'output_format': 'pcm_24000'},
-                              headers={'xi-api-key': os.environ['ELEVENLABS_API_KEY'], 'accept': 'audio/pcm'}, json=body, timeout=300)
+            # owner's voice rule (Nov 12): the best quality only - pcm_44100, else mp3_44100_192; never 22/24 kHz or low bitrates
+            fmt = _FMT.get('ok') or 'pcm_44100'
+            r = requests.post(f'https://api.elevenlabs.io/v1/text-to-speech/{vid}', params={'output_format': fmt},
+                              headers={'xi-api-key': os.environ['ELEVENLABS_API_KEY']}, json=body, timeout=300)
+            if not r.ok and fmt == 'pcm_44100' and r.status_code in (400, 403, 422) and 'format' in r.text.lower():
+                _FMT['ok'] = 'mp3_44100_192'; print('pcm_44100 not on this plan -> mp3_44100_192'); continue
             if r.ok:
-                _MODEL['ok'] = model; _count(len(text))
+                _MODEL['ok'] = model; _FMT['ok'] = fmt; _count(len(text))
                 try:
                     from . import cost; cost.tts(len(text) * 30)
                 except Exception: pass
-                a_ = np.frombuffer(r.content, dtype='<i2').astype(np.float32) / 32768.0
-                sp = float(el.get('speed', 1.2))
-                if sp > 1.2: a_ = _tempo(a_, 24000, sp / 1.2)     # owner (Nov 12): speed 1.4; the API stops at 1.2 -> the rest same-pitch
-                return a_, 24000
+                if fmt.startswith('pcm'):
+                    return np.frombuffer(r.content, dtype='<i2').astype(np.float32) / 32768.0, 44100
+                return _decode(r.content)          # raw speech, untouched; the ONE speed-up is done on the whole file later
             last = r.text[:300]
             if r.status_code in (400, 404, 422) and ('model' in last.lower()): break       # model not available -> next model
             if r.status_code in (401, 402, 403): raise RuntimeError('ElevenLabs refused: ' + last)   # plan/credits/key problem
@@ -212,8 +273,7 @@ def synth_lines(lines, out_wav, groups=None, gap=0.35, **kw):
             while part and n + len(part[0]) < 2400: take.append(part.pop(0)); n += len(take[-1]) + 1
             if not take: take = [part.pop(0)]
             chunks.append(take)
-    audio, segs, t, li = [], [], 0.0, 0
-    sr0 = 24000
+    audio, said, sr0 = [], [], 44100
     for ci, ch in enumerate(chunks):
         from .fa_text import speakable
         say = [speakable(x) for x in ch] if CFG['channel'].get('language') == 'fa' else ch     # numbers/symbols as words for the narrator
@@ -221,17 +281,27 @@ def synth_lines(lines, out_wav, groups=None, gap=0.35, **kw):
             a, sr = _eleven_tts(' '.join(say), ' '.join(chunks[ci - 1]) if ci else '', ' '.join(chunks[ci + 1]) if ci + 1 < len(chunks) else '')
         else:
             a, sr = _openai_tts(' '.join(say))
+        if audio and sr != sr0:
+            from scipy.signal import resample_poly
+            a = resample_poly(a, sr0, sr).astype(np.float32); sr = sr0
         sr0 = sr
-        a = _trim(a, sr)
-        tmp = str(out_wav) + '.part.wav'; sf.write(tmp, a, sr)
-        ws = timing.words(tmp)
-        st = _align(say, ws, t)
-        dur = len(a) / sr
-        for k, txt in enumerate(ch):
-            end = (st[k + 1] - 0.05) if k + 1 < len(ch) else t + dur
-            segs.append({'i': li, 'text': txt, 'start': round(st[k], 3), 'end': round(end, 3)}); li += 1
-        audio.append(a); t += dur
-        audio.append(np.zeros(int(gap * sr), np.float32)); t += gap
+        audio.append(_trim(a, sr)); audio.append(np.zeros(int(gap * sr), np.float32)); said += say
     y = np.concatenate(audio[:-1]); y = y / max(1e-6, np.abs(y).max()) * 0.95
-    sf.write(out_wav, y, sr0)
+    raw = str(out_wav) + '.raw.wav'; sf.write(raw, y, sr0)
+    if eng == 'elevenlabs':
+        words = sum(len(x.split()) for x in said)
+        rep = pace(raw, out_wav, words)
+        import json as _j
+        pathlib.Path(str(out_wav).rsplit('.', 1)[0] + '_report.json').write_text(_j.dumps(rep, ensure_ascii=False, indent=1))
+    else:
+        sf.write(out_wav, y, sr0)
+    pathlib.Path(raw).unlink(missing_ok=True)
+    # timing on the FINAL file (after the one speed-up): whisper words -> start of every line
+    ws = timing.words(str(out_wav))
+    st = _align(said, ws, 0.0)
+    total = len(sf.read(str(out_wav))[0]) / sf.info(str(out_wav)).samplerate
+    segs = []
+    for k, txt in enumerate(lines):
+        end = (st[k + 1] - 0.05) if k + 1 < len(lines) else total
+        segs.append({'i': k, 'text': txt, 'start': round(st[k], 3), 'end': round(max(end, st[k] + 0.2), 3)})
     return segs

@@ -116,7 +116,7 @@ When the topic touches Iran (rial, Iranian inflation, gold coins, the Tehran sto
 No investment advice or predictions, no party politics. Write the notes in English (they are internal), keep names and numbers exact.
 Output a compact bullet list with URLs.""", web_search=True, max_tokens=7000)
 
-WORDS_MIN, WORDS_MAX = 1120, 1220   # Persian at 1.4x narrator speed ≈ 2.3 words/s: ≈ 8:10–8:50 (owner: 8–9 min, ≥ 8 for mid-roll; sample Nov 12 with 1600 words ran 11:47)
+WORDS_MIN, WORDS_MAX = 1450, 1560   # owner's voice rule (Nov 12): final pace ≈ 2.96 words/s -> ≈ 8:10–8:50 (owner: 8–9 min, ≥ 8 for mid-roll)
 
 HOOK_RULES = """OPENING = the first 30 seconds (analytics: this is where we lose 1/3 of viewers). The hook scene has 5–7 short sentences:
 - Sentence 1 is a COLD OPEN in the middle of the most surprising, most visual moment of the whole story (no "hi", no "in this video", no definition).
