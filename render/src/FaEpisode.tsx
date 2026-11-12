@@ -2,7 +2,7 @@
 // No mascot drawings: every sentence = 1-4 key words rising out of a mask (key word on a coloured marker) + one flat widget.
 // Each section (stage) has its own flat background; a circle wipe opens every new section. Long 1920x1080, Short 1080x1920.
 import React from 'react';
-import {AbsoluteFill, useCurrentFrame, spring, interpolate, Easing} from 'remotion';
+import {AbsoluteFill, useCurrentFrame, spring, interpolate, Easing, Img, staticFile} from 'remotion';
 import {iconPath} from './Icons';
 import type {TLEpProps, Visual} from './TLEpisode';
 import './theme';
@@ -35,7 +35,10 @@ const fmt = (v: number) => P(Math.abs(v) >= 1000 ? Math.round(v).toLocaleString(
 const CUR: Record<string, string> = {'$': 'دلار', '€': 'یورو', '£': 'پوند', '¥': 'ین'};
 // currency symbols are written as words after the number (no Latin symbols on screen)
 const cur = (_u?: string) => '';
-const rest = (u?: string, pre?: string) => { const c = CUR[(pre || '').trim()] || CUR[(u || '')[0]] || ''; const r0 = (u || '').replace(/^[$£€¥]/, '').trim(); return P([r0, c].filter(Boolean).join(' ')); };
+const MAG: Record<string, string> = {K: 'هزار', M: 'میلیون', B: 'میلیارد', BN: 'میلیارد', T: 'تریلیون', TN: 'تریلیون'};
+// no Latin on screen (owner): $639B -> ۶۳۹ میلیارد دلار; any other Latin letters are dropped
+const rest = (u?: string, pre?: string) => { const c = CUR[(pre || '').trim()] || CUR[(u || '')[0]] || ''; let r0 = (u || '').replace(/^[$£€¥]/, '').trim();
+  r0 = r0.replace(/\b(BN|TN|[KMBT])\b/gi, (m) => MAG[m.toUpperCase()] || '').replace(/[A-Za-z]+/g, '').replace(/\s+/g, ' ').trim(); return P([r0, c].filter(Boolean).join(' ')); };
 
 // ---------- kinetic typography ----------
 const Rise: React.FC<{text: string; f: number; at: number; size: number; color: string; marker?: string}> = ({text, f, at, size, color, marker}) => {
@@ -217,6 +220,24 @@ const Wipe: React.FC<{f: number; at: number; color: string; W: number; H: number
   return k > 0 && k < 1 ? <svg width={W} height={H} style={{position: 'absolute'}}><circle cx={right ? W * 0.85 : W * 0.15} cy={H * 0.2} r={k * Math.hypot(W, H)} fill={color} /></svg> : null;
 };
 
+// owner (Nov 12): AI scene pictures so the viewer SEES who/what we talk about. The first sentence of a picture shows it full-screen
+// (slow camera move, Persian key words at the bottom); the next sentences keep it darkened behind the flat graphic.
+const Pic: React.FC<{src: string; f: number; at: number; fade: number; dimAt: number; hero: boolean; vertical?: boolean; seed: number}> = ({src, f, at, fade, dimAt, hero, vertical, seed}) => {
+  const t = Math.max(0, f - at);
+  const z = 1.05 + Math.min(0.15, t * 0.0009);
+  const dir = seed % 4; const px = (dir === 0 ? 1 : dir === 1 ? -1 : 0) * Math.min(40, t * 0.25), py = (dir === 2 ? 1 : dir === 3 ? -1 : 0) * Math.min(30, t * 0.2);
+  const inK = ease(f, fade, fade + 10);
+  const dk = hero ? 0 : ease(f, dimAt, dimAt + 8);
+  return <AbsoluteFill style={{opacity: inK, overflow: 'hidden'}}>
+    <Img src={staticFile(src)} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+      transform: `scale(${z + (1 - inK) * 0.08}) translate(${px}px, ${py}px)`, filter: `blur(${dk * 5}px) saturate(${1 - dk * 0.2})`}} />
+    <AbsoluteFill style={{background: vertical
+        ? 'linear-gradient(180deg, rgba(6,10,22,0.85) 0%, rgba(6,10,22,0.35) 32%, rgba(6,10,22,0) 50%)'
+        : 'linear-gradient(0deg, rgba(6,10,22,0.88) 0%, rgba(6,10,22,0.45) 24%, rgba(6,10,22,0) 42%)', opacity: 1 - dk}} />
+    <AbsoluteFill style={{background: 'rgba(8,14,30,0.64)', opacity: dk}} />
+  </AbsoluteFill>;
+};
+
 const Cover: React.FC<{text: string; f: number; bg?: string; hi?: string}> = ({text, f, bg = C.orange, hi = C.navy}) => {
   const o = interpolate(f, [62, 76], [1, 0], cl); if (o <= 0) return null;
   const ws = text.split(/\s+/).filter(Boolean).slice(0, 6);
@@ -248,9 +269,16 @@ export const FaEpisode: React.FC<TLEpProps> = ({beats, vertical, cover, brand = 
   const out = interpolate(f, [b.end - 6, b.end], [1, 0], cl);
   const textOnly = b.visual?.type === 'question';
   const L = vertical ? {words: [60, 420, 960, 96], wc: [540, 1080], ws: 1.32, stamp: [W - 60, 150]} : {words: [120, 60, 1680, 96], wc: [960, 650], ws: 1.25, stamp: [W - 70, 70]};
+  const picAt = b.img ? (b.imgAt ?? b.start) : -1;
+  const hero = !!b.img && picAt === b.start && !textOnly;
+  const prev = i > 0 ? beats[i - 1] : undefined;
+  const picTh: Th = {...PAL[1], ink: C.white, sub: '#D5DEEC', card: 'rgba(10,18,36,0.80)', cardInk: C.white};
+  const wt = b.img ? picTh : th;
   return <AbsoluteFill style={{background: f < sAt + 14 ? prevTh.bg : th.bg}}>
     <Wipe f={f} at={sAt} color={th.bg} W={W} H={H} right={sec % 2 === 0} />
     {f >= sAt + 14 && <AbsoluteFill style={{background: th.bg}} />}
+    {b.img && prev?.img && prev.img !== b.img && f < picAt + 10 && <Pic src={prev.img} f={f} at={prev.imgAt ?? prev.start} fade={-99} dimAt={-99} hero={false} vertical={vertical} seed={beats.findIndex((x) => x.img === prev.img)} />}
+    {b.img && <Pic src={b.img} f={f} at={picAt} fade={prev?.img === b.img ? -99 : picAt} dimAt={b.start} hero={hero} vertical={vertical} seed={beats.findIndex((x) => x.img === b.img)} />}
     {/* section label (stage) */}
     {b.stage && <div style={{position: 'absolute', top: L.stamp[1], right: W - L.stamp[0], direction: 'rtl', opacity: ease(f, sAt + 8, sAt + 18),
       transform: `translateY(${(1 - ease(f, sAt + 8, sAt + 18)) * -30}px)`, background: th.accent, color: th.bg === C.navy ? C.navy : C.white,
@@ -259,14 +287,15 @@ export const FaEpisode: React.FC<TLEpProps> = ({beats, vertical, cover, brand = 
       color: th.sub, display: 'flex', alignItems: 'center', gap: 12, opacity: vertical ? 0 : 1}}>
       <span style={{width: 16, height: 16, borderRadius: 8, background: th.accent, display: 'inline-block'}} />{brand}</div>
     <div key={'w' + i} style={{opacity: out}}>
-      {!textOnly && <KWords words={b.words || []} f={f} at={b.start + 2} size={L.words[3]} th={th} top={L.words[1] + (vertical ? 0 : 40)} width={L.words[2]} left={L.words[0]} />}
+      {!textOnly && !hero && <KWords words={b.words || []} f={f} at={b.start + 2} size={L.words[3]} th={wt} top={L.words[1] + (vertical ? 0 : 40)} width={L.words[2]} left={L.words[0]} />}
+      {hero && <KWords words={b.words || []} f={f} at={b.start + 6} size={vertical ? 104 : 104} th={picTh} top={vertical ? 230 : H - 230} width={L.words[2]} left={L.words[0]} />}
     </div>
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{position: 'absolute'}}>
+    {!hero && <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{position: 'absolute'}}>
       <g key={'v' + i} opacity={Math.min(ease(f, b.start, b.start + 6), out)}
         transform={`translate(${L.wc[0]} ${textOnly ? H / 2 : L.wc[1]}) scale(${(textOnly ? 1.25 : L.ws) * (0.94 + 0.06 * Math.min(1, sp(f, b.start)))})`}>
-        <Widget v={b.visual} f={f} at={b.start + 6} dur={dur} th={th} node={b.node} />
+        <Widget v={b.visual} f={f} at={b.start + 6} dur={dur} th={wt} node={b.node} />
       </g>
-    </svg>
+    </svg>}
     {vertical && cover && f < 80 && <Cover text={cover} f={f} bg={HOOK.bg} hi={HOOK.accent} />}
   </AbsoluteFill>;
 };
