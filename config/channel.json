@@ -51,7 +51,9 @@
   },
   "pace": {
    "words_per_second": 2.96,
-   "max_factor": 1.33
+   "max_factor": 1.33,
+   "filter": "atempo",
+   "note": "Owner (Nov 12) approved by ear: raw ElevenLabs (speed 1.0) -> long pauses trimmed if needed -> ONE atempo. Rubberband sounded like a hall."
   }
  },
  "long_video": {
