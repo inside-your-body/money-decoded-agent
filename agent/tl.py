@@ -438,10 +438,7 @@ Shorts: {json.dumps([' '.join(_tx(l) for l in x.get('lines', [])) for x in ep.ge
    - title ≤ 60 characters, the subject inside the first 40 (mobile feed), the main keyword (or its most natural wording) near the start,
      a number, a name or a date from the script, a curiosity gap (twist, hidden truth, surprising number) — understandable at a glance;
      max 2 ALL-CAPS words, no hype words (amazing, insane, secret, ultimate, best…).
-   - thumb: 2-4 Persian words for the thumbnail that say what the title does NOT (never repeat a title word) — same promise, different
-     words, e.g. a verdict "بانکی که یک‌شبه مُرد", "همه‌اش دود شد", a contrast "پولدار دیروز، ورشکسته امروز". Owner (Nov 12): an ordinary
-     Persian viewer who knows NOTHING about finance must understand it instantly — no jargon or technical terms (رپو، مشتقه، اوراق…),
-     no unexplained foreign names, no bare numbers without meaning. Put the ONE key word that should be yellow in "key".
+   - thumb: {THUMB_RULE} Put the ONE key word that should be yellow in "key".
 2. "title": the best one of them (best mix of searchable + curiosity + honest).
 3. "hook": the first 2 lines of the description (≤ 220 characters total): they show under the video in search — keyword in sentence 1,
    then an open question or twist that makes people want to watch. No hashtags.
@@ -603,19 +600,49 @@ def _typeset(bg_jpg, text, key, dst):
     sh(['npx', 'remotion', 'still', 'src/index.ts', 'ThumbFa', str(dst), f'--props={pf}', '--log=warn'], cwd=ROOT / 'render')
 
 
+# owner (Nov 12): the thumbnail headline must make people CURIOUS (an open question / a mystery), understandable by anyone
+THUMB_RULE = """2-5 Persian words for the thumbnail that say what the title does NOT (never repeat a title word) and open a CURIOSITY GAP
+     the viewer can only close by clicking: a mystery, a question, a hidden cause or a shocking twist - e.g. "پول‌ها کجا رفت؟",
+     "یک اشتباه، ۱۵۸ سال را نابود کرد", "چرا کسی نجاتش نداد؟", "رازی که پنهان کردند". An ordinary Persian viewer who knows NOTHING
+     about finance must understand every word instantly - no jargon or technical terms (رپو، مشتقه، اوراق…), no unexplained foreign
+     names, no bare numbers without meaning, no plain statement that already tells the whole story."""
+
+# owner (Nov 12): ONE fixed thumbnail template, always the same, clean (not busy), text far from the edges
+THUMB_TEMPLATE = """FIXED CHANNEL TEMPLATE - follow it exactly, every thumbnail of the channel must look like the same series:
+- Canvas: 16:9. No frame or border (our code adds the channel frame afterwards).
+- LEFT 55%: ONE big, clear, cinematic subject (the real subject, recognisable) + at most ONE extra curiosity element. Nothing else.
+- RIGHT 45%: a calm, simple dark navy (#0B1626) area with a soft gradient into the picture - the headline sits here.
+- CLEAN, NOT BUSY: maximum 2-3 visual elements in total; no newspapers, no extra signs, no flying banknotes or debris everywhere,
+  no collage, no small details. Lots of breathing room.
+- HEADLINE: the given Persian text in 2 lines (3 at most), right-aligned in the right area, in a huge ultra-bold chunky display typeface
+  (the same style every time), white with the ONE key word in bright yellow (#FFD23F), thick black outline and a strong drop shadow.
+- SAFE MARGINS: every letter at least 9% of the width away from the left/right edges and 14% of the height away from the top and bottom
+  edges (the top and bottom 6% may be cropped). The bottom-right corner stays empty (YouTube shows the video length there).
+- No other text at all, apart from the real name/logo on the subject itself."""
+
+
 def _text_check(img, text):
     """Claude vision: is the Persian headline in the AI thumbnail spelled exactly right and readable?"""
     import base64
     content = [{'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': base64.b64encode(pathlib.Path(img).read_bytes()).decode()}},
                {'type': 'text', 'text': f"""This YouTube thumbnail must show this Persian headline: «{text}».
-Read the Persian text in the picture letter by letter. Return JSON only: {{"read": str, "exact": bool, "readable": bool, "extra_text": bool, "problem": str}}
+Read the Persian text in the picture letter by letter. Return JSON only: {{"read": str, "exact": bool, "readable": bool, "margin_ok": bool, "extra_text": bool, "problem": str}}
 exact=true only if every word is spelled exactly right (all letters and dots correct, right-to-left, no missing/extra/garbled letters);
-readable=true if it is big and clear on a phone; extra_text=true if there is any OTHER text besides the headline and the real name/logo of
+readable=true if it is big and clear on a phone; margin_ok=false if any letter is closer than ~5% of the width/height to an edge
+or is cut off; extra_text=true if there is any OTHER text besides the headline and the real name/logo of
 the subject (e.g. a company name on its building is fine)."""}]
     try:
         return llm._repair(llm.ask(content, max_tokens=500, retries=2)) or {}
     except Exception as e:
         print('text check failed', e); return {}
+
+
+def _frame(im):
+    """The channel's fixed thumbnail frame (owner Nov 12: always the same template): thin rounded orange line inset from the edges."""
+    from PIL import ImageDraw
+    im = im.convert('RGB'); d = ImageDraw.Draw(im); w, h = im.size; m = round(w * 0.018)
+    d.rounded_rectangle([m, m, w - m - 1, h - m - 1], radius=round(w * 0.022), outline=(251, 133, 0), width=max(4, round(w * 0.006)))
+    return im
 
 
 def _ai_thumb(title, summ, text, out, dst):
@@ -632,19 +659,24 @@ What the video is about: {summ}
 1) PICTURE: the viewer must understand at ONE glance WHO or WHAT the video is about - show the real subject recognisably (a company: its real
 famous headquarters with its real name sign/logo; a person: a recognisable documentary portrait; a country/currency: its landmark or real
 banknotes; an event: its most iconic moment) plus ONE dramatic curiosity element (a crack, money burning or flying away, a giant red arrow,
-a shocked face). Cinematic, high contrast, saturated, glossy, dramatic light.
+a shocked face). Cinematic, high contrast, saturated, dramatic light, simple and uncluttered.
 2) HEADLINE: write EXACTLY this Persian (Farsi) text, right-to-left, spelled perfectly letter by letter: «{text}»
-Typeset it yourself the way the most viral Persian / Arabic YouTube thumbnails do: a huge, ultra-bold, chunky display typeface, 2 lines at
-most, white with the most important word in bright yellow (or red), thick dark outline and strong drop shadow, maybe a slight 3D or a
-coloured highlight box behind one word, very large - about a third of the image height - and perfectly readable on a phone.
-No other text at all (apart from the real name/logo on the subject itself). Keep all text and faces inside the central 80% of the
-height (the top and bottom 10% may be cropped).{note}"""
-        if not images.gen(prompt, raw, size='1536x1024', quality='high'):
+Typeset it yourself in the style of the most viral Persian YouTube thumbnails.
+{THUMB_TEMPLATE}{note}"""
+        style = ROOT / 'assets/thumb_style.jpg'       # the owner-approved thumbnail = the fixed template for every next one
+        if style.exists():
+            ref = out / 'style_ref.png'; Image.open(style).convert('RGB').save(ref)
+            ok = images.edit(prompt + "\nThe reference image is the channel's APPROVED thumbnail template: copy its layout, headline position, "
+                             "typeface style, outline, colours and amount of detail exactly - only the subject and the headline text are new "
+                             "(never copy the reference's subject or words).", [str(ref)], str(raw), size='1536x1024', quality='high')
+        else:
+            ok = images.gen(prompt, raw, size='1536x1024', quality='high')
+        if not ok:
             continue
         im = Image.open(raw).convert('RGB'); h = round(im.width * 9 / 16); y0 = (im.height - h) // 2
-        jpg = out / f'full{k}.jpg'; im.crop((0, y0, im.width, y0 + h)).resize((1280, 720), Image.LANCZOS).save(jpg, quality=92)
+        jpg = out / f'full{k}.jpg'; _frame(im.crop((0, y0, im.width, y0 + h)).resize((1280, 720), Image.LANCZOS)).save(jpg, quality=92)
         r = _text_check(jpg, text); print('ai thumbnail check', k, r)
-        if r.get('exact') and r.get('readable', True) and not r.get('extra_text'):
+        if r.get('exact') and r.get('readable', True) and r.get('margin_ok', True) and not r.get('extra_text'):
             shutil.copy(jpg, dst); return True
         note = (f"\nA previous attempt wrote the headline wrongly as «{r.get('read', '')}» ({r.get('problem') or 'misspelled'}). "
                 f"Copy every Persian letter of «{text}» exactly.")
