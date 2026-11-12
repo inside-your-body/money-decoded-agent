@@ -627,10 +627,10 @@ THUMB_TEMPLATE = """FIXED CHANNEL TEMPLATE (owner Nov 12, from his reference) - 
 # owner (Nov 12): a Short has no custom thumbnail -> its FIRST frames show the same template as a vertical cover
 VERTICAL_COVER = """
 VERTICAL SHORT COVER (9:16): the same template, re-arranged for a phone screen: PART A in huge black letters in the upper part (starting
-below the top 16%), the subject in the middle, PART B on the red box right next to / just under the subject's face and ENDING ABOVE 70% of the
+below the top 8%), the subject in the middle, PART B on the red box right next to / just under the subject's face and ENDING ABOVE 70% of the
 height (the lower 30% of the picture shows only the subject's body or empty background). YouTube draws buttons over a Short, so EVERY letter must stay inside the
-safe area: at least 16% of the height away from the top, at least 26% of the height away from the bottom, and at least 10% of the width away
-from the left and right edges (the left and right 8% may be cropped). Nothing important in the bottom quarter."""
+safe area: at least 8% of the height away from the top, at least 24% of the height away from the bottom, and at least 12% of the width away
+from the left and right edges (nothing is cropped; keep the red box well inside the picture). Nothing important in the bottom quarter."""
 
 
 def _text_check(img, text, vertical=False):
@@ -690,9 +690,10 @@ Typeset it yourself in the style of the most viral YouTube thumbnails.
         if not ok:
             continue
         im = Image.open(raw).convert('RGB')
-        if vertical:              # 1024x1536 -> 9:16 (the sides are cropped a little) -> 1080x1920
-            w = round(im.height * 9 / 16); x0 = (im.width - w) // 2
-            jpg = out / f'vfull{k}.jpg'; im.crop((x0, 0, x0 + w, im.height)).resize((1080, 1920), Image.LANCZOS).save(jpg, quality=92)
+        if vertical:              # 1024x1536 (2:3) -> 1080x1620, extended to 9:16 by continuing its own top/bottom edges: nothing is cut off
+            a_ = np.asarray(im.resize((1080, 1620), Image.LANCZOS))
+            a_ = np.pad(a_, ((220, 80), (0, 0), (0, 0)), mode='edge')
+            jpg = out / f'vfull{k}.jpg'; Image.fromarray(a_).save(jpg, quality=92)
         else:
             h = round(im.width * 9 / 16); y0 = (im.height - h) // 2
             jpg = out / f'full{k}.jpg'; im.crop((0, y0, im.width, y0 + h)).resize((1280, 720), Image.LANCZOS).save(jpg, quality=92)   # owner's template has no frame
