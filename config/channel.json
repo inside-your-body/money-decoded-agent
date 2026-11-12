@@ -13,8 +13,8 @@
  "schedule": {
   "every_days": 2,
   "build_cron_utc": "7 5 * * * (+ backup 7 9 * * *)",
-  "publish_long_utc": "17:00",
-  "publish_short_utc": "17:30",
+  "publish_long_utc": "14:00",
+  "publish_short_utc": "14:30",
   "publish_short2_utc": "14:00",
   "audience": "Owner (Nov 8): Persian-speaking viewers (Iran + diaspora). Long video 17:00 UTC = 20:30 Tehran / 20:00 Istanbul, the Short 30 min later.",
   "mode": "auto_public",
@@ -22,7 +22,8 @@
   "rhythm_note": "Owner (Nov 2): one long video + one Short every OTHER day (40 h gap guard; the daily cron skips the day in between).",
   "paused": true,
   "paused_note": "Owner (Nov 8): paused while the bot is switched to Persian; un-pause after the owner approves the first Persian preview. true = scheduled runs skip.",
-  "publish_time_note": "Owner approved (Nov 10): long video 20:30 Tehran (17:00 UTC), Short 30 min later (17:30 UTC)."
+  "publish_time_note": "Owner (Nov 12): every other day, long video 17:00 Istanbul (14:00 UTC), Short 17:30 Istanbul (14:30 UTC). Episodes are built ahead (up to 3 a day, YouTube quota) and scheduled into the next free slot.",
+  "max_episodes_per_day": 3
  },
  "voice": {
   "engine": "elevenlabs",
