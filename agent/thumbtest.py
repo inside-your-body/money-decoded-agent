@@ -6,11 +6,10 @@ from . import tl
 
 def main():
     out = ROOT / 'samples/thumb_test'; shutil.rmtree(out, ignore_errors=True); out.mkdir(parents=True)
-    title = os.environ.get('T_TITLE') or 'سقوط لیمن برادرز؛ ۶۳۹ میلیارد دلار و صفر پول نقد'
+    title = os.environ.get('T_TITLE') or 'چرا تورم هیچ‌وقت پایین نمیاد؟'
     text = os.environ.get('T_TEXT') or ''
-    summ = os.environ.get('T_ABOUT') or ('The 2008 collapse of Lehman Brothers, the 158-year-old Wall Street investment bank: huge bets on US home '
-                                         'mortgages, hidden debt, the weekend nobody saved it, employees leaving its New York headquarters with '
-                                         'cardboard boxes, the biggest bankruptcy in history (639 billion dollars) and the global crash that followed.')
+    summ = os.environ.get('T_ABOUT') or ('Why prices only go up and never come back down: inflation explained simply for ordinary people - '
+                                         'the same shopping basket costs more every year, money printing, wages that lag behind, savings losing value.')
     texts = [text] if os.environ.get('T_TEXT') else []
     if not texts:          # owner (Nov 12): more curious headlines -> Claude proposes them with the channel's thumbnail rule
         from . import llm

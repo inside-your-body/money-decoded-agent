@@ -608,17 +608,20 @@ THUMB_RULE = """2-5 Persian words for the thumbnail that say what the title does
      names, no bare numbers without meaning, no plain statement that already tells the whole story."""
 
 # owner (Nov 12): ONE fixed thumbnail template, always the same, clean (not busy), text far from the edges
-THUMB_TEMPLATE = """FIXED CHANNEL TEMPLATE - follow it exactly, every thumbnail of the channel must look like the same series:
-- Canvas: 16:9. No frame or border (our code adds the channel frame afterwards).
-- LEFT 55%: ONE big, clear, cinematic subject (the real subject, recognisable) + at most ONE extra curiosity element. Nothing else.
-- RIGHT 45%: a calm, simple dark navy (#0B1626) area with a soft gradient into the picture - the headline sits here.
-- CLEAN, NOT BUSY: maximum 2-3 visual elements in total; no newspapers, no extra signs, no flying banknotes or debris everywhere,
-  no collage, no small details. Lots of breathing room.
-- HEADLINE: the given Persian text in 2 lines (3 at most), right-aligned in the right area, in a huge ultra-bold chunky display typeface
-  (the same style every time), white with the ONE key word in bright yellow (#FFD23F), thick black outline and a strong drop shadow.
-- SAFE MARGINS: every letter at least 9% of the width away from the left/right edges and 14% of the height away from the top and bottom
+THUMB_TEMPLATE = """FIXED CHANNEL TEMPLATE (owner Nov 12, from his reference) - every thumbnail of the channel must look like the same series:
+- STYLE: clean, simple and elegant editorial poster look. Background = light off-white / cream paper with a subtle grunge paper texture.
+- SUBJECT: ONE person or object that shows the topic, as a sharp BLACK-AND-WHITE photo cut-out (no background), in the CENTRE, big,
+  from the chest up for a person; a clear readable expression (thoughtful, worried or surprised). Never a real famous person.
+  If the topic is a brand, show its most famous product / store recognisably instead of a person.
+- ONE light accent element around the subject that tells the topic (e.g. a few flying banknotes, coins, price tags or receipts),
+  small and airy - never a busy collage.
+- HEADLINE IN TWO PARTS: PART A = huge, ultra-bold, condensed, slightly distressed/grunge BLACK letters standing on the cream background on
+  ONE side of the subject; PART B = white bold condensed distressed letters on a solid RED (#E4252B) rectangle box on the OTHER side of the
+  subject, slightly overlapping it. Same typeface style and the same layout every time.
+- Only 3 colours: cream, black, red (+ the grey tones of the photo and the money).
+- SAFE MARGINS: every letter at least 7% of the width away from the left/right edges and 14% of the height away from the top and bottom
   edges (the top and bottom 6% may be cropped). The bottom-right corner stays empty (YouTube shows the video length there).
-- No other text at all, apart from the real name/logo on the subject itself."""
+- No other text at all."""
 
 
 def _text_check(img, text):
@@ -651,17 +654,18 @@ def _ai_thumb(title, summ, text, out, dst):
     from . import images
     from PIL import Image
     note = ''
+    ta, tb = [x.strip() for x in text.split('|', 1)] if '|' in text else (text.split()[0], ' '.join(text.split()[1:]) or text)
+    text = f'{ta} {tb}'
     for k in range(3):
         raw = out / f'full{k}.png'
         prompt = f"""Design a complete, professional, highly clickable YouTube thumbnail (16:9) for a Persian-language finance documentary.
 Video title: {title}
 What the video is about: {summ}
-1) PICTURE: the viewer must understand at ONE glance WHO or WHAT the video is about - show the real subject recognisably (a company: its real
-famous headquarters with its real name sign/logo; a person: a recognisable documentary portrait; a country/currency: its landmark or real
-banknotes; an event: its most iconic moment) plus ONE dramatic curiosity element (a crack, money burning or flying away, a giant red arrow,
-a shocked face). Cinematic, high contrast, saturated, dramatic light, simple and uncluttered.
-2) HEADLINE: write EXACTLY this Persian (Farsi) text, right-to-left, spelled perfectly letter by letter: «{text}»
-Typeset it yourself in the style of the most viral Persian YouTube thumbnails.
+1) The viewer must understand at ONE glance what the video is about from the subject + the accent element + the headline.
+2) HEADLINE (Persian / Farsi, right-to-left, spelled perfectly letter by letter, Persian digits only):
+   PART A (big black letters): «{ta}»
+   PART B (white letters on the red box): «{tb}»
+Typeset it yourself in the style of the most viral YouTube thumbnails.
 {THUMB_TEMPLATE}{note}"""
         style = ROOT / 'assets/thumb_style.jpg'       # the owner-approved thumbnail = the fixed template for every next one
         if style.exists():
@@ -674,7 +678,7 @@ Typeset it yourself in the style of the most viral Persian YouTube thumbnails.
         if not ok:
             continue
         im = Image.open(raw).convert('RGB'); h = round(im.width * 9 / 16); y0 = (im.height - h) // 2
-        jpg = out / f'full{k}.jpg'; _frame(im.crop((0, y0, im.width, y0 + h)).resize((1280, 720), Image.LANCZOS)).save(jpg, quality=92)
+        jpg = out / f'full{k}.jpg'; im.crop((0, y0, im.width, y0 + h)).resize((1280, 720), Image.LANCZOS).save(jpg, quality=92)   # owner's template has no frame
         r = _text_check(jpg, text); print('ai thumbnail check', k, r)
         if r.get('exact') and r.get('readable', True) and r.get('margin_ok', True) and not r.get('extra_text'):
             shutil.copy(jpg, dst); return True
@@ -697,6 +701,9 @@ def thumbs(ep, ep_dir):
     summ = summary(ep); (out / 'summary.txt').write_text(summ)
     title = ep.get('upload', {}).get('title') or ep.get('title')
     text = (ep.get('thumb_text') or ((ep.get('thumbnail') or {}).get('variants') or [{}])[0].get('words') or title).strip()
+    if '|' not in text and ep.get('thumb_key') and ep['thumb_key'] in text:        # big black key word | the rest on the red box
+        rest = ' '.join(text.replace(ep['thumb_key'], ' ').split())
+        if rest: text = ep['thumb_key'] + '|' + rest
     try:
         if CFG.get('thumb_ai_text', True) and _ai_thumb(title, summ, text, out, ep_dir / 'thumbnail.jpg'):
             print('thumbnail (ChatGPT, own typography):', text); return
