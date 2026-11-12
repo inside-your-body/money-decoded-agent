@@ -1,0 +1,30 @@
+name: Voice test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  voice:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11', cache: 'pip'}
+      - name: System deps
+        run: bash .github/scripts/deps.sh
+      - name: Deps
+        run: pip install requests numpy scipy soundfile
+      - name: One-minute voice (owner's fixed voice rule)
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: ffmpeg -hide_banner -filters | grep -i rubberband || echo "no rubberband"; python -m agent.voicetest
+      - name: Commit
+        run: |
+          git config user.name "money-decoded-agent"; git config user.email "agent@users.noreply.github.com"
+          git add samples/voice_test data/eleven_usage.json && git commit -m "voice test [skip ci]" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase --autostash -q origin main && git push && break; sleep 5; done
