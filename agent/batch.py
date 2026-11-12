@@ -67,6 +67,11 @@ def main():
             print('== voicing', t['id'], t['title'])
             tl.build(t, ep_dir, voice_only=True)
             _pack(ep_dir, t['id']); t['prepared'] = True; done.append(t['id'])
+            if len(done) == 1:          # a listening sample for the owner: first minute of the long voice + the Short
+                pv = ROOT / 'samples/voice_preview'; pv.mkdir(parents=True, exist_ok=True)
+                subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(ep_dir / 'vo_long.wav'), '-t', '75', '-b:a', '96k', str(pv / f"ep-{t['id']}-long.mp3")])
+                subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(ep_dir / 'vo_short0.wav'), '-b:a', '96k', str(pv / f"ep-{t['id']}-short.mp3")])
+                (pv / f"ep-{t['id']}.txt").write_text(t['title'] + '\n\n' + '\n'.join(l.get('say') or l['text'] for l in tl.long_lines(load(ep_dir / 'episode.json'))[:12]))
         except Exception as e:
             print('episode failed:', t['id'], e)
             if 'ElevenLabs refused' in str(e): break                     # plan/credit problem: stop, do not burn Claude credits
