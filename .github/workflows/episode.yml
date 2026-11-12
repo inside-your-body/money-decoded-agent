@@ -19,6 +19,13 @@ on:
       resume_run:
         description: 'Optional: run id whose finished build (work artifact) should be rendered + published without rebuilding'
         required: false
+      reuse_voice_run:
+        description: 'Optional: run id whose script + voices are reused (no new ElevenLabs credits); pictures, graphics and thumbnail are made again'
+        required: false
+      revoice:
+        description: 'With reuse_voice_run: keep the script but make the voice again'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -53,6 +60,10 @@ jobs:
         if: inputs.resume_run != ''
         uses: actions/download-artifact@v4
         with: {name: work, path: work, run-id: '${{ inputs.resume_run }}', github-token: '${{ github.token }}'}
+      - name: Reuse script + voices
+        if: inputs.reuse_voice_run != ''
+        uses: actions/download-artifact@v4
+        with: {name: work, path: work, run-id: '${{ inputs.reuse_voice_run }}', github-token: '${{ github.token }}'}
       - name: Build episode
         id: run
         env:
@@ -64,6 +75,7 @@ jobs:
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           GH_TOKEN: ${{ github.token }}
+          REVOICE: ${{ inputs.revoice }}
         run: |
           if [ -z "$YT_TOKEN_JSON" ] && [ -f data/yt_token.enc ] && [ -n "$YT_CLIENT_SECRET" ]; then
             RT=$(openssl enc -d -aes-256-cbc -pbkdf2 -a -A -in data/yt_token.enc -pass env:YT_CLIENT_SECRET); echo "::add-mask::$RT"
@@ -74,6 +86,7 @@ jobs:
           ARGS="--stage build"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           if [ -n "${{ inputs.topic }}" ]; then ARGS="$ARGS --topic \"${{ inputs.topic }}\""; fi
+          if [ -n "${{ inputs.reuse_voice_run }}" ] && [ -f work/current.json ]; then ARGS="$ARGS --reuse"; fi
           eval python -m agent.run $ARGS
           if [ -f work/current.json ]; then echo "go=1" >> $GITHUB_OUTPUT; fi
       - name: Save work
