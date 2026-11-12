@@ -1,0 +1,10 @@
+{
+ "words": 1727,
+ "raw_seconds": 764.87,
+ "factor_raw": 1.311,
+ "factor": 1.311,
+ "filter": "atempo",
+ "final_seconds": 583.44,
+ "words_per_second": 2.96,
+ "ok": true
+}
