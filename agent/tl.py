@@ -109,7 +109,7 @@ format says), 8–16 sentences each, each with its own surprise. Plant an open l
 Final scene (stage null): the big picture + one question for the comments. Short spoken sentences, one idea each, every sentence SHOWABLE
 with a number, a place in the money map, an object, a flow of money or a change. Max 12 numbers in total. Explain — never advise.
 
-Then write {N_SHORTS} SHORTS (each 85–105 words, ≈ 30–40 s — never longer), each a DIFFERENT self-contained moment of the video
+Then write {N_SHORTS} SHORTS (each 70–86 words, ≈ 30–38 s at the fast narrator speed — never longer), each a DIFFERENT self-contained moment of the video
 (different fact, different twist — never the same point twice), each survives without the long video:
 line 1 = a curiosity question or shocking claim that works in the first second; one continuous mini story with a turn in it;
 second-to-last line sends viewers to the full video ("داستان کامل رو توی ویدیوی بالا گذاشتم"); last line loops into the first.
@@ -357,8 +357,8 @@ def build(topic, ep_dir, dry_run=False, voice_only=False):
         except Exception as e: print('voice text prep failed:', e)
         save(ep_dir / 'episode.json', ep)
     for s_ in ep.get('shorts', [])[:N_SHORTS]:
-        if paid and _wc([l['text'] for l in s_['lines']]) > 108 and not (ep_dir / 'vo_short0.wav').exists():
-            out = llm.ask_json(f"""Shorten this Persian YouTube Short script to 88-102 words (30-40 seconds). Keep line 1 (the hook), the turn,
+        if paid and _wc([l['text'] for l in s_['lines']]) > 90 and not (ep_dir / 'vo_short0.wav').exists():
+            out = llm.ask_json(f"""Shorten this Persian YouTube Short script to 72-84 words (30-38 seconds). Keep line 1 (the hook), the turn,
 the line that sends viewers to the full video and the loop. Return ONLY {{"lines": [str]}}.
 Lines: {json.dumps([l['text'] for l in s_['lines']], ensure_ascii=False)}""", max_tokens=3000)
             if out.get('lines'):
@@ -371,7 +371,7 @@ Lines: {json.dumps([l['text'] for l in s_['lines']], ensure_ascii=False)}""", ma
         lines = long_lines(ep)
         segs = _voice([l.get('say') or l['text'] for l in lines], [len(s['lines']) for s in ep['scenes']], ep_dir / 'vo_long.wav', ep_dir / 'segs_long.json')
         print(f"voice long: {segs[-1]['end']:.0f}s (need {need}s), {long_words(ep)} words")
-        if segs[-1]['end'] >= need or attempt == 2: break
+        if segs[-1]['end'] >= need or attempt == (0 if paid else 2): break   # paid voice: never throw a voiced file away
         ep = expand(ep, notes, int(need * long_words(ep) / segs[-1]['end'] * 1.06)); ep = storyboard(ep); save(ep_dir / 'episode.json', ep)
         for f in ('vo_long.wav', 'segs_long.json'): (ep_dir / f).unlink(missing_ok=True)
     # 'narration' view so package.py chapters work
@@ -388,7 +388,7 @@ Lines: {json.dumps([l['text'] for l in s_['lines']], ensure_ascii=False)}""", ma
         for attempt in range(1 if paid else 3):
             sg = _voice([l.get('say') or l['text'] for l in s['lines']], [len(s['lines'])], ep_dir / f'vo_short{k}.wav', ep_dir / f'segs_short{k}.json')
             print(f'voice short {k}: {sg[-1]["end"]:.0f}s')
-            if sg[-1]['end'] <= 41 or attempt == 2: break          # owner (Nov 9): Shorts 30-40 s
+            if sg[-1]['end'] <= 41 or attempt == (0 if paid else 2): break          # owner (Nov 9): Shorts 30-40 s; paid voice is never thrown away
             target = int(_wc([l['text'] for l in s['lines']]) * 37 / sg[-1]['end'])
             out = llm.ask_json(f"""Shorten this Persian YouTube Short script to at most {target} words (it must stay under 40 seconds). Keep line 1 (the hook),
 the mini timeline, the line that sends viewers to the full video and the loop. Return ONLY {{"lines": [str]}}.
@@ -597,6 +597,12 @@ def _typeset(bg_jpg, text, key, dst):
     sh(['npx', 'remotion', 'still', 'src/index.ts', 'ThumbFa', str(dst), f'--props={pf}', '--log=warn'], cwd=ROOT / 'render')
 
 
+def _typeset_plain(text, key, dst):
+    """No usable picture: Persian headline on the dark navy card (no Latin letters/digits ever)."""
+    pf = pathlib.Path(dst).with_suffix('.json'); save(pf, {'bg': '', 'text': text, 'key_word': key or ''})
+    sh(['npx', 'remotion', 'still', 'src/index.ts', 'ThumbFa', str(dst), f'--props={pf}', '--log=warn'], cwd=ROOT / 'render')
+
+
 def thumbs(ep, ep_dir):
     """Owner (Nov 8): Persian channel. The image model cannot spell Persian, so it draws the picture WITHOUT any text (dark navy look,
     one glossy subject, Finn small in a corner, empty top band) and our code typesets the Persian headline (ep['thumb_text'])."""
@@ -605,7 +611,7 @@ def thumbs(ep, ep_dir):
     summ = summary(ep); (out / 'summary.txt').write_text(summ)
     title = ep.get('upload', {}).get('title') or ep.get('title')
     text = (ep.get('thumb_text') or ((ep.get('thumbnail') or {}).get('variants') or [{}])[0].get('words') or title).strip()
-    note, best = '', None
+    note, best, last = '', None, None
     for k in range(3):
         raw = out / f'bg{k}.png'
         prompt = f"""Create the PICTURE for a YouTube thumbnail (16:9 landscape) of a finance explainer video. The headline will be added later
@@ -615,7 +621,7 @@ What the video is about: {summ}
 Goal: the highest click-through rate - ONE striking, instantly understandable image of the topic that creates curiosity (a clear before -> after
 or cause -> effect with ONE bright orange arrow works best). {FINN_THUMB.split('HUGE bold')[0]}
 Leave the TOP 38% of the frame as calm dark navy background (only soft glow) - the headline goes there; the subject sits in the lower 62%.
-High contrast, very clean, readable at phone size. No real people's faces, no logos.{note}"""
+High contrast, very clean, readable at phone size. No real people's faces, no logos, no company names, no building signs, no newspapers.{note}"""
         if CFG.get('style') == 'finn':
             from . import fox
             ok = images.edit(prompt + '\nFinn the fox (the channel mascot) appears SMALL in a lower corner, reacting with a strong emotion: ' + fox.FINN,
@@ -628,11 +634,17 @@ High contrast, very clean, readable at phone size. No real people's faces, no lo
         if not r.get('has_text', False) and r.get('top_clear', True) and r.get('topic_clear', True):
             best = jpg; break
         if not r.get('has_text', False) and not best: best = jpg
+        last = jpg
         note = f"\nA previous attempt had this problem, avoid it: {r.get('problem') or 'it contained text'}."
+    best = best or last      # owner (Nov 12): never the Latin code-made card; a little text in the picture is hidden under our headline band
     if best:
         try:
             _typeset(best, text, ep.get('thumb_key'), ep_dir / 'thumbnail.jpg'); print('thumbnail:', text); return
         except Exception as e: print('typeset failed', e)
+    if CFG.get('language') == 'fa':
+        try:
+            _typeset_plain(text, ep.get('thumb_key'), ep_dir / 'thumbnail.jpg'); print('thumbnail (no picture):', text); return
+        except Exception as e: print('plain typeset failed', e)
     print('picture failed -> code-made fallback')
     v = ((ep.get('thumbnail') or {}).get('variants') or [{}])[0]
     from PIL import Image
