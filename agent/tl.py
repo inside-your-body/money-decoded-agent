@@ -438,7 +438,7 @@ Shorts: {json.dumps([' '.join(_tx(l) for l in x.get('lines', [])) for x in ep.ge
    - title ≤ 60 characters, the subject inside the first 40 (mobile feed), the main keyword (or its most natural wording) near the start,
      a number, a name or a date from the script, a curiosity gap (twist, hidden truth, surprising number) — understandable at a glance;
      max 2 ALL-CAPS words, no hype words (amazing, insane, secret, ultimate, best…).
-   - thumb: {THUMB_RULE} Put the ONE key word that should be yellow in "key".
+   - thumb: {THUMB_RULE} Write "thumb" as PART A + " " + PART B, and put PART A (exactly as written) in "key".
 2. "title": the best one of them (best mix of searchable + curiosity + honest).
 3. "hook": the first 2 lines of the description (≤ 220 characters total): they show under the video in search — keyword in sentence 1,
    then an open question or twist that makes people want to watch. No hashtags.
@@ -601,11 +601,11 @@ def _typeset(bg_jpg, text, key, dst):
 
 
 # owner (Nov 12): the thumbnail headline must make people CURIOUS (an open question / a mystery), understandable by anyone
-THUMB_RULE = """2-5 Persian words for the thumbnail that say what the title does NOT (never repeat a title word) and open a CURIOSITY GAP
-     the viewer can only close by clicking: a mystery, a question, a hidden cause or a shocking twist - e.g. "پول‌ها کجا رفت؟",
-     "یک اشتباه، ۱۵۸ سال را نابود کرد", "چرا کسی نجاتش نداد؟", "رازی که پنهان کردند". An ordinary Persian viewer who knows NOTHING
-     about finance must understand every word instantly - no jargon or technical terms (رپو، مشتقه، اوراق…), no unexplained foreign
-     names, no bare numbers without meaning, no plain statement that already tells the whole story."""
+THUMB_RULE = """the thumbnail headline in TWO parts (owner Nov 12, approved example: «تورم» + «چرا هیچ‌وقت پایین نمیاد؟»):
+     PART A = the TOPIC in 1-2 big words that tell at once what the video is about (e.g. «تورم», «برند زارا», «پس‌انداز», «کازینو»);
+     PART B = a short clear question or claim (3-6 words) that says what the viewer will find out and makes them curious
+     (e.g. «چرا هیچ‌وقت پایین نمیاد؟», «از همبرگر پول درنمیاره!»). Together they must say clearly what the video is about - never
+     vague lines like «آخر هفته‌ای که همه سکوت کردند». Simple everyday Persian, no jargon, no unexplained foreign names."""
 
 # owner (Nov 12): ONE fixed thumbnail template, always the same, clean (not busy), text far from the edges
 THUMB_TEMPLATE = """FIXED CHANNEL TEMPLATE (owner Nov 12, from his reference) - every thumbnail of the channel must look like the same series:
