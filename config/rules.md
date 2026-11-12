@@ -7,7 +7,7 @@ Tone: confident, curious, a little dramatic, warm — a storyteller friend who r
 Persian (محاوره‌ی روان و درست، نه کتابی و نه لاتی). Never a translation feel: write like a native Persian YouTuber.
 
 ## Voice, look and length (owner, Nov 9)
-- Narrator: ElevenLabs «Aran - Parsi» only, speed 1.4. Speak to the viewer as «تو», warm and friendly, story-driven, strong hook in the first 30 s.
+- Narrator: ElevenLabs «Aran - Parsi» only - owner's FIXED VOICE RULE (Nov 12): ≈ 3 words per second, natural, no wobble or metallic sound (see config voice.pace). Speak to the viewer as «تو», warm and friendly, story-driven, strong hook in the first 30 s.
 - Long video 8–9 minutes (at least 8 for mid-roll ads). One Short of 30–40 s per video.
 - The picture changes every 4–5 seconds; fonts: Lalezar (headlines), Titr (bold), Yekan (regular); a different colour palette per topic.
 - No English words, Latin letters or Latin digits on screen; digits are Persian.
@@ -41,13 +41,13 @@ marker, flat badges and icons, white cards, orange/yellow/teal accents, red for 
 AI SCENE PICTURES (owner Nov 12): every ~6-10 s a cinematic picture shows WHO / WHAT / WHERE we talk about (the real company building, people, place, era);
 the flat graphics and Persian typography run on top of it. The thumbnail picture shows the real subject recognisably.
 
-## Script (long video ≈ 8:10–8:50, 1120–1220 words)
+## Script (long video ≈ 8:10–8:50, 1450–1560 words)
 - Scene 1 = HOOK: cold open in the most surprising, most visual moment; a burning question; a concrete payoff promise by ~20 s;
   no background/definitions/statistics before 0:30.
 - 5–8 scenes, each with its own surprise. Final scene = the big picture + one question for the comments.
 - Short spoken sentences, one idea each; every sentence SHOWABLE (a number, an object, a flow of money, a change). Max ~12 numbers, rounded.
 
-## Short (ONE per long video) — 30–40 s (70–86 words), hard limit 41 s
+## Short (ONE per long video) — 30–40 s (88–105 words), hard limit 41 s
 - Line 1 works in the first second (curiosity question or shocking claim). One continuous mini story with a turn.
 - Second-to-last line sends viewers to the full video; the last line loops back into the first.
 

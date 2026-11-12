@@ -36,18 +36,22 @@
     "eleven_v3",
     "eleven_multilingual_v2"
    ],
-   "stability": 0.4,
+   "stability": 0.5,
    "similarity": 0.75,
    "style": 0.1,
-   "speed": 1.4,
+   "speed": 1.0,
    "monthly_credit_cap": 290000,
-   "note": "Owner (Nov 9): always «Aran - Parsi», eleven_v4, stability 40%, similarity 0.75, low style, speed 1.2. The 600k monthly plan is shared with other channels: this channel may use ~300k. No fallback voice: if ElevenLabs fails the episode stops. Owner (Nov 12): speed 1.4 (API max 1.2, the rest is a same-pitch speed-up)."
+   "note": "Owner (Nov 9): always «Aran - Parsi», eleven_v4, no fallback voice; ~300k credits/month for this channel. Owner's FIXED VOICE RULE (Nov 12): stability 0.50, similarity 0.75, speed 1.0, best format (pcm_44100 / mp3_44100_192); then ONE speed-up of the whole file with a factor computed every time = duration / (words / 2.96), max 1.33 (never 1.4); long pauses trimmed first if needed; WAV until one final AAC 192k; music 0.30 with sidechain ducking, SFX 0.2-0.4, loudnorm -15/-1.5, 2.5 s music fade-out."
   },
   "openai": {
    "model": "gpt-4o-mini-tts",
    "voice": "verse",
    "speed": 1.1,
    "instructions": "Language: Persian (Farsi), standard Tehrani accent, natural modern spoken Persian - pronounce every Persian word correctly, read numbers in Persian. Voice: an energetic, captivating storyteller explaining money like a top Persian finance YouTuber talking to a friend. Tone: confident, curious, a little dramatic and warm. Pace: brisk and lively, never slow or sleepy; short pauses only right before a reveal or after a question. Emphasis: punch the key numbers and the twist words. Never monotone, never salesy."
+  },
+  "pace": {
+   "words_per_second": 2.96,
+   "max_factor": 1.33
   }
  },
  "long_video": {
