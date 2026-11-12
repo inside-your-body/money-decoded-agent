@@ -109,7 +109,7 @@ format says), 8–16 sentences each, each with its own surprise. Plant an open l
 Final scene (stage null): the big picture + one question for the comments. Short spoken sentences, one idea each, every sentence SHOWABLE
 with a number, a place in the money map, an object, a flow of money or a change. Max 12 numbers in total. Explain — never advise.
 
-Then write {N_SHORTS} SHORTS (each 70–90 words, ≈ 30–40 s — never longer), each a DIFFERENT self-contained moment of the video
+Then write {N_SHORTS} SHORTS (each 85–105 words, ≈ 30–40 s — never longer), each a DIFFERENT self-contained moment of the video
 (different fact, different twist — never the same point twice), each survives without the long video:
 line 1 = a curiosity question or shocking claim that works in the first second; one continuous mini story with a turn in it;
 second-to-last line sends viewers to the full video ("داستان کامل رو توی ویدیوی بالا گذاشتم"); last line loops into the first.
@@ -357,8 +357,8 @@ def build(topic, ep_dir, dry_run=False, voice_only=False):
         except Exception as e: print('voice text prep failed:', e)
         save(ep_dir / 'episode.json', ep)
     for s_ in ep.get('shorts', [])[:N_SHORTS]:
-        if paid and _wc([l['text'] for l in s_['lines']]) > 92 and not (ep_dir / 'vo_short0.wav').exists():
-            out = llm.ask_json(f"""Shorten this Persian YouTube Short script to 75-88 words (30-40 seconds). Keep line 1 (the hook), the turn,
+        if paid and _wc([l['text'] for l in s_['lines']]) > 108 and not (ep_dir / 'vo_short0.wav').exists():
+            out = llm.ask_json(f"""Shorten this Persian YouTube Short script to 88-102 words (30-40 seconds). Keep line 1 (the hook), the turn,
 the line that sends viewers to the full video and the loop. Return ONLY {{"lines": [str]}}.
 Lines: {json.dumps([l['text'] for l in s_['lines']], ensure_ascii=False)}""", max_tokens=3000)
             if out.get('lines'):

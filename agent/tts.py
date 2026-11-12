@@ -109,7 +109,7 @@ def _eleven_tts(text, prev='', nxt=''):
     for model in models:
         body = {'text': text, 'model_id': model,
                 'voice_settings': {'stability': el.get('stability', 0.4), 'similarity_boost': el.get('similarity', 0.75),
-                                   'style': el.get('style', 0.1), 'use_speaker_boost': True, 'speed': el.get('speed', 1.2)}}
+                                   'style': el.get('style', 0.1), 'use_speaker_boost': True, 'speed': min(1.2, el.get('speed', 1.2))}}
         if prev and model != 'eleven_v3': body['previous_text'] = prev[-600:]
         if nxt and model != 'eleven_v3': body['next_text'] = nxt[:600]
         for a in range(3):
@@ -120,7 +120,10 @@ def _eleven_tts(text, prev='', nxt=''):
                 try:
                     from . import cost; cost.tts(len(text) * 30)
                 except Exception: pass
-                return np.frombuffer(r.content, dtype='<i2').astype(np.float32) / 32768.0, 24000
+                a_ = np.frombuffer(r.content, dtype='<i2').astype(np.float32) / 32768.0
+                sp = float(el.get('speed', 1.2))
+                if sp > 1.2: a_ = _tempo(a_, 24000, sp / 1.2)     # owner (Nov 12): speed 1.4; the API stops at 1.2 -> the rest same-pitch
+                return a_, 24000
             last = r.text[:300]
             if r.status_code in (400, 404, 422) and ('model' in last.lower()): break       # model not available -> next model
             if r.status_code in (401, 402, 403): raise RuntimeError('ElevenLabs refused: ' + last)   # plan/credits/key problem
