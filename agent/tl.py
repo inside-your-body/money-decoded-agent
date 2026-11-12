@@ -603,6 +603,54 @@ def _typeset(bg_jpg, text, key, dst):
     sh(['npx', 'remotion', 'still', 'src/index.ts', 'ThumbFa', str(dst), f'--props={pf}', '--log=warn'], cwd=ROOT / 'render')
 
 
+def _text_check(img, text):
+    """Claude vision: is the Persian headline in the AI thumbnail spelled exactly right and readable?"""
+    import base64
+    content = [{'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': base64.b64encode(pathlib.Path(img).read_bytes()).decode()}},
+               {'type': 'text', 'text': f"""This YouTube thumbnail must show this Persian headline: «{text}».
+Read the Persian text in the picture letter by letter. Return JSON only: {{"read": str, "exact": bool, "readable": bool, "extra_text": bool, "problem": str}}
+exact=true only if every word is spelled exactly right (all letters and dots correct, right-to-left, no missing/extra/garbled letters);
+readable=true if it is big and clear on a phone; extra_text=true if there is any OTHER text besides the headline and the real name/logo of
+the subject (e.g. a company name on its building is fine)."""}]
+    try:
+        return llm._repair(llm.ask(content, max_tokens=500, retries=2)) or {}
+    except Exception as e:
+        print('text check failed', e); return {}
+
+
+def _ai_thumb(title, summ, text, out, dst):
+    """Owner (Nov 12): ChatGPT designs the WHOLE thumbnail, including the Persian headline in its own viral thumbnail typography
+    (no font given by us). Claude checks the spelling; up to 3 tries. Returns True when a correct one was saved to dst."""
+    from . import images
+    from PIL import Image
+    note = ''
+    for k in range(3):
+        raw = out / f'full{k}.png'
+        prompt = f"""Design a complete, professional, highly clickable YouTube thumbnail (16:9) for a Persian-language finance documentary.
+Video title: {title}
+What the video is about: {summ}
+1) PICTURE: the viewer must understand at ONE glance WHO or WHAT the video is about - show the real subject recognisably (a company: its real
+famous headquarters with its real name sign/logo; a person: a recognisable documentary portrait; a country/currency: its landmark or real
+banknotes; an event: its most iconic moment) plus ONE dramatic curiosity element (a crack, money burning or flying away, a giant red arrow,
+a shocked face). Cinematic, high contrast, saturated, glossy, dramatic light.
+2) HEADLINE: write EXACTLY this Persian (Farsi) text, right-to-left, spelled perfectly letter by letter: «{text}»
+Typeset it yourself the way the most viral Persian / Arabic YouTube thumbnails do: a huge, ultra-bold, chunky display typeface, 2 lines at
+most, white with the most important word in bright yellow (or red), thick dark outline and strong drop shadow, maybe a slight 3D or a
+coloured highlight box behind one word, very large - about a third of the image height - and perfectly readable on a phone.
+No other text at all (apart from the real name/logo on the subject itself). Keep all text and faces inside the central 80% of the
+height (the top and bottom 10% may be cropped).{note}"""
+        if not images.gen(prompt, raw, size='1536x1024', quality='high'):
+            continue
+        im = Image.open(raw).convert('RGB'); h = round(im.width * 9 / 16); y0 = (im.height - h) // 2
+        jpg = out / f'full{k}.jpg'; im.crop((0, y0, im.width, y0 + h)).resize((1280, 720), Image.LANCZOS).save(jpg, quality=92)
+        r = _text_check(jpg, text); print('ai thumbnail check', k, r)
+        if r.get('exact') and r.get('readable', True) and not r.get('extra_text'):
+            shutil.copy(jpg, dst); return True
+        note = (f"\nA previous attempt wrote the headline wrongly as «{r.get('read', '')}» ({r.get('problem') or 'misspelled'}). "
+                f"Copy every Persian letter of «{text}» exactly.")
+    return False
+
+
 def _typeset_plain(text, key, dst):
     """No usable picture: Persian headline on the dark navy card (no Latin letters/digits ever)."""
     pf = pathlib.Path(dst).with_suffix('.json'); save(pf, {'bg': '', 'text': text, 'key_word': key or ''})
@@ -617,6 +665,10 @@ def thumbs(ep, ep_dir):
     summ = summary(ep); (out / 'summary.txt').write_text(summ)
     title = ep.get('upload', {}).get('title') or ep.get('title')
     text = (ep.get('thumb_text') or ((ep.get('thumbnail') or {}).get('variants') or [{}])[0].get('words') or title).strip()
+    try:
+        if CFG.get('thumb_ai_text', True) and _ai_thumb(title, summ, text, out, ep_dir / 'thumbnail.jpg'):
+            print('thumbnail (ChatGPT, own typography):', text); return
+    except Exception as e: print('ai thumbnail failed', e)
     note, best, last = '', None, None
     for k in range(3):
         raw = out / f'bg{k}.png'
