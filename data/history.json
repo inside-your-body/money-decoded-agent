@@ -130,6 +130,18 @@
    "fmt": "myths",
    "music": "deliberate_thought",
    "built_at": "2026-11-13T13:08:40"
+  },
+  {
+   "topic": "بانک‌ها با پول ما چی کار می‌کنن؟",
+   "video_id": "tvGI8gpBIX8",
+   "short_ids": [
+    "yhegvxkSUi0"
+   ],
+   "publish_at": "2026-11-16T14:00:00Z",
+   "format": "tl",
+   "fmt": "case",
+   "music": "clean_soul",
+   "built_at": "2026-11-13T21:57:35"
   }
  ],
  "used_music": [
@@ -143,6 +155,7 @@
   "fluidscape",
   "floating_cities",
   "inspired",
-  "deliberate_thought"
+  "deliberate_thought",
+  "clean_soul"
  ]
 }
