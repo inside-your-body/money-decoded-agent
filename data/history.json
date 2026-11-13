@@ -118,6 +118,18 @@
    "fmt": "whatif",
    "music": "inspired",
    "built_at": "2026-11-08T11:27:01"
+  },
+  {
+   "topic": "چرا تورم هیچ‌وقت پایین نمیاد؟",
+   "video_id": "VhUcv9Jv98k",
+   "short_ids": [
+    "VzC3I8RxbuQ"
+   ],
+   "publish_at": "2026-11-14T14:00:00Z",
+   "format": "tl",
+   "fmt": "myths",
+   "music": "deliberate_thought",
+   "built_at": "2026-11-13T13:08:40"
   }
  ],
  "used_music": [
@@ -130,6 +142,7 @@
   "clean_soul",
   "fluidscape",
   "floating_cities",
-  "inspired"
+  "inspired",
+  "deliberate_thought"
  ]
 }
