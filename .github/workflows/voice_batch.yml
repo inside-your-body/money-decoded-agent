@@ -3,6 +3,8 @@ name: Voice batch
 # Owner (Nov 12): write + voice the month's episodes in advance (ElevenLabs credits expire monthly).
 # Each voiced episode is stored as an asset of the GitHub release "prepared"; nothing goes to YouTube here.
 on:
+  schedule:
+    - cron: '37 1 * * *'       # owner (Nov 13): every night it checks itself and voices whatever topics are still missing (stops at the credit cap)
   workflow_dispatch:
     inputs:
       limit:
