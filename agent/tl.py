@@ -143,6 +143,20 @@ Return ONLY {{"scenes": [{{"title": str, "stage": str|null, "node": str, "lines"
     return ep
 
 
+def tighten(ep, notes, target):
+    """Owner (Nov 13): the sample ran 9:45 (1727 words) -> a script above the limit is cut down BEFORE voicing (credits + 8-9 min)."""
+    cur = long_words(ep) if ep['scenes'] and isinstance(ep['scenes'][0]['lines'][0], dict) else _wc([l for s in ep['scenes'] for l in s['lines']])
+    plain = [{'title': s['title'], 'stage': s.get('stage'), 'node': s.get('node'), 'lines': [l['text'] if isinstance(l, dict) else l for l in s['lines']]} for s in ep['scenes']]
+    out = llm.ask_json(f"""This Persian "پول و قدرت" script is too long: {cur} words. Rewrite it to {target - 60}–{target} words (never more).
+Keep the hook (first lines unchanged), the stamps, the story order, every key fact and the style; cut repetition, side details and
+filler. Short spoken Persian sentences. Never investment advice.
+Scenes: {json.dumps(plain, ensure_ascii=False)}
+Return ONLY {{"scenes": [{{"title": str, "stage": str|null, "node": str, "lines": [str]}}]}}""", max_tokens=24000)
+    if out.get('scenes') and _wc([l for s in out['scenes'] for l in s['lines']]) < cur:
+        ep['scenes'] = out['scenes']; ep.pop('boarded', None); ep.pop('voiced_text', None)
+    return ep
+
+
 def board_lines(lines, context, recent=()):
     """Storyboard: one visual widget + 2-4 key words (+ money-map node) per sentence."""
     try: out = _board_ask(lines, context)
@@ -252,10 +266,13 @@ def voice_text(ep):
     from .fa_text import speakable
     groups = [sc['lines'] for sc in ep['scenes']] + [s['lines'] for s in ep.get('shorts', [])]
     flat = [l for g in groups for l in g if isinstance(l, dict)]
-    for k in range(0, len(flat), 60):
-        part = flat[k:k + 60]
+    for k in range(0, len(flat), 30):
+        part = flat[k:k + 30]
         r = llm.ask_json(f"""Prepare these Persian narration sentences for a Persian text-to-speech voice.
-Owner (Nov 12): correct pronunciation is VERY important - a Persian TTS voice guesses every vowel that is not written.
+Owner (Nov 12 + Nov 13 "be even more careful"): correct pronunciation is VERY important - a Persian TTS voice guesses every vowel that is
+not written, and it guessed wrong in places. Be generous: when in doubt, ADD the diacritic. Always mark the ezafe (ـِ) between words that
+belong together (قیمتِ نان، ارزشِ پول، بانکِ مرکزی), the vowels of every verb form that has two readings (بُرد/بَرد، کُشت/کِشت، می‌کُنند),
+words with ّ (تشدید), and colloquial forms (میره، نمیاد، می‌کنن) so they are read as spoken Persian.
 For each sentence return the SAME words and order, except: (1) add Persian diacritics (اعراب: َ ِ ُ ّ ْ) on EVERY word whose vowels a
 narrator could read in more than one way: homographs (کُرد/کَرد، مِلک/مُلک، شِکَر/شُکر), the ezafe kasra between linked words
 (بانکِ مرکزی، ارزشِ پول) wherever a reader could miss it, rare or Arabic-origin words, and every foreign name or loanword
@@ -266,6 +283,14 @@ Sentences: {json.dumps([l['text'] for l in part], ensure_ascii=False)}
 Return JSON: {{"say": [str]}} with exactly {len(part)} items.""", max_tokens=12000)
         say = r.get('say') or []
         if len(say) == len(part):
+            try:                     # second pass: a proof-reader looks only for words still easy to misread
+                r2 = llm.ask_json(f"""You proof-read Persian text-to-speech input. A narrator reads EXACTLY what is written; a missing vowel or
+ezafe makes him read it wrong. Check every word of these sentences and add any diacritic (َ ِ ُ ّ ـِ) that is still missing on a word that
+could be misread; fix wrong diacritics. Change nothing else (same words, same order, numbers stay as words).
+Sentences: {json.dumps([str(x) for x in say], ensure_ascii=False)}
+Return JSON: {{"say": [str]}} with exactly {len(say)} items.""", max_tokens=12000)
+                if len(r2.get('say') or []) == len(say): say = r2['say']
+            except Exception as e: print('diacritics proof-read skipped:', e)
             for l, x in zip(part, say): l['say'] = speakable(str(x))
     for l in flat: l.setdefault('say', speakable(l['text']))
     ep['voiced_text'] = True
@@ -341,6 +366,11 @@ def build(topic, ep_dir, dry_run=False, voice_only=False):
             w = _wc([l for s in ep['scenes'] for l in s['lines']])
             if w >= llm.WORDS_MIN - 60: break
             print('script too short:', w, '-> expanding'); ep = expand(ep, notes, llm.WORDS_MIN + 40); save(ep_dir / 'episode.json', ep)
+    if not (ep_dir / 'vo_long.wav').exists():
+        for _ in range(2):                 # owner (Nov 13): never longer than 8-9 minutes
+            w = long_words(ep) if ep['scenes'] and isinstance(ep['scenes'][0]['lines'][0], dict) else _wc([l for s in ep['scenes'] for l in s['lines']])
+            if w <= llm.WORDS_MAX + 30: break
+            print('script too long:', w, '-> tightening'); ep = tighten(ep, notes, llm.WORDS_MAX); save(ep_dir / 'episode.json', ep)
     if not ep.get('polished'):            # packaging first: the hook must confirm the final title
         try: ep = polish(ep); save(ep_dir / 'episode.json', ep)
         except Exception as e: print('packaging polish failed (keeping the writer\'s title/description):', e)
@@ -619,6 +649,7 @@ THUMB_TEMPLATE = """FIXED CHANNEL TEMPLATE (owner Nov 12, from his reference) - 
   ONE side of the subject; PART B = white bold condensed distressed letters on a solid RED (#E4252B) rectangle box on the OTHER side of the
   subject, slightly overlapping it. Same typeface style and the same layout every time.
 - Only 3 colours: cream, black, red (+ the grey tones of the photo and the money).
+- Banknotes: only plain US dollar bills or generic notes WITHOUT any portrait - never Iranian rials or any political/religious leader's face (the channel stays out of politics).
 - SAFE MARGINS: every letter at least 7% of the width away from the left/right edges and 14% of the height away from the top and bottom
   edges (the top and bottom 6% may be cropped). The bottom-right corner stays empty (YouTube shows the video length there).
 - No other text at all."""

@@ -11,7 +11,9 @@ SFX = ['bong', 'boom', 'bubble', 'click', 'drip', 'heartbeat', 'impact1', 'impac
 STYLE = ("Cinematic semi-realistic editorial illustration (high-end documentary / news-magazine look), dramatic film lighting, rich colour, "
          "shallow depth of field, one clear focal point, uncluttered, readable on a small phone screen. "
          "No captions, no subtitles, no invented writing; the ONLY readable text allowed is the real name or logo of the company/place the "
-         "scene is about (e.g. the real sign on its headquarters), when that makes the subject instantly recognisable.")
+         "scene is about (e.g. the real sign on its headquarters), when that makes the subject instantly recognisable. "
+         "Banknotes: US dollars or generic notes without portraits - never a political or religious leader's face, no flags as statements "
+         "(the channel stays out of politics).")
 LAYOUT = {False: "Wide 16:9 composition, the main subject in the centre-right; keep the bottom quarter calm (Persian subtitles go there).",
           True: "Tall 9:16 composition, the main subject in the middle; keep the top third calm (Persian text goes there)."}
 
