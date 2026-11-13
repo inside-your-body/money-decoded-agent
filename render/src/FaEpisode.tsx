@@ -1,3 +1,4 @@
+// Owner (Nov 13): modern fonts like the thumbnails -> Estedad Black (headlines, OFL) + Vazirmatn Black/Medium (numbers/labels/body, OFL).
 // Persian channel engine (owner approved the sample, Nov 8 2026): flat 2D motion graphics + professional Persian kinetic typography.
 // No mascot drawings: every sentence = 1-4 key words rising out of a mask (key word on a coloured marker) + one flat widget.
 // Each section (stage) has its own flat background; a circle wipe opens every new section. Long 1920x1080, Short 1080x1920.
@@ -46,7 +47,7 @@ const Rise: React.FC<{text: string; f: number; at: number; size: number; color: 
   const m = marker ? ease(f, at + 9, at + 21) : 0;
   return <span style={{display: 'inline-block', overflow: 'hidden', padding: `0 ${size * 0.1}px`, lineHeight: 1.38, position: 'relative'}}>
     {marker && <span style={{position: 'absolute', right: 0, bottom: size * 0.2, height: size * 0.42, width: `${m * 100}%`, background: marker, borderRadius: size * 0.08}} />}
-    <span style={{display: 'inline-block', position: 'relative', transform: `translateY(${(1 - k) * 112}%)`, fontFamily: 'F_lalezar', fontSize: size, color}}>{P(text)}</span>
+    <span style={{display: 'inline-block', position: 'relative', transform: `translateY(${(1 - k) * 112}%)`, fontFamily: 'F_estedad', fontSize: size, color}}>{P(text)}</span>
   </span>;
 };
 
@@ -73,7 +74,7 @@ const Card: React.FC<{x: number; y: number; w: number; h: number; th: Th; childr
 
 const T: React.FC<{x?: number; y: number; size: number; fill: string; children: React.ReactNode; anchor?: 'middle' | 'start' | 'end'; o?: number; bold?: boolean}> =
   ({x = 0, y, size, fill, children, anchor = 'middle', o = 1, bold = true}) =>
-  <text x={x} y={y} direction="rtl" textAnchor={anchor} fontFamily={bold ? 'F_titr' : 'F_yekan'} fontSize={size} fill={fill} opacity={o}>{P(children)}</text>;
+  <text x={x} y={y} direction="rtl" textAnchor={anchor} fontFamily={bold ? 'F_vazirb' : 'F_vazirm'} fontSize={size} fill={fill} opacity={o}>{P(children)}</text>;
 
 // flat money map: 8 places around "you"; the place we talk about grows and coins fly to it
 const PLACES: Record<string, {label: string; icon: string; a: number; c: string}> = {
@@ -112,7 +113,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number; th: Th; n
       return <g transform={`scale(${0.85 + 0.15 * Math.min(1, p)})`}>
         <Card x={-390} y={-150} w={780} h={260} th={{...th, card: C.white}} />
         <rect x={-300 * ease(f, at + 8, at + 24)} y={-10} width={600 * ease(f, at + 8, at + 24)} height={60} rx={14} fill={C.yellow} opacity={0.45} />
-        <text y={40} direction="rtl" textAnchor="middle" fontFamily="F_titr" fontSize={size} fill={col}>
+        <text y={40} direction="rtl" textAnchor="middle" fontFamily="F_vazirb" fontSize={size} fill={col}>
           {val}{rest(v.unit, v.prefix) ? <tspan fontSize={size * 0.42}>{' ' + rest(v.unit, v.prefix)}</tspan> : null}</text>
         {lab(v.label, 190)}
       </g>;
@@ -140,7 +141,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number; th: Th; n
         <rect x={-150} y={-80} width={300} height={170} rx={28} fill="rgba(0,0,0,0.1)" /><rect x={-150} y={-90} width={300} height={170} rx={28} fill={th.card} />
         <rect x={-150} y={-90} width={300} height={22} rx={11} fill={col} />
         <foreignObject x={-140} y={-62} width={280} height={130}><div style={{width: 280, height: 130, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          textAlign: 'center', direction: 'rtl', fontFamily: 'F_titr', fontSize: (txt || '').length > 12 ? 36 : 46, lineHeight: 1.25, color: th.cardInk}}>{P(txt)}</div></foreignObject></g>;
+          textAlign: 'center', direction: 'rtl', fontFamily: 'F_vazirb', fontSize: (txt || '').length > 12 ? 36 : 46, lineHeight: 1.25, color: th.cardInk}}>{P(txt)}</div></foreignObject></g>;
       return <g>{box(230, v.from, th.sub, sp(f, at))}{box(-230, v.to, th.accent, sp(f, at + 8))}
         {[0, 1, 2, 3, 4].map((j) => { const q = ((f - at) / 28 + j / 5) % 1; if (f < at + 10 + j * 3) return null;
           return <g key={j} transform={`translate(${80 - 160 * q} ${-Math.sin(q * Math.PI) * 90})`}><circle r={18} fill={C.yellow} stroke="#C98A00" strokeWidth={4} /></g>; })}
@@ -152,7 +153,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number; th: Th; n
         return <g key={y}><T x={340} y={y - 24} size={40} fill={th.ink} anchor="start">{r.label.slice(0, 30)}</T>
           <rect x={340 - 560} y={y} width={560} height={70} rx={20} fill={th.ink} opacity={0.08} />
           <rect x={340 - w} y={y} width={w} height={70} rx={20} fill={col} />
-          <text x={340 - w - 18} y={y + 54} direction="rtl" textAnchor="start" fontFamily="F_titr" fontSize={46} fill={col}>{fmt(r.value * k)}{rest(v.unit) ? ' ' + rest(v.unit) : ''}</text></g>; };
+          <text x={340 - w - 18} y={y + 54} direction="rtl" textAnchor="start" fontFamily="F_vazirb" fontSize={46} fill={col}>{fmt(r.value * k)}{rest(v.unit) ? ' ' + rest(v.unit) : ''}</text></g>; };
       const onHook = th.ink === C.white && th.card === C.white;     // coloured hook background: bars in white/dark so they never vanish
       return <g>{row(v.a, -120, onHook ? C.white : C.red, 0)}{row(v.b, 70, onHook ? th.accent : C.teal, 12)}</g>;
     }
@@ -160,7 +161,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number; th: Th; n
       const col = v.good ? C.teal : C.red; const val = v.from + (v.to - v.from) * t;
       return <g>{lab(v.label, -100)}<rect x={-360} y={-40} width={720} height={84} rx={42} fill={th.ink} opacity={0.08} />
         <rect x={360 - 720 * Math.max(0, Math.min(1, val))} y={-40} width={720 * Math.max(0, Math.min(1, val))} height={84} rx={42} fill={col} />
-        <text y={170} textAnchor="middle" fontFamily="F_titr" fontSize={110} fill={col}>{P(Math.round(val * 100) + '%')}</text></g>;
+        <text y={170} textAnchor="middle" fontFamily="F_vazirb" fontSize={110} fill={col}>{P(Math.round(val * 100) + '%')}</text></g>;
     }
     case 'stack': {
       const val = v.from + (v.to - v.from) * t; const n = Math.round(1 + 11 * Math.max(0, Math.min(1, val)));
@@ -184,7 +185,7 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number; th: Th; n
       return <g><circle r={180} cy={10} fill="rgba(0,0,0,0.1)" /><circle r={180} fill={th.card} /><circle r={150} fill="none" stroke={th.accent} strokeWidth={10} />
         <line x2={0} y2={-85} stroke={th.cardInk} strokeWidth={14} strokeLinecap="round" transform={`rotate(${(c / 60) * 30})`} />
         <line x2={0} y2={-125} stroke={th.accent} strokeWidth={8} strokeLinecap="round" transform={`rotate(${c * 6})`} /><circle r={14} fill={th.accent} />
-        <text y={262} textAnchor="middle" fontFamily="F_titr" fontSize={60} fill={th.ink}>{P(String(Math.floor(c / 60) % 24).padStart(2, '0') + ':' + String(Math.floor(c % 60)).padStart(2, '0'))}</text></g>;
+        <text y={262} textAnchor="middle" fontFamily="F_vazirb" fontSize={60} fill={th.ink}>{P(String(Math.floor(c / 60) % 24).padStart(2, '0') + ':' + String(Math.floor(c % 60)).padStart(2, '0'))}</text></g>;
     }
     case 'checklist': {
       const items = (v.items || []).slice(0, 4);
@@ -198,16 +199,16 @@ const Widget: React.FC<{v: Visual; f: number; at: number; dur: number; th: Th; n
     case 'node': return <g transform="scale(0.9) translate(0 -20)"><FlatMap focus={(v as any).name || node} label={(v as any).label} f={f} at={at} th={th} /></g>;
     case 'question': {
       const q = sp(f, at, 9, 120);
-      return <g><text y={110} textAnchor="middle" fontFamily="F_titr" fontSize={380} fill={th.accent} opacity={0.18} transform={`rotate(${Math.sin(f / 10) * 6}) scale(${q})`}>؟</text>
+      return <g><text y={110} textAnchor="middle" fontFamily="F_vazirb" fontSize={380} fill={th.accent} opacity={0.18} transform={`rotate(${Math.sin(f / 10) * 6}) scale(${q})`}>؟</text>
         <foreignObject x={-390} y={-140} width={780} height={280}><div style={{width: 780, height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          textAlign: 'center', direction: 'rtl', fontFamily: 'F_titr', fontSize: (v.text || '').length > 40 ? 52 : 64, lineHeight: 1.4, color: th.ink, opacity: ease(f, at, at + 12)}}>{P(v.text)}</div></foreignObject></g>;
+          textAlign: 'center', direction: 'rtl', fontFamily: 'F_vazirb', fontSize: (v.text || '').length > 40 ? 52 : 64, lineHeight: 1.4, color: th.ink, opacity: ease(f, at, at + 12)}}>{P(v.text)}</div></foreignObject></g>;
     }
     case 'versus': {
       const card = (x: number, title: string, txt: string, col: string, k: number) => <g transform={`translate(${x} 0) scale(${0.85 + 0.15 * Math.min(1, k)})`} opacity={Math.min(1, k * 1.5)}>
         <rect x={-185} y={-200} width={370} height={420} rx={30} fill="rgba(0,0,0,0.1)" /><rect x={-185} y={-210} width={370} height={420} rx={30} fill={th.card} />
         <rect x={-185} y={-210} width={370} height={96} rx={30} fill={col} /><rect x={-185} y={-140} width={370} height={26} fill={col} />
         <T y={-145} size={52} fill="#FFFFFF">{title}</T>
-        <foreignObject x={-165} y={-96} width={330} height={290}><div style={{fontFamily: 'F_yekan', fontWeight: 800, fontSize: txt.length > 60 ? 34 : 42, lineHeight: 1.5,
+        <foreignObject x={-165} y={-96} width={330} height={290}><div style={{fontFamily: 'F_vazirm', fontWeight: 800, fontSize: txt.length > 60 ? 34 : 42, lineHeight: 1.5,
           color: th.cardInk, textAlign: 'center', direction: 'rtl'}}>{P(txt)}</div></foreignObject></g>;
       return <g>{card(200, 'باور غلط', v.myth || '', C.red, sp(f, at))}{card(-200, 'واقعیت', v.fact || '', C.teal, sp(f, at + 24))}</g>;
     }
@@ -244,7 +245,7 @@ const Cover: React.FC<{text: string; f: number; bg?: string; hi?: string}> = ({t
   const size = text.length > 22 ? 118 : 140;
   return <AbsoluteFill style={{background: bg, opacity: o}}>
     <div style={{position: 'absolute', top: 470, left: 60, right: 60, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', direction: 'rtl', columnGap: 22}}>
-      {ws.map((w, i) => <span key={i} style={{position: 'relative', fontFamily: 'F_lalezar', fontSize: size, lineHeight: 1.4, color: i === ws.length - 1 ? hi : C.white}}>
+      {ws.map((w, i) => <span key={i} style={{position: 'relative', fontFamily: 'F_estedad', fontSize: size, lineHeight: 1.4, color: i === ws.length - 1 ? hi : C.white}}>
         {i === ws.length - 1 && <span style={{position: 'absolute', right: -8, left: -8, bottom: size * 0.2, height: size * 0.42, background: C.yellow, borderRadius: 14, zIndex: -1}} />}
         <span style={{position: 'relative'}}>{P(w)}</span></span>)}
     </div>
@@ -282,8 +283,8 @@ export const FaEpisode: React.FC<TLEpProps & {coverImg?: string}> = ({beats, ver
     {/* section label (stage) */}
     {b.stage && <div style={{position: 'absolute', top: L.stamp[1], right: W - L.stamp[0], direction: 'rtl', opacity: ease(f, sAt + 8, sAt + 18),
       transform: `translateY(${(1 - ease(f, sAt + 8, sAt + 18)) * -30}px)`, background: th.accent, color: th.bg === C.navy ? C.navy : C.white,
-      fontFamily: 'F_lalezar', fontSize: vertical ? 50 : 44, padding: '4px 28px', borderRadius: 40}}>{P(b.stage)}</div>}
-    <div style={{position: 'absolute', top: vertical ? 70 : 34, left: vertical ? 60 : 56, direction: 'rtl', fontFamily: 'F_yekan', fontSize: vertical ? 34 : 28,
+      fontFamily: 'F_estedad', fontSize: vertical ? 50 : 44, padding: '4px 28px', borderRadius: 40}}>{P(b.stage)}</div>}
+    <div style={{position: 'absolute', top: vertical ? 70 : 34, left: vertical ? 60 : 56, direction: 'rtl', fontFamily: 'F_vazirm', fontSize: vertical ? 34 : 28,
       color: th.sub, display: 'flex', alignItems: 'center', gap: 12, opacity: vertical ? 0 : 1}}>
       <span style={{width: 16, height: 16, borderRadius: 8, background: th.accent, display: 'inline-block'}} />{brand}</div>
     <div key={'w' + i} style={{opacity: out}}>
