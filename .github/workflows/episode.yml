@@ -2,8 +2,11 @@ name: Make episode
 
 on:
   schedule:
-    - cron: '17 */4 * * *'     # owner (Nov 12): every 4 h one episode is built from the voiced batch (max 3 a day = YouTube quota);
-                               # each is scheduled into the next every-other-day slot: long 17:00 Istanbul (14:00 UTC), Short 17:30
+    - cron: '17 */2 * * *'     # owner (Nov 13: never fall behind): every 2 h it checks for a voiced episode and builds one (max 3 a day =
+                               # YouTube quota); each is scheduled into the next every-other-day slot: long 17:00 Istanbul (14:00 UTC), Short 17:30
+  workflow_run:                # ... and right after every voice batch, so new voices are used at once
+    workflows: ['Voice batch']
+    types: [completed]
   workflow_dispatch:
     inputs:
       dry_run:
