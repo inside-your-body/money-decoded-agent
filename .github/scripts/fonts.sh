@@ -9,3 +9,7 @@ ls -la render/public/fonts/vazir*.woff2 || true
 # owner's headline font Lalezar (SIL OFL) - Titr and Yekan are committed in render/public/fonts (owner's own files)
 [ -s render/public/fonts/lalezar.woff2 ] || curl -sfL --retry 3 -o render/public/fonts/lalezar.woff2 "https://raw.githubusercontent.com/google/fonts/main/ofl/lalezar/Lalezar-Regular.ttf"
 ls -la render/public/fonts/lalezar.woff2 render/public/fonts/titr.woff2 render/public/fonts/yekan.woff2 || true
+# owner (Nov 13): modern video fonts - Estedad Black (SIL OFL, github.com/aminabedi68/Estedad) + Vazirmatn FD Medium
+[ -s render/public/fonts/estedad.woff2 ] || curl -sfL --retry 3 -o render/public/fonts/estedad.woff2 "https://cdn.jsdelivr.net/gh/aminabedi68/Estedad@master/fonts/webfonts/Estedad-Black.woff2"
+[ -s render/public/fonts/vazirm.woff2 ] || curl -sfL --retry 3 -o render/public/fonts/vazirm.woff2 "$B/Vazirmatn-FD-Medium.woff2"
+ls -la render/public/fonts/estedad.woff2 render/public/fonts/vazirm.woff2 || true
