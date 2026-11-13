@@ -20,8 +20,8 @@
   "mode": "auto_public",
   "min_hours_between_episodes": 40,
   "rhythm_note": "Owner (Nov 2): one long video + one Short every OTHER day (40 h gap guard; the daily cron skips the day in between).",
-  "paused": true,
-  "paused_note": "Owner (Nov 8): paused while the bot is switched to Persian; un-pause after the owner approves the first Persian preview. true = scheduled runs skip.",
+  "paused": false,
+  "paused_note": "Owner (Nov 13): approved the Persian sample and switched the bot ON. true = scheduled runs skip.",
   "publish_time_note": "Owner (Nov 12): every other day, long video 17:00 Istanbul (14:00 UTC), Short 17:30 Istanbul (14:30 UTC). Episodes are built ahead (up to 3 a day, YouTube quota) and scheduled into the next free slot.",
   "max_episodes_per_day": 3
  },
