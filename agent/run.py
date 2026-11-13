@@ -65,7 +65,7 @@ def main():
     if a.stage == 'finish' and cur:
         return run_tl(a, cur['topic'], WORK / cur['dir'])
 
-    if CFG['schedule'].get('paused') and os.environ.get('GITHUB_EVENT_NAME') == 'schedule':
+    if CFG['schedule'].get('paused') and os.environ.get('GITHUB_EVENT_NAME') in ('schedule', 'workflow_run'):
         print('schedule paused in config/channel.json -> skip'); return
     # owner (Nov 12): build as many episodes per day as the YouTube upload quota allows; each one is scheduled into the next free
     # every-other-day slot (long 17:00 Istanbul, Short 17:30). A cap per day keeps us under the daily API quota.
