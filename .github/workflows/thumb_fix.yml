@@ -1,0 +1,45 @@
+name: Thumbnail fix
+
+on:
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: 'LONG_ID:SHORT_ID pairs, comma separated'
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  YT_CLIENT_ID: 284823645962-pk32li91jr26p2v8va7j8kric6evrqh6.apps.googleusercontent.com
+
+jobs:
+  fix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11', cache: 'pip'}
+      - name: Deps
+        run: pip install requests numpy scipy soundfile Pillow google-api-python-client google-auth google-auth-oauthlib
+      - name: New thumbnails + Short covers on YouTube
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          YT_TOKEN_JSON: ${{ secrets.YT_TOKEN_JSON }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          FIX_IDS: ${{ inputs.ids }}
+        run: |
+          if [ -z "$YT_TOKEN_JSON" ] && [ -f data/yt_token.enc ] && [ -n "$YT_CLIENT_SECRET" ]; then
+            RT=$(openssl enc -d -aes-256-cbc -pbkdf2 -a -A -in data/yt_token.enc -pass env:YT_CLIENT_SECRET); echo "::add-mask::$RT"
+            export YT_TOKEN_JSON=$(RT="$RT" python3 -c "import json,os;print(json.dumps({'client_id':os.environ['YT_CLIENT_ID'],'client_secret':os.environ['YT_CLIENT_SECRET'],'refresh_token':os.environ['RT'],'token_uri':'https://oauth2.googleapis.com/token'}))")
+          fi
+          python -m agent.thumbfix
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "money-decoded-agent"; git config user.email "agent@users.noreply.github.com"
+          git add samples/thumb_fix data/thumb_repair.json data/history.json && git commit -m "thumbnail fix [skip ci]" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase --autostash -q origin main && git push && break; sleep 5; done
