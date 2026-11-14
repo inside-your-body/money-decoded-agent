@@ -141,7 +141,12 @@
    "format": "tl",
    "fmt": "case",
    "music": "clean_soul",
-   "built_at": "2026-11-13T21:57:35"
+   "built_at": "2026-11-13T21:57:35",
+   "thumb_key": "پول توی بانک",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ]
   },
   {
    "topic": "پول از کجا میاد و چه کسی چاپش می‌کنه؟",
@@ -153,7 +158,12 @@
    "format": "tl",
    "fmt": "timeline",
    "music": "fluidscape",
-   "built_at": "2026-11-14T02:38:00"
+   "built_at": "2026-11-14T02:38:00",
+   "thumb_key": "چاپ پول",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ]
   }
  ],
  "used_music": [
