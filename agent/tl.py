@@ -673,6 +673,9 @@ safe area: at least 8% of the height away from the top, at least 24% of the heig
 from the left and right edges (nothing is cropped; keep the red box well inside the picture). Nothing important in the bottom quarter."""
 
 
+TRIES = []     # headline attempts + Claude's verdicts (written into the repair report)
+
+
 def headline_fits(text, topic):
     """Owner (Nov 14): a video about where money comes from got «تورم» on its cover. Claude checks that PART A names THIS topic."""
     if not text: return False
@@ -684,24 +687,30 @@ ok=true only if ALL of these hold:
    (fragments or loose numbers like «کجا رفت؟ فقط ۱۰ ساعت!» are NOT ok);
 3) simple everyday Persian.
 Return JSON: {{"ok": bool, "why": str}}""", max_tokens=300)
-        print('headline check', text, r); return bool(r.get('ok', True))
+        print('headline check', text, r); TRIES.append({'headline': text, 'ok': r.get('ok'), 'why': r.get('why')})
+        return bool(r.get('ok', True))
     except Exception as e:
         print('headline check failed', e); return True
 
 
 def new_headline(topic, title, used=()):
     """A fresh two-part headline (PART A|PART B) for this topic; returns (text, key) or None."""
-    for _ in range(3):
+    fb = ''
+    for _ in range(5):
         try:
             r = llm.ask_json(f"""Persian YouTube video. Topic: «{topic}». Title: «{title}».
 Write its thumbnail headline following this rule: {THUMB_RULE}
-PART A must name this exact topic; never use these PART A words of earlier videos: {json.dumps(list(used), ensure_ascii=False)}.
+PART A must name this exact topic; never use these PART A words of earlier videos: {json.dumps(list(used), ensure_ascii=False)}.{fb}
 Return JSON: {{"a": str, "b": str}}""", max_tokens=400)
         except Exception as e:
             print('headline failed', e); continue
         a, b = (r.get('a') or '').strip(), (r.get('b') or '').strip()
-        if a and b and a not in used and len((a + ' ' + b).split()) <= 8 and headline_fits(a + ' ' + b, topic):
+        if not (a and b) or a in used or len((a + ' ' + b).split()) > 10:
+            fb = f'\nRejected before: «{a} {b}» (empty, reused PART A, or too long).'; continue
+        if headline_fits(a + ' ' + b, topic):
             return a + ' ' + b, a
+        why = TRIES[-1].get('why') if TRIES else ''
+        fb = f'\nRejected before: «{a} {b}» - {why}. Write a better one.'
     return None
 
 

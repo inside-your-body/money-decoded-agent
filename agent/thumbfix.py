@@ -23,7 +23,7 @@ def main():
         r = {'video': vid, 'short': sid, 'topic': topic, 'title': title}
         h = tl.new_headline(topic, title, [u for u in used if u != e.get('thumb_key')] + ['تورم'])
         if not h:
-            r['error'] = 'no headline'; report.append(r); print(r); continue
+            r['error'] = 'no headline'; r['tries'] = tl.TRIES[-6:]; report.append(r); print(r); continue
         text, key = h; r['headline'] = text; used.append(key)
         d = out / vid; d.mkdir(exist_ok=True)
         rest = text[len(key):].strip() if text.startswith(key) else ''
