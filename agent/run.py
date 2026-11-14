@@ -131,6 +131,9 @@ def run_tl(a, topic, ep_dir):
         except Exception as e: print('could not delete', old, e)
     at, short_at = next_slot()
     thumb = ep_dir / 'thumbnail.jpg'
+    if not thumb.exists():                      # owner (Nov 14): never upload a video without its cover
+        try: tl.thumbs(ep, ep_dir)
+        except Exception as e: print('thumbnail retry failed', e)
     vid = youtube.upload(yt, long_final, pkg['title'], pkg['description'], pkg['tags'], thumb if thumb.exists() else None, publish_at=at, synthetic=True)
     try: youtube.add_to_playlist(yt, vid)
     except Exception as e: print('playlist', e)
@@ -139,8 +142,9 @@ def run_tl(a, topic, ep_dir):
         try:
             # Short #1 30 min after the long video, Short #2 the next afternoon (US morning) so the channel gets a fresh upload every half day
             when = short_at
+            cov = ep_dir / 'broll' / f"short{s['k']}_cover.jpg"           # owner (Nov 14): every Short gets its cover as thumbnail too
             svid = youtube.upload(yt, s['file'], s['title'], s['description'].replace('{FULL_URL}', 'https://youtu.be/' + vid), pkg['tags'][:10],
-                                  publish_at=when, synthetic=True)
+                                  cov if cov.exists() else None, publish_at=when, synthetic=True)
             sids.append(svid)
             try: youtube.pin_comment_text(yt, svid, 'داستان کامل اینجاست: https://youtu.be/' + vid)
             except Exception as e: print('short comment not posted:', e)
@@ -150,6 +154,8 @@ def run_tl(a, topic, ep_dir):
     try: from . import tts; tts.commit_usage()
     except Exception as e: print('usage tally', e)
     mark_done(topic['id'], {'topic': topic['title'], 'video_id': vid, 'short_ids': sids, 'publish_at': at, 'format': 'tl', 'fmt': ep.get('fmt'), 'music': track,
+                            'thumb_key': ep.get('thumb_key'), 'thumb': youtube.THUMBS.get(vid, 'none'),
+                            'short_thumbs': [youtube.THUMBS.get(x, 'none') for x in sids],
                             'built_at': dt.datetime.utcnow().isoformat(timespec='seconds')})
     save(ep_dir / 'result.json', {'video': vid, 'shorts': sids, 'publish_at': at, 'pinned_comment': pkg['pinned_comment']})
     print('DONE', vid, sids, at)

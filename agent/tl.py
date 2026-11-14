@@ -436,6 +436,7 @@ Lines: {json.dumps([l['text'] for l in s['lines']], ensure_ascii=False)}""", max
         pr = props(s['lines'], [l.get('stage') for l in s['lines']], sg, True)
         pr['cover'] = s.get('cover') or (s.get('title') or '')[:44]
         save(ep_dir / f'props_short{k}.json', _visuals(pr, ep_dir, f'short{k}', ep['title'] + ' (vertical Short)'))
+    ep['topic_title'] = topic.get('title') or ep.get('title')     # owner (Nov 14): the thumbnail word must be THIS video's topic
     if not ep.get('polished'):
         try: ep = polish(ep); save(ep_dir / 'episode.json', ep)
         except Exception as e: print('packaging polish failed (keeping the writer\'s title/description):', e)
@@ -452,6 +453,7 @@ def polish(ep):
     and caption, and the pinned comment. Facts may only come from the script."""
     up = ep['upload']
     narr = ' '.join(_tx(l) for l in long_lines(ep))[:14000]
+    used = [e.get('thumb_key') for e in load(ROOT / 'data/history.json', {'episodes': []})['episodes'] if e.get('thumb_key')]
     r = llm.ask_json(f"""You are the packaging editor of the Persian finance YouTube channel "پول و قدرت" (Persian-speaking adults in Iran and abroad).
 Everything you write is Persian, phrased the way Persian speakers search and talk on YouTube.
 The video is finished. Write its packaging so that people who see it WANT to click — through curiosity, never false hope.
@@ -459,6 +461,8 @@ Rules: every claim must be true to the script; no clickbait lies, no "get rich",
 in the Short caption and none elsewhere. Use concrete, surprising specifics from the script (a number, a twist, a reversal).
 
 Main search keyword: "{up.get('main_keyword') or ep.get('main_keyword', '')}"
+THE TOPIC OF THIS VIDEO (title AND thumbnail must be about exactly this, never a side theme of the script): "{ep.get('topic_title') or up.get('title')}"
+Thumbnail PART A words already used by earlier videos - never use them again: {json.dumps(used, ensure_ascii=False)}
 Writer's title: "{up.get('title')}"
 Script: {narr}
 Shorts: {json.dumps([' '.join(_tx(l) for l in x.get('lines', [])) for x in ep.get('shorts', [])], ensure_ascii=False)}
@@ -495,6 +499,9 @@ Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str, "
         up['title'] = c['title'].strip()[:100]
         th = (c.get('thumb') or '').strip()
         if th and len(th.split()) <= 5: ep['thumb_text'] = th; ep['thumb_key'] = (c.get('key') or '').strip()
+        if ep.get('thumb_key') in used or not headline_fits(ep.get('thumb_text', ''), ep.get('topic_title') or up['title']):
+            fix = new_headline(ep.get('topic_title') or up['title'], up['title'], used)       # owner (Nov 14): «تورم» on a money-printing video
+            if fix: ep['thumb_text'], ep['thumb_key'] = fix
         print('packaging lint:', sc, L['issues'])
     elif 10 <= len(pick) <= 70: up['title'] = pick
     ep['queries'] = queries
@@ -631,8 +638,8 @@ def _typeset(bg_jpg, text, key, dst):
 
 
 # owner (Nov 12): the thumbnail headline must make people CURIOUS (an open question / a mystery), understandable by anyone
-THUMB_RULE = """the thumbnail headline in TWO parts (owner Nov 12, approved example: «تورم» + «چرا هیچ‌وقت پایین نمیاد؟»):
-     PART A = the TOPIC in 1-2 big words that tell at once what the video is about (e.g. «تورم», «برند زارا», «پس‌انداز», «کازینو»);
+THUMB_RULE = """the thumbnail headline in TWO parts (owner Nov 12; the examples only show the SHAPE - never reuse their words):
+     PART A = the TOPIC OF THIS VIDEO in 1-2 big words that tell at once what it is about (e.g. «برند زارا», «پس‌انداز», «کازینو», «چاپ پول»);
      PART B = a short clear question or claim (3-6 words) that says what the viewer will find out and makes them curious
      (e.g. «چرا هیچ‌وقت پایین نمیاد؟», «از همبرگر پول درنمیاره!»). Together they must say clearly what the video is about - never
      vague lines like «آخر هفته‌ای که همه سکوت کردند». Simple everyday Persian, no jargon, no unexplained foreign names."""
@@ -662,6 +669,35 @@ below the top 8%), the subject in the middle, PART B on the red box right next t
 height (the lower 30% of the picture shows only the subject's body or empty background). YouTube draws buttons over a Short, so EVERY letter must stay inside the
 safe area: at least 8% of the height away from the top, at least 24% of the height away from the bottom, and at least 12% of the width away
 from the left and right edges (nothing is cropped; keep the red box well inside the picture). Nothing important in the bottom quarter."""
+
+
+def headline_fits(text, topic):
+    """Owner (Nov 14): a video about where money comes from got «تورم» on its cover. Claude checks that PART A names THIS topic."""
+    if not text: return False
+    try:
+        r = llm.ask_json(f"""Persian YouTube video topic: «{topic}». Proposed thumbnail headline: «{text}».
+Does the headline (especially its first big word/words) clearly name THIS topic, so a viewer knows at a glance what the video is about?
+A headline about a different or side topic (e.g. «تورم» for a video about who prints money) is NOT ok.
+Return JSON: {{"ok": bool, "why": str}}""", max_tokens=300)
+        print('headline check', text, r); return bool(r.get('ok', True))
+    except Exception as e:
+        print('headline check failed', e); return True
+
+
+def new_headline(topic, title, used=()):
+    """A fresh two-part headline (PART A|PART B) for this topic; returns (text, key) or None."""
+    for _ in range(3):
+        try:
+            r = llm.ask_json(f"""Persian YouTube video. Topic: «{topic}». Title: «{title}».
+Write its thumbnail headline following this rule: {THUMB_RULE}
+PART A must name this exact topic; never use these PART A words of earlier videos: {json.dumps(list(used), ensure_ascii=False)}.
+Return JSON: {{"a": str, "b": str}}""", max_tokens=400)
+        except Exception as e:
+            print('headline failed', e); continue
+        a, b = (r.get('a') or '').strip(), (r.get('b') or '').strip()
+        if a and b and a not in used and len((a + ' ' + b).split()) <= 8 and headline_fits(a + ' ' + b, topic):
+            return a + ' ' + b, a
+    return None
 
 
 def _text_check(img, text, vertical=False):
@@ -714,8 +750,9 @@ Typeset it yourself in the style of the most viral YouTube thumbnails.
         if style.exists():
             ref = out / 'style_ref.png'; Image.open(style).convert('RGB').save(ref)
             ok = images.edit(prompt + "\nThe reference image is the channel's APPROVED thumbnail template: copy its layout, headline position, "
-                             "typeface style, outline, colours and amount of detail exactly - only the subject and the headline text are new "
-                             "(never copy the reference's subject or words).", [str(ref)], str(raw), size=size, quality='high')
+                             "typeface style, outline, colours and amount of detail exactly. Take ONLY the design from it: its person, "
+                             f"its money and its words («تورم», «چرا هیچ‌وقت پایین نمیاد؟») must NOT appear - the subject must show «{ta}» "
+                             f"and the only words are «{ta}» and «{tb}».", [str(ref)], str(raw), size=size, quality='high')
         else:
             ok = images.gen(prompt, raw, size=size, quality='high')
         if not ok:
@@ -763,8 +800,21 @@ def short_cover(ep, ep_dir):
         dst = ep_dir / 'broll' / f'short{k}_cover.jpg'
         title = ep.get('upload', {}).get('title') or ep.get('title')
         summ = (out / 'summary.txt').read_text() if (out / 'summary.txt').exists() else summary(ep)
-        if dst.exists() or _ai_thumb(title, summ, text, out, dst, vertical=True):
+        if not dst.exists() and not _ai_thumb(title, summ, text, out, dst, vertical=True):
+            vertical_from(ep_dir / 'thumbnail.jpg', dst)          # owner (Nov 14): a Short must never be without its cover
+        if dst.exists():
             pr = load(pf); pr['coverImg'] = f'ep/broll/short{k}_cover.jpg'; save(pf, pr); print('short cover:', text)
+
+
+def vertical_from(thumb, dst):
+    """Fallback Short cover: the long video's 16:9 thumbnail on the cream 9:16 card, in the safe middle area."""
+    from PIL import Image
+    thumb = pathlib.Path(thumb)
+    if not thumb.exists(): return False
+    im = Image.open(thumb).convert('RGB').resize((1040, 585), Image.LANCZOS)
+    a = np.asarray(im).astype(np.float32); bgc = tuple(int(x) for x in np.median(np.concatenate([a[:6].reshape(-1, 3), a[-6:].reshape(-1, 3)]), axis=0))
+    card = Image.new('RGB', (1080, 1920), bgc); card.paste(im, (20, 560)); card.save(dst, quality=92)
+    print('short cover from the long thumbnail'); return True
 
 
 def _thumbs_main(ep, ep_dir):

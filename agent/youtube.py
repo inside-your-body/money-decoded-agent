@@ -52,11 +52,36 @@ def upload(yt, video, title, description, tags, thumb=None, publish_at=None, syn
         st, resp = req.next_chunk()
         if st: print(f'  upload {int(st.progress() * 100)}%')
     vid = resp['id']; print('  uploaded https://youtu.be/' + vid)
-    if thumb:
-        try:
-            yt.thumbnails().set(videoId=vid, media_body=MediaFileUpload(str(thumb))).execute(); print('  thumbnail set')
-        except Exception as e: print('  thumbnail error', e)
+    if thumb: set_thumb(yt, vid, thumb)
     return vid
+
+
+THUMBS = {}      # video id -> 'ok' / 'error: ...' (owner Nov 14: a video went out without its cover and nobody knew)
+
+
+def set_thumb(yt, vid, thumb):
+    """Sets the custom thumbnail (re-encoded under YouTube's 2 MB limit), 3 tries; the result is kept in THUMBS for the history."""
+    import time, pathlib
+    from googleapiclient.http import MediaFileUpload
+    from PIL import Image
+    thumb = pathlib.Path(thumb)
+    if not thumb.exists(): THUMBS[vid] = 'error: no file'; print('  thumbnail error: no file'); return False
+    up = thumb
+    if thumb.stat().st_size > 1_900_000 or thumb.suffix.lower() not in ('.jpg', '.jpeg'):
+        up = thumb.with_name(thumb.stem + '_yt.jpg'); q = 90
+        im = Image.open(thumb).convert('RGB')
+        while True:
+            im.save(up, quality=q)
+            if up.stat().st_size < 1_900_000 or q < 50: break
+            q -= 10
+    err = ''
+    for k in range(3):
+        try:
+            yt.thumbnails().set(videoId=vid, media_body=MediaFileUpload(str(up), mimetype='image/jpeg')).execute()
+            THUMBS[vid] = 'ok'; print('  thumbnail set', vid); return True
+        except Exception as e:
+            err = str(e)[:300]; print('  thumbnail error', vid, err); time.sleep(15)
+    THUMBS[vid] = 'error: ' + err; return False
 
 def add_to_playlist(yt, vid, name=None):
     name = name or CFG['channel']['playlist_name']
