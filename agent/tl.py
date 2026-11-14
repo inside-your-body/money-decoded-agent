@@ -640,9 +640,11 @@ def _typeset(bg_jpg, text, key, dst):
 # owner (Nov 12): the thumbnail headline must make people CURIOUS (an open question / a mystery), understandable by anyone
 THUMB_RULE = """the thumbnail headline in TWO parts (owner Nov 12; the examples only show the SHAPE - never reuse their words):
      PART A = the TOPIC OF THIS VIDEO in 1-2 big words that tell at once what it is about (e.g. «برند زارا», «پس‌انداز», «کازینو», «چاپ پول»);
-     PART B = a short clear question or claim (3-6 words) that says what the viewer will find out and makes them curious
-     (e.g. «چرا هیچ‌وقت پایین نمیاد؟», «از همبرگر پول درنمیاره!»). Together they must say clearly what the video is about - never
-     vague lines like «آخر هفته‌ای که همه سکوت کردند». Simple everyday Persian, no jargon, no unexplained foreign names."""
+     PART B = ONE complete, meaningful question or claim (3-7 words) that a stranger understands WITHOUT having seen the video and that
+     makes them curious about the answer (e.g. «چرا هیچ‌وقت پایین نمیاد؟», «از همبرگر پول درنمیاره!», «چرا قیمت‌ها هر روز بالاتر می‌ره؟»).
+     Owner (Nov 14): never fragments or loose numbers that mean nothing alone, like «کجا رفت؟ فقط ۱۰ ساعت!» - the reader must know WHAT
+     the mystery is (good: «بانک پولت رو کجا خرج می‌کنه؟»). Together A + B say clearly what the video is about - never vague lines like
+     «آخر هفته‌ای که همه سکوت کردند». Simple everyday Persian, no jargon, no unexplained foreign names."""
 
 # owner (Nov 12): ONE fixed thumbnail template, always the same, clean (not busy), text far from the edges
 THUMB_TEMPLATE = """FIXED CHANNEL TEMPLATE (owner Nov 12, from his reference) - every thumbnail of the channel must look like the same series:
@@ -676,8 +678,11 @@ def headline_fits(text, topic):
     if not text: return False
     try:
         r = llm.ask_json(f"""Persian YouTube video topic: «{topic}». Proposed thumbnail headline: «{text}».
-Does the headline (especially its first big word/words) clearly name THIS topic, so a viewer knows at a glance what the video is about?
-A headline about a different or side topic (e.g. «تورم» for a video about who prints money) is NOT ok.
+ok=true only if ALL of these hold:
+1) its first big word/words clearly name THIS topic (a headline about a side topic, e.g. «تورم» for a video about who prints money, is NOT ok);
+2) the rest is ONE complete, meaningful question or claim that a stranger understands without the video and that makes them curious
+   (fragments or loose numbers like «کجا رفت؟ فقط ۱۰ ساعت!» are NOT ok);
+3) simple everyday Persian.
 Return JSON: {{"ok": bool, "why": str}}""", max_tokens=300)
         print('headline check', text, r); return bool(r.get('ok', True))
     except Exception as e:
@@ -726,7 +731,19 @@ def _frame(im):
     return im
 
 
-def _ai_thumb(title, summ, text, out, dst, vertical=False):
+SUBJECTS = [   # owner (Nov 14): never the same face on every cover -> rotate the kind of subject, one per video
+    'a woman in her 30s with long dark hair', 'a grey-haired man in his 60s with glasses', 'a young man in his 20s in a hoodie',
+    'a middle-aged woman with short hair and a blazer', 'an elderly woman with a warm, worried face', 'a bald man in his 40s with a beard',
+    'a young woman in her 20s with a ponytail', 'a man in his 50s in a shirt and tie', 'NO person: one big symbolic object that tells the topic',
+    'a teenager-looking young man with curly hair', 'a woman in her 40s with glasses', 'a worker in his 30s in work clothes']
+
+
+def _subject():
+    n = len(load(ROOT / 'data/history.json', {'episodes': []}).get('episodes', []))
+    return SUBJECTS[n % len(SUBJECTS)]
+
+
+def _ai_thumb(title, summ, text, out, dst, vertical=False, subject=None):
     """Owner (Nov 12): ChatGPT designs the WHOLE thumbnail, including the Persian headline in its own viral thumbnail typography
     (no font given by us). Claude checks the spelling; up to 3 tries. Returns True when a correct one was saved to dst."""
     from . import images
@@ -734,6 +751,7 @@ def _ai_thumb(title, summ, text, out, dst, vertical=False):
     note = ''
     ta, tb = [x.strip() for x in text.split('|', 1)] if '|' in text else (text.split()[0], ' '.join(text.split()[1:]) or text)
     text = f'{ta} {tb}'
+    subject = subject or _subject()
     for k in range(3):
         raw = out / (f'vfull{k}.png' if vertical else f'full{k}.png')
         prompt = f"""Design a complete, professional, highly clickable YouTube thumbnail ({'9:16 VERTICAL cover frame of a YouTube Short' if vertical else '16:9'}) for a Persian-language finance documentary.
@@ -744,6 +762,7 @@ What the video is about: {summ}
    PART A (big black letters): «{ta}»
    PART B (white letters on the red box): «{tb}»
 Typeset it yourself in the style of the most viral YouTube thumbnails.
+SUBJECT FOR THIS VIDEO (owner: a different one every time): {subject} - matching the topic.
 {THUMB_TEMPLATE}{VERTICAL_COVER if vertical else ''}{note}"""
         size = '1024x1536' if vertical else '1536x1024'
         style = ROOT / 'assets/thumb_style.jpg'       # the owner-approved thumbnail = the fixed template for every next one
@@ -751,7 +770,7 @@ Typeset it yourself in the style of the most viral YouTube thumbnails.
             ref = out / 'style_ref.png'; Image.open(style).convert('RGB').save(ref)
             ok = images.edit(prompt + "\nThe reference image is the channel's APPROVED thumbnail template: copy its layout, headline position, "
                              "typeface style, outline, colours and amount of detail exactly. Take ONLY the design from it: its person, "
-                             f"its money and its words («تورم», «چرا هیچ‌وقت پایین نمیاد؟») must NOT appear - the subject must show «{ta}» "
+                             f"its money and its words («تورم», «چرا هیچ‌وقت پایین نمیاد؟») must NOT appear - a DIFFERENT subject: {subject}, about «{ta}» "
                              f"and the only words are «{ta}» and «{tb}».", [str(ref)], str(raw), size=size, quality='high')
         else:
             ok = images.gen(prompt, raw, size=size, quality='high')

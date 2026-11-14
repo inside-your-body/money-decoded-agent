@@ -2,7 +2,7 @@
 the Shorts had no cover. For every pair "LONG_ID:SHORT_ID" in FIX_IDS: a new two-part headline for THIS topic (checked by Claude),
 ChatGPT makes the 16:9 thumbnail and the 9:16 Short cover in the approved template, both are set on YouTube (nothing is deleted or
 re-uploaded). Pictures -> samples/thumb_fix/, report -> data/thumb_repair.json, history.json gets thumb_key / thumb status."""
-import os, datetime as dt
+import os, random, datetime as dt
 from .common import ROOT, load, save
 from . import tl, youtube
 
@@ -30,11 +30,12 @@ def main():
         ta, tb = (key, rest) if rest else (text.split()[0], ' '.join(text.split()[1:]))
         ht = ta + '|' + tb
         long_jpg, cov = out / f'{vid}_thumbnail.jpg', out / f'{sid or vid}_short_cover.jpg'
-        r['thumb_made'] = tl._ai_thumb(title, summ, ht, d, long_jpg)
+        subj = random.choice([s for s in tl.SUBJECTS if 'NO person' not in s]); r['subject'] = subj   # owner: a new face each time
+        r['thumb_made'] = tl._ai_thumb(title, summ, ht, d, long_jpg, subject=subj)
         if r['thumb_made']: youtube.set_thumb(yt, vid, long_jpg)
         r['thumb'] = youtube.THUMBS.get(vid, 'not made')
         if sid:
-            r['cover_made'] = tl._ai_thumb(title, summ, ht, d, cov, vertical=True) or tl.vertical_from(long_jpg, cov)
+            r['cover_made'] = tl._ai_thumb(title, summ, ht, d, cov, vertical=True, subject=subj) or tl.vertical_from(long_jpg, cov)
             if r['cover_made']: youtube.set_thumb(yt, sid, cov)
             r['short_thumb'] = youtube.THUMBS.get(sid, 'not made')
         for f in d.glob('*.png'): f.unlink()
