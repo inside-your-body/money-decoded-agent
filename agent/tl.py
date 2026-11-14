@@ -499,7 +499,7 @@ Return JSON: {{"queries": [str], "title_ideas": [{{"title": str, "thumb": str, "
         up['title'] = c['title'].strip()[:100]
         th = (c.get('thumb') or '').strip()
         if th and len(th.split()) <= 5: ep['thumb_text'] = th; ep['thumb_key'] = (c.get('key') or '').strip()
-        if ep.get('thumb_key') in used or not headline_fits(ep.get('thumb_text', ''), ep.get('topic_title') or up['title']):
+        if ep.get('thumb_key') in used or not headline_fits(ep.get('thumb_text', ''), ep.get('topic_title') or up['title'], ep.get('thumb_key')):
             fix = new_headline(ep.get('topic_title') or up['title'], up['title'], used)       # owner (Nov 14): «تورم» on a money-printing video
             if fix: ep['thumb_text'], ep['thumb_key'] = fix
         print('packaging lint:', sc, L['issues'])
@@ -676,14 +676,17 @@ from the left and right edges (nothing is cropped; keep the red box well inside 
 TRIES = []     # headline attempts + Claude's verdicts (written into the repair report)
 
 
-def headline_fits(text, topic):
+def headline_fits(text, topic, key=None):
     """Owner (Nov 14): a video about where money comes from got «تورم» on its cover. Claude checks that PART A names THIS topic."""
     if not text: return False
+    key = key if key and text.startswith(key) else text.split()[0]
+    rest = text[len(key):].strip()
     try:
-        r = llm.ask_json(f"""Persian YouTube video topic: «{topic}». Proposed thumbnail headline: «{text}».
+        r = llm.ask_json(f"""Persian YouTube video topic: «{topic}». Proposed thumbnail headline, in TWO SEPARATE blocks on the picture
+(they are NOT read as one sentence): PART A in huge black letters: «{key}»; PART B on a red box: «{rest}».
 ok=true only if ALL of these hold:
-1) its first big word/words clearly name THIS topic (a headline about a side topic, e.g. «تورم» for a video about who prints money, is NOT ok);
-2) the rest is ONE complete, meaningful question or claim that a stranger understands without the video and that makes them curious
+1) PART A clearly names THIS topic (a headline about a side topic, e.g. «تورم» for a video about who prints money, is NOT ok);
+2) PART B on its own is ONE complete, meaningful question or claim that a stranger understands without the video and that makes them curious
    (fragments or loose numbers like «کجا رفت؟ فقط ۱۰ ساعت!» are NOT ok);
 3) simple everyday Persian.
 Return JSON: {{"ok": bool, "why": str}}""", max_tokens=300)
@@ -707,7 +710,7 @@ Return JSON: {{"a": str, "b": str}}""", max_tokens=400)
         a, b = (r.get('a') or '').strip(), (r.get('b') or '').strip()
         if not (a and b) or a in used or len((a + ' ' + b).split()) > 10:
             fb = f'\nRejected before: «{a} {b}» (empty, reused PART A, or too long).'; continue
-        if headline_fits(a + ' ' + b, topic):
+        if headline_fits(a + ' ' + b, topic, a):
             return a + ' ' + b, a
         why = TRIES[-1].get('why') if TRIES else ''
         fb = f'\nRejected before: «{a} {b}» - {why}. Write a better one.'
