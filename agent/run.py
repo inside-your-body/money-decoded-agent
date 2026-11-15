@@ -79,7 +79,10 @@ def main():
     if not a.dry_run:
         from . import tts
         left = tts.credits_left_this_month()
-        if left is not None and left < 12000:
+        # owner (Nov 15): an episode whose voices were made in the batch needs (almost) no credits -> only a NEW voicing needs 12000
+        ready = any(x['status'] in ('next', 'todo') and x.get('prepared') for x in load(ROOT / 'data/topics.json'))
+        need = 1500 if (ready and not a.topic) else 12000
+        if left is not None and left < need:
             print(f'ElevenLabs: only {left} of this channel\'s monthly credits left -> no new episode this month'); return
     if not a.topic:
         try:
