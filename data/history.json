@@ -181,6 +181,23 @@
     "ok"
    ],
    "built_at": "2026-11-15T16:23:46"
+  },
+  {
+   "topic": "طلا، دلار یا سکه؛ مردم پولشون رو کجا نگه می‌دارن و چرا؟",
+   "video_id": "4G4MDQrIizk",
+   "short_ids": [
+    "iaxsDAfVGvw"
+   ],
+   "publish_at": "2026-11-22T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "inspired",
+   "thumb_key": "طلا، دلار یا سکه",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ],
+   "built_at": "2026-11-15T21:16:49"
   }
  ],
  "used_music": [
@@ -197,6 +214,7 @@
   "deliberate_thought",
   "clean_soul",
   "fluidscape",
-  "floating_cities"
+  "floating_cities",
+  "inspired"
  ]
 }
