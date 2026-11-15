@@ -371,6 +371,7 @@ def build(topic, ep_dir, dry_run=False, voice_only=False):
             w = long_words(ep) if ep['scenes'] and isinstance(ep['scenes'][0]['lines'][0], dict) else _wc([l for s in ep['scenes'] for l in s['lines']])
             if w <= llm.WORDS_MAX + 30: break
             print('script too long:', w, '-> tightening'); ep = tighten(ep, notes, llm.WORDS_MAX); save(ep_dir / 'episode.json', ep)
+    ep['topic_title'] = topic.get('title') or ep.get('title')
     if not ep.get('polished'):            # packaging first: the hook must confirm the final title
         try: ep = polish(ep); save(ep_dir / 'episode.json', ep)
         except Exception as e: print('packaging polish failed (keeping the writer\'s title/description):', e)
@@ -810,7 +811,28 @@ def _typeset_plain(text, key, dst):
     sh(['npx', 'remotion', 'still', 'src/index.ts', 'ThumbFa', str(dst), f'--props={pf}', '--log=warn'], cwd=ROOT / 'render')
 
 
+def check_headline(ep, ep_dir=None):
+    """Owner (Nov 14/15): the cover headline must name THIS topic, be clear on its own and never reuse an earlier PART A. Episodes voiced
+    in the batch were packaged before this rule -> checked (and rewritten if needed) right before the thumbnail is made."""
+    if ep.get('thumb_checked'): return ep
+    topic = ep.get('topic_title') or (ep.get('upload') or {}).get('title') or ep.get('title')
+    title = (ep.get('upload') or {}).get('title') or ep.get('title')
+    used = [e.get('thumb_key') for e in load(ROOT / 'data/history.json', {'episodes': []})['episodes'] if e.get('thumb_key')]
+    text = (ep.get('thumb_text') or '').replace('|', ' ').strip()
+    key = (ep.get('thumb_key') or '').strip() or (text.split()[0] if text else '')
+    if not text or key in used or not headline_fits(text, topic, key):
+        fix = new_headline(topic, title, used)
+        if fix: ep['thumb_text'], ep['thumb_key'] = fix; print('new cover headline:', fix[0])
+    else:
+        ep['thumb_key'] = key
+    ep['thumb_checked'] = True
+    if ep_dir: save(pathlib.Path(ep_dir) / 'episode.json', ep)
+    return ep
+
+
 def thumbs(ep, ep_dir):
+    try: check_headline(ep, ep_dir)
+    except Exception as e: print('headline check failed', e)
     _thumbs_main(ep, ep_dir)
     try: short_cover(ep, ep_dir)
     except Exception as e: print('short cover failed', e)
