@@ -215,6 +215,23 @@
     "ok"
    ],
    "built_at": "2026-11-16T02:14:29"
+  },
+  {
+   "topic": "لیر ترکیه چرا این‌قدر ارزش از دست داد؟",
+   "video_id": "qcRRcnJFDhE",
+   "short_ids": [
+    "pZhRGT52DLc"
+   ],
+   "publish_at": "2026-11-26T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "clean_soul",
+   "thumb_key": "لیر ترکیه",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ],
+   "built_at": "2026-11-16T08:48:58"
   }
  ],
  "used_music": [
@@ -233,6 +250,7 @@
   "fluidscape",
   "floating_cities",
   "inspired",
-  "deliberate_thought"
+  "deliberate_thought",
+  "clean_soul"
  ]
 }
