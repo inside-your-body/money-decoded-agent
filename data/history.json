@@ -198,6 +198,23 @@
     "ok"
    ],
    "built_at": "2026-11-15T21:16:49"
+  },
+  {
+   "topic": "چرا قیمت‌ها بالا می‌رن ولی دیگه پایین نمیان؟",
+   "video_id": "hO4rHU1FKFE",
+   "short_ids": [
+    "Pb6G1imXU0E"
+   ],
+   "publish_at": "2026-11-24T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "deliberate_thought",
+   "thumb_key": "قیمت‌ها",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ],
+   "built_at": "2026-11-16T02:14:29"
   }
  ],
  "used_music": [
@@ -215,6 +232,7 @@
   "clean_soul",
   "fluidscape",
   "floating_cities",
-  "inspired"
+  "inspired",
+  "deliberate_thought"
  ]
 }
