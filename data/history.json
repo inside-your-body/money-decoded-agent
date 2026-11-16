@@ -232,6 +232,23 @@
     "ok"
    ],
    "built_at": "2026-11-16T08:48:58"
+  },
+  {
+   "topic": "شغل‌هایی که وقتی خوابی هم برات پول می‌سازن",
+   "video_id": "GvrGM_ZUEDg",
+   "short_ids": [
+    "Lg7jp4qD2J8"
+   ],
+   "publish_at": "2026-11-28T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "fluidscape",
+   "thumb_key": "درآمد غیرفعال",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ],
+   "built_at": "2026-11-16T10:03:59"
   }
  ],
  "used_music": [
@@ -251,6 +268,7 @@
   "floating_cities",
   "inspired",
   "deliberate_thought",
-  "clean_soul"
+  "clean_soul",
+  "fluidscape"
  ]
 }
