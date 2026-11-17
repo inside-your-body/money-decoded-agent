@@ -283,6 +283,23 @@
     "ok"
    ],
    "built_at": "2026-11-17T10:18:34"
+  },
+  {
+   "topic": "۵ اشتباه پولی که بیشتر مردم تا آخر عمر تکرار می‌کنن",
+   "video_id": "Q7yXSTNhBAY",
+   "short_ids": [
+    "RTzBm0Jp34o"
+   ],
+   "publish_at": "2026-12-04T14:00:00Z",
+   "format": "tl",
+   "fmt": "countdown",
+   "music": "deliberate_thought",
+   "thumb_key": "اشتباهات مالی",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ],
+   "built_at": "2026-11-17T16:30:34"
   }
  ],
  "used_music": [
@@ -305,6 +322,7 @@
   "clean_soul",
   "fluidscape",
   "floating_cities",
-  "inspired"
+  "inspired",
+  "deliberate_thought"
  ]
 }
