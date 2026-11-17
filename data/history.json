@@ -266,6 +266,23 @@
     "ok"
    ],
    "built_at": "2026-11-17T05:02:31"
+  },
+  {
+   "topic": "چرا هر چی بیشتر درآمد داری، بازم پولت ته ماه تموم می‌شه؟",
+   "video_id": "2pf-WMBkAFA",
+   "short_ids": [
+    "ng6xC855BTE"
+   ],
+   "publish_at": "2026-12-02T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "inspired",
+   "thumb_key": "اضافه‌حقوق",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ],
+   "built_at": "2026-11-17T10:18:34"
   }
  ],
  "used_music": [
@@ -287,6 +304,7 @@
   "deliberate_thought",
   "clean_soul",
   "fluidscape",
-  "floating_cities"
+  "floating_cities",
+  "inspired"
  ]
 }
