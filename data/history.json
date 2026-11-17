@@ -249,6 +249,23 @@
     "ok"
    ],
    "built_at": "2026-11-16T10:03:59"
+  },
+  {
+   "topic": "سود مرکب؛ معجزه‌ای که پولت رو چند برابر می‌کنه",
+   "video_id": "JXKdQtogJ6I",
+   "short_ids": [
+    "SKxRsjAzhm0"
+   ],
+   "publish_at": "2026-11-30T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "floating_cities",
+   "thumb_key": "سود مرکب",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ],
+   "built_at": "2026-11-17T05:02:31"
   }
  ],
  "used_music": [
@@ -269,6 +286,7 @@
   "inspired",
   "deliberate_thought",
   "clean_soul",
-  "fluidscape"
+  "fluidscape",
+  "floating_cities"
  ]
 }
