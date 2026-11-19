@@ -23,7 +23,8 @@
   "paused": false,
   "paused_note": "Owner (Nov 13): approved the Persian sample and switched the bot ON. true = scheduled runs skip.",
   "publish_time_note": "Owner (Nov 12): every other day, long video 17:00 Istanbul (14:00 UTC), Short 17:30 Istanbul (14:30 UTC). Episodes are built ahead (up to 3 a day, YouTube quota) and scheduled into the next free slot.",
-  "max_episodes_per_day": 3
+  "max_episodes_per_day": 1,
+  "pace_note": "Nov 19: one episode a day at most (the schedule was already full until mid-December; saves API costs)."
  },
  "voice": {
   "engine": "elevenlabs",
@@ -83,6 +84,10 @@
  "repo": "inside-your-body/money-decoded-agent",
  "format": "tl",
  "style": "flat",
+ "scene_source": "pixabay",
+ "scene_source_note": "Owner (Nov 19): no money for OpenAI images -> free Pixabay photos that fit each sentence (Claude picks among previews), motion graphics on top.",
+ "thumbnails": "owner",
+ "thumbnails_note": "Owner (Nov 19): he makes the thumbnails himself; the bot uploads without a custom thumbnail and makes no Short cover.",
  "style_note": "Owner (Nov 8): Persian channel = flat 2D motion graphics + professional Persian kinetic typography (render/src/FaEpisode.tsx). \"finn\" = old fox drawings, \"documentary\" = old stock footage.",
  "fonts": {
   "headline": "Lalezar",
