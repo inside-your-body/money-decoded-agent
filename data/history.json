@@ -385,6 +385,23 @@
     "ok"
    ],
    "built_at": "2026-11-19T10:22:43"
+  },
+  {
+   "topic": "برند کوکاکولا چطور فقط با آب و شکر یه امپراتوری ساخت؟",
+   "video_id": "6YDeJaGPr1w",
+   "short_ids": [
+    "kRHmpjcfI6c"
+   ],
+   "publish_at": "2026-12-16T14:00:00Z",
+   "format": "tl",
+   "fmt": "case",
+   "music": "clean_soul",
+   "thumb_key": "برند کوکاکولا",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ],
+   "built_at": "2026-11-19T11:17:36"
   }
  ],
  "used_music": [
@@ -413,6 +430,7 @@
   "fluidscape",
   "floating_cities",
   "inspired",
-  "deliberate_thought"
+  "deliberate_thought",
+  "clean_soul"
  ]
 }
