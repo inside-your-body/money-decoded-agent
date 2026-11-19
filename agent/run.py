@@ -133,6 +133,16 @@ def run_tl(a, topic, ep_dir):
         try: yt.videos().delete(id=old).execute(); print('deleted old upload', old)
         except Exception as e: print('could not delete', old, e)
     at, short_at = next_slot()
+    # owner (Nov 19): a rebuilt video (same voice, new free pictures) takes the publish date of the upload it replaces
+    olds = [x for x in os.environ.get('REPLACE_IDS', '').replace(',', ' ').split() if x]
+    if olds:
+        h = load(ROOT / 'data/history.json')
+        prev = [e for e in h['episodes'] if e.get('video_id') in olds]
+        if prev and prev[0].get('publish_at') and dt.datetime.fromisoformat(prev[0]['publish_at'].rstrip('Z')) > dt.datetime.utcnow() + dt.timedelta(hours=2):
+            at = prev[0]['publish_at']; d0 = at[:10]
+            short_at = d0 + 'T' + CFG['schedule']['publish_short_utc'] + ':00Z'
+            print('replacement keeps the old slot', at)
+        h['episodes'] = [e for e in h['episodes'] if e.get('video_id') not in olds]; save(ROOT / 'data/history.json', h)
     thumb = ep_dir / 'thumbnail.jpg'
     if not thumb.exists():                      # owner (Nov 14): never upload a video without its cover
         try: tl.thumbs(ep, ep_dir)
