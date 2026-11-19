@@ -368,6 +368,23 @@
     "ok"
    ],
    "built_at": "2026-11-19T01:13:56"
+  },
+  {
+   "topic": "چرا آیفونِ برند اپل این‌قدر گرونه ولی بازم همه می‌خرنش؟",
+   "video_id": "BbxOhDhlWgA",
+   "short_ids": [
+    "WmoKvs_N9oc"
+   ],
+   "publish_at": "2026-12-14T14:00:00Z",
+   "format": "tl",
+   "fmt": "countdown",
+   "music": "deliberate_thought",
+   "thumb_key": "آیفون",
+   "thumb": "ok",
+   "short_thumbs": [
+    "ok"
+   ],
+   "built_at": "2026-11-19T10:22:43"
   }
  ],
  "used_music": [
@@ -395,6 +412,7 @@
   "clean_soul",
   "fluidscape",
   "floating_cities",
-  "inspired"
+  "inspired",
+  "deliberate_thought"
  ]
 }
