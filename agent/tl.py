@@ -831,6 +831,8 @@ def check_headline(ep, ep_dir=None):
 
 
 def thumbs(ep, ep_dir):
+    if CFG.get('thumbnails') == 'owner':         # owner (Nov 19): he makes the thumbnails himself (no paid image credits)
+        print('thumbnails are made by the owner -> none made here'); return
     try: check_headline(ep, ep_dir)
     except Exception as e: print('headline check failed', e)
     _thumbs_main(ep, ep_dir)

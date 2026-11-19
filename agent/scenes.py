@@ -3,8 +3,9 @@ with the image tool and bring them in with motion graphics").
 Every ~6-10 s of narration gets ONE picture made by the OpenAI image model (cinematic editorial illustration: the real company building,
 the trading floor, the people of that time, the place, the object), shown full-screen with a slow camera move; the next sentences keep
 the picture in the background (darkened) with the flat motion graphic + Persian typography on top. A new graphic every ~4 s stays."""
-import json, pathlib, concurrent.futures as cf
+import json, os, base64, pathlib, threading, requests, concurrent.futures as cf
 from . import llm, images
+from .common import CFG
 
 FPS = 30
 SFX = ['bong', 'boom', 'bubble', 'click', 'drip', 'heartbeat', 'impact1', 'impact2', 'impact3', 'pop1', 'pop2', 'pop3', 'pop4', 'reveal', 'riser', 'shield', 'sparkle', 'tick', 'whoosh1', 'whoosh2', 'whoosh3']
@@ -48,12 +49,76 @@ setting, never in a humiliating, criminal or invented situation. Concrete and vi
 the time of day and the camera shot (wide establishing shot / close-up / over-the-shoulder / aerial). Vary the shots; never two
 similar pictures in a row. Never charts, infographics or text panels (our motion graphics do that).
 Also pick the sound effect that fits the moment ("sfx", one of: {', '.join(SFX)}) or null.
+Also write "query": 2-4 plain English words to find a matching REAL PHOTO on a free stock-photo site (Pixabay) - concrete things
+that exist as photos (e.g. "bank vault", "supermarket prices", "printing money", "fast food restaurant", "worried woman bills"),
+and "query2": a broader 1-2 word fallback (e.g. "money", "shopping"). Never names of people; brands only if very famous.
 Scenes: {json.dumps({i: t for i, t in enumerate(texts)}, ensure_ascii=False)}
-Return JSON: {{"scenes": [{{"i": int, "picture": str, "sfx": str|null}}]}} — one per scene, same order.""", max_tokens=12000)
+Return JSON: {{"scenes": [{{"i": int, "picture": str, "query": str, "query2": str, "sfx": str|null}}]}} — one per scene, same order.""", max_tokens=14000)
     out = {s.get('i'): s for s in r.get('scenes', []) if isinstance(s, dict)}
     pics = [(out.get(i) or {}).get('picture') or f"A documentary scene that shows: {context}" for i in range(len(texts))]
     sfx = [(out.get(i) or {}).get('sfx') if (out.get(i) or {}).get('sfx') in SFX else None for i in range(len(texts))]
-    return pics, sfx
+    qs = [[q for q in ((out.get(i) or {}).get('query'), (out.get(i) or {}).get('query2')) if isinstance(q, str) and q.strip()] or ['money']
+          for i in range(len(texts))]
+    return pics, sfx, qs
+
+
+# ---- owner (Nov 19): no more paid AI pictures -> FREE real photos from Pixabay that fit the sentence (checked by Claude) ----
+PIXABAY_IMG = 'https://pixabay.com/api/'
+_used, _lock, _scache = set(), threading.Lock(), {}
+
+
+def _search(q, vertical):
+    k = (q.lower(), vertical)
+    if k in _scache: return _scache[k]
+    try:
+        r = requests.get(PIXABAY_IMG, params={'key': os.environ['PIXABAY_API_KEY'], 'q': q[:100], 'image_type': 'photo', 'safesearch': 'true',
+                                              'orientation': 'vertical' if vertical else 'horizontal', 'per_page': 30, 'min_width': 1200,
+                                              'order': 'popular'}, timeout=30)
+        r.raise_for_status(); hits = r.json().get('hits', [])
+    except Exception as e:
+        print('pixabay photo search failed', q, e); hits = []
+    _scache[k] = hits
+    return hits
+
+
+def _choose(hits, text, picture, context):
+    """Claude looks at up to 6 small previews and picks the one that clearly fits the sentence (0 = none fits)."""
+    content = []
+    for n, h in enumerate(hits, 1):
+        try:
+            b = requests.get(h.get('webformatURL') or h['previewURL'], timeout=20).content
+            content += [{'type': 'text', 'text': f'Picture {n}:'}, {'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': base64.b64encode(b).decode()}}]
+        except Exception: pass
+    if not content: return 0
+    content.append({'type': 'text', 'text': f"""Persian finance video: {context}
+Narration at this moment (Persian): «{text}»
+Ideal picture: {picture}
+Which picture above fits this moment best, so the viewer immediately connects it with what is said? It must be clearly related to the
+topic of the sentence (not just "some money"). Reject pictures with flags, politicians, religious symbols, big foreign text or
+watermarks. Return JSON only: {{"best": int (picture number, 0 if none clearly fits)}}"""})
+    try:
+        return int((llm._repair(llm.ask(content, max_tokens=200, retries=2)) or {}).get('best') or 0)
+    except Exception as e:
+        print('photo choice failed', e); return 0
+
+
+def _free_pic(queries, text, picture, context, vertical, dst):
+    from PIL import Image, ImageOps
+    import io
+    for q in queries:
+        with _lock: cand = [h for h in _search(q, vertical) if h.get('id') not in _used][:6]
+        if not cand: continue
+        best = _choose(cand, text, picture, context)
+        if 1 <= best <= len(cand):
+            h = cand[best - 1]
+            with _lock: _used.add(h.get('id'))
+            try:
+                im = Image.open(io.BytesIO(requests.get(h.get('largeImageURL') or h['webformatURL'], timeout=60).content)).convert('RGB')
+                ImageOps.fit(im, (1080, 1920) if vertical else (1920, 1080), Image.LANCZOS).save(dst, quality=88)
+                return True
+            except Exception as e:
+                print('photo download failed', e)
+    return False
 
 
 def attach(props, ep_dir, kind, context, lo=6.0, hi=10.0):
@@ -62,12 +127,15 @@ def attach(props, ep_dir, kind, context, lo=6.0, hi=10.0):
     beats = props['beats']
     groups = _groups(beats, 4.0, 7.0) if vertical else _groups(beats, lo, hi)
     texts = [' '.join(beats[k].get('text', '') for k in g) for g in groups]
-    pics, sfx = _prompts(texts, context)
+    pics, sfx, qs = _prompts(texts, context)
     out = pathlib.Path(ep_dir) / 'broll'; out.mkdir(exist_ok=True)
+    free = CFG.get('scene_source') == 'pixabay' and os.environ.get('PIXABAY_API_KEY')
 
     def one(n):
         dst = out / f'{kind}_pic_{n:03d}.jpg'
         if dst.exists(): return n, dst
+        if free:
+            return n, (dst if _free_pic(qs[n], texts[n], pics[n], context, vertical, dst) else None)
         png = out / f'{kind}_pic_{n:03d}.png'
         p = f"{pics[n]}\n{LAYOUT[vertical]}\nStyle: {STYLE}"
         if images.gen(p, png, size='1024x1536' if vertical else '1536x1024', quality='medium'):
