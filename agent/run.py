@@ -71,6 +71,18 @@ def main():
     # every-other-day slot (long 17:00 Istanbul, Short 17:30). A cap per day keeps us under the daily API quota.
     h = load(ROOT / 'data/history.json')
     today = dt.datetime.utcnow().strftime('%Y-%m-%d')
+    # owner (Nov 20): videos made with only motion graphics are rebuilt one by one (same voice, free photos, same date) from data/rebuild.json
+    q = load(ROOT / 'data/rebuild.json', [])
+    all_today = sum(1 for e in h['episodes'] if (e.get('built_at') or '').startswith(today))
+    if q and not a.topic and not a.dry_run and all_today >= 3:
+        print('3 uploads today already (YouTube daily quota) -> the next rebuild tomorrow'); return
+    if q and not a.topic and not a.dry_run:
+        it = q[0]
+        topic = next(x for x in load(ROOT / 'data/topics.json') if x['id'] == it['topic_id'])
+        ep_dir = WORK / f"rb{it['topic_id']}"; ep_dir.mkdir(parents=True, exist_ok=True)
+        save(WORK / 'current.json', {'dir': ep_dir.name, 'topic': topic, 'format': 'tl', 'replace': it['replace']})
+        print('REBUILD', it['topic_id'], it.get('publish_at'), it['replace'])
+        return run_tl(a, topic, ep_dir)
     built_today = sum(1 for e in h['episodes'] if (e.get('built_at') or '').startswith(today))
     if not a.topic and not a.dry_run and built_today >= int(CFG['schedule'].get('max_episodes_per_day', 3)):
         print(f'{built_today} episodes built today (daily upload quota) -> skip'); return
@@ -129,12 +141,9 @@ def run_tl(a, topic, ep_dir):
         print('dry run: outputs in', ep_dir); return
     from . import youtube
     yt = youtube.client()                      # refuses to continue unless the token belongs to Money Decoded
-    for old in [x for x in os.environ.get('REPLACE_IDS', '').replace(',', ' ').split() if x]:
-        try: yt.videos().delete(id=old).execute(); print('deleted old upload', old)
-        except Exception as e: print('could not delete', old, e)
     at, short_at = next_slot()
     # owner (Nov 19): a rebuilt video (same voice, new free pictures) takes the publish date of the upload it replaces
-    olds = [x for x in os.environ.get('REPLACE_IDS', '').replace(',', ' ').split() if x]
+    olds = [x for x in os.environ.get('REPLACE_IDS', '').replace(',', ' ').split() if x] or load(WORK / 'current.json', {}).get('replace', [])
     if olds:
         h = load(ROOT / 'data/history.json')
         prev = [e for e in h['episodes'] if e.get('video_id') in olds]
@@ -142,7 +151,7 @@ def run_tl(a, topic, ep_dir):
             at = prev[0]['publish_at']; d0 = at[:10]
             short_at = d0 + 'T' + CFG['schedule']['publish_short_utc'] + ':00Z'
             print('replacement keeps the old slot', at)
-        h['episodes'] = [e for e in h['episodes'] if e.get('video_id') not in olds]; save(ROOT / 'data/history.json', h)
+        h['episodes'] = [e for e in h['episodes'] if e.get('video_id') not in olds]   # saved after the new upload worked
     thumb = ep_dir / 'thumbnail.jpg'
     if not thumb.exists():                      # owner (Nov 14): never upload a video without its cover
         try: tl.thumbs(ep, ep_dir)
@@ -166,7 +175,14 @@ def run_tl(a, topic, ep_dir):
     except Exception as e: print('comment not posted (will work once public):', e)
     try: from . import tts; tts.commit_usage()
     except Exception as e: print('usage tally', e)
-    mark_done(topic['id'], {'topic': topic['title'], 'video_id': vid, 'short_ids': sids, 'publish_at': at, 'format': 'tl', 'fmt': ep.get('fmt'), 'music': track,
+    if olds:          # owner (Nov 19/20): the old upload is deleted only AFTER the new one is on YouTube
+        save(ROOT / 'data/history.json', h)
+        for old in olds:
+            try: yt.videos().delete(id=old).execute(); print('deleted old upload', old)
+            except Exception as e: print('could not delete', old, e)
+        q = load(ROOT / 'data/rebuild.json', [])
+        save(ROOT / 'data/rebuild.json', [x for x in q if not set(x.get('replace', [])) & set(olds)])
+    mark_done(topic['id'], {'rebuild': bool(olds), 'topic': topic['title'], 'video_id': vid, 'short_ids': sids, 'publish_at': at, 'format': 'tl', 'fmt': ep.get('fmt'), 'music': track,
                             'thumb_key': ep.get('thumb_key'), 'thumb': youtube.THUMBS.get(vid, 'none'),
                             'short_thumbs': [youtube.THUMBS.get(x, 'none') for x in sids],
                             'built_at': dt.datetime.utcnow().isoformat(timespec='seconds')})
