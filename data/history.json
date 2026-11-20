@@ -402,6 +402,23 @@
     "ok"
    ],
    "built_at": "2026-11-19T11:17:36"
+  },
+  {
+   "topic": "برند نوکیا که یه روز پادشاه موبایل بود، چطور سقوط کرد؟",
+   "video_id": "qWfa3YLGiwI",
+   "short_ids": [
+    "08VGIcGqYAU"
+   ],
+   "publish_at": "2026-12-18T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "fluidscape",
+   "thumb_key": "نوکیا",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-20T02:13:14"
   }
  ],
  "used_music": [
@@ -431,6 +448,7 @@
   "floating_cities",
   "inspired",
   "deliberate_thought",
-  "clean_soul"
+  "clean_soul",
+  "fluidscape"
  ]
 }
