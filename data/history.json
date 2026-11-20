@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "چرا قیمت‌ها بالا می‌رن ولی دیگه پایین نمیان؟",
-   "video_id": "hO4rHU1FKFE",
-   "short_ids": [
-    "Pb6G1imXU0E"
-   ],
-   "publish_at": "2026-11-24T14:00:00Z",
-   "format": "tl",
-   "fmt": "timeline",
-   "music": "deliberate_thought",
-   "thumb_key": "قیمت‌ها",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-16T02:14:29"
-  },
-  {
    "topic": "لیر ترکیه چرا این‌قدر ارزش از دست داد؟",
    "video_id": "qcRRcnJFDhE",
    "short_ids": [
@@ -420,6 +403,24 @@
     "none"
    ],
    "built_at": "2026-11-20T07:31:14"
+  },
+  {
+   "rebuild": true,
+   "topic": "چرا قیمت‌ها بالا می‌رن ولی دیگه پایین نمیان؟",
+   "video_id": "TGxcNLWTDaM",
+   "short_ids": [
+    "27j7xx4k8G0"
+   ],
+   "publish_at": "2026-11-24T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "inspired",
+   "thumb_key": "چاپ پول",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-20T09:19:59"
   }
  ],
  "used_music": [
@@ -451,6 +452,7 @@
   "deliberate_thought",
   "clean_soul",
   "fluidscape",
-  "floating_cities"
+  "floating_cities",
+  "inspired"
  ]
 }
