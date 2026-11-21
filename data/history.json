@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "شغل‌هایی که وقتی خوابی هم برات پول می‌سازن",
-   "video_id": "GvrGM_ZUEDg",
-   "short_ids": [
-    "Lg7jp4qD2J8"
-   ],
-   "publish_at": "2026-11-28T14:00:00Z",
-   "format": "tl",
-   "fmt": "timeline",
-   "music": "fluidscape",
-   "thumb_key": "درآمد غیرفعال",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-16T10:03:59"
-  },
-  {
    "topic": "سود مرکب؛ معجزه‌ای که پولت رو چند برابر می‌کنه",
    "video_id": "JXKdQtogJ6I",
    "short_ids": [
@@ -422,6 +405,24 @@
     "none"
    ],
    "built_at": "2026-11-21T01:39:50"
+  },
+  {
+   "rebuild": true,
+   "topic": "شغل‌هایی که وقتی خوابی هم برات پول می‌سازن",
+   "video_id": "ufInuLZKgmQ",
+   "short_ids": [
+    "Mp9tTV62urU"
+   ],
+   "publish_at": "2026-11-28T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "clean_soul",
+   "thumb_key": null,
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-21T08:57:21"
   }
  ],
  "used_music": [
@@ -455,6 +456,7 @@
   "fluidscape",
   "floating_cities",
   "inspired",
-  "deliberate_thought"
+  "deliberate_thought",
+  "clean_soul"
  ]
 }
