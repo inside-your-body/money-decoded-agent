@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "سود مرکب؛ معجزه‌ای که پولت رو چند برابر می‌کنه",
-   "video_id": "JXKdQtogJ6I",
-   "short_ids": [
-    "SKxRsjAzhm0"
-   ],
-   "publish_at": "2026-11-30T14:00:00Z",
-   "format": "tl",
-   "fmt": "timeline",
-   "music": "floating_cities",
-   "thumb_key": "سود مرکب",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-17T05:02:31"
-  },
-  {
    "topic": "چرا هر چی بیشتر درآمد داری، بازم پولت ته ماه تموم می‌شه؟",
    "video_id": "2pf-WMBkAFA",
    "short_ids": [
@@ -423,6 +406,24 @@
     "none"
    ],
    "built_at": "2026-11-21T08:57:21"
+  },
+  {
+   "rebuild": true,
+   "topic": "سود مرکب؛ معجزه‌ای که پولت رو چند برابر می‌کنه",
+   "video_id": "vC-JnpP7NJ0",
+   "short_ids": [
+    "HWEughBa-o4"
+   ],
+   "publish_at": "2026-11-30T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "fluidscape",
+   "thumb_key": null,
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-21T09:56:08"
   }
  ],
  "used_music": [
@@ -457,6 +458,7 @@
   "floating_cities",
   "inspired",
   "deliberate_thought",
-  "clean_soul"
+  "clean_soul",
+  "fluidscape"
  ]
 }
