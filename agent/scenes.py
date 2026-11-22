@@ -157,4 +157,6 @@ def attach(props, ep_dir, kind, context, lo=6.0, hi=10.0):
         if sfx[n] and not beats[g[0]].get('sfx'): beats[g[0]]['sfx'] = sfx[n]
         last = img or last
     print(f'scene pictures {kind}: {ok}/{len(groups)} pictures for {len(beats)} beats')
+    if free and ok < 0.5 * len(groups):     # owner (Nov 22): never again a video with only text (e.g. when the Claude credit ran out)
+        raise RuntimeError(f'only {ok}/{len(groups)} scene pictures -> not building a text-only video')
     return props

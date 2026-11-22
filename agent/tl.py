@@ -344,7 +344,9 @@ def _visuals(pr, ep_dir, kind, context):
         if CFG.get('scene_pictures', True):   # owner (Nov 12): + AI pictures so the viewer SEES who/what we talk about
             from . import scenes
             try: return scenes.attach(pr, ep_dir, kind, context)
-            except Exception as e: print('scene pictures failed -> graphics only', e)
+            except Exception as e:
+                if CFG.get('scene_source') == 'pixabay': raise          # owner (Nov 22): no text-only videos -> stop, the next run retries
+                print('scene pictures failed -> graphics only', e)
         return pr
     if CFG.get('style') == 'finn':
         from . import fox
