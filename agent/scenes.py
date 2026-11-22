@@ -83,12 +83,21 @@ def _search(q, vertical):
 
 def _choose(hits, text, picture, context):
     """Claude looks at up to 6 small previews and picks the one that clearly fits the sentence (0 = none fits)."""
-    content = []
-    for n, h in enumerate(hits, 1):
-        try:
-            b = requests.get(h.get('webformatURL') or h['previewURL'], timeout=20).content
-            content += [{'type': 'text', 'text': f'Picture {n}:'}, {'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': base64.b64encode(b).decode()}}]
-        except Exception: pass
+    from PIL import Image
+    import io, time
+    content, order = [], []
+    for i, h in enumerate(hits):
+        b = None
+        for k in range(3):                 # Pixabay sometimes answers too fast requests with an error page instead of the picture
+            try:
+                r = requests.get(h.get('webformatURL') or h['previewURL'], timeout=20)
+                im = Image.open(io.BytesIO(r.content)).convert('RGB'); im.thumbnail((512, 512))
+                buf = io.BytesIO(); im.save(buf, 'JPEG', quality=80); b = buf.getvalue(); break
+            except Exception:
+                time.sleep(2 + 3 * k)
+        if not b: continue                 # owner (Nov 22): a broken preview made Claude reject the whole request
+        order.append(i)
+        content += [{'type': 'text', 'text': f'Picture {len(order)}:'}, {'type': 'image', 'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': base64.b64encode(b).decode()}}]
     if not content: return 0
     content.append({'type': 'text', 'text': f"""Persian finance video: {context}
 Narration at this moment (Persian): «{text}»
@@ -97,7 +106,8 @@ Which picture above fits this moment best, so the viewer immediately connects it
 topic of the sentence (not just "some money"). Reject pictures with flags, politicians, religious symbols, big foreign text or
 watermarks. Return JSON only: {{"best": int (picture number, 0 if none clearly fits)}}"""})
     try:
-        return int((llm._repair(llm.ask(content, max_tokens=200, retries=2)) or {}).get('best') or 0)
+        best = int((llm._repair(llm.ask(content, max_tokens=200, retries=2)) or {}).get('best') or 0)
+        return order[best - 1] + 1 if 1 <= best <= len(order) else 0
     except Exception as e:
         print('photo choice failed', e); return 0
 
@@ -106,7 +116,9 @@ def _free_pic(queries, text, picture, context, vertical, dst):
     from PIL import Image, ImageOps
     import io
     for q in queries:
-        with _lock: cand = [h for h in _search(q, vertical) if h.get('id') not in _used][:6]
+        with _lock:
+            pool = _search(q, vertical) + (_search(q, False) if vertical else [])   # few tall photos -> wide ones, cropped to 9:16
+            cand = [h for h in pool if h.get('id') not in _used][:6]
         if not cand: continue
         best = _choose(cand, text, picture, context)
         if 1 <= best <= len(cand):
