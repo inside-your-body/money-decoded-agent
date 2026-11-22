@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "چرا هر چی بیشتر درآمد داری، بازم پولت ته ماه تموم می‌شه؟",
-   "video_id": "2pf-WMBkAFA",
-   "short_ids": [
-    "ng6xC855BTE"
-   ],
-   "publish_at": "2026-12-02T14:00:00Z",
-   "format": "tl",
-   "fmt": "timeline",
-   "music": "inspired",
-   "thumb_key": "اضافه‌حقوق",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-17T10:18:34"
-  },
-  {
    "topic": "۵ اشتباه پولی که بیشتر مردم تا آخر عمر تکرار می‌کنن",
    "video_id": "Q7yXSTNhBAY",
    "short_ids": [
@@ -424,6 +407,24 @@
     "none"
    ],
    "built_at": "2026-11-21T09:56:08"
+  },
+  {
+   "rebuild": true,
+   "topic": "چرا هر چی بیشتر درآمد داری، بازم پولت ته ماه تموم می‌شه؟",
+   "video_id": "t3uoOHiolPA",
+   "short_ids": [
+    "n6QFbnKVOS4"
+   ],
+   "publish_at": "2026-12-02T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "floating_cities",
+   "thumb_key": "اضافه‌حقوق",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-22T06:49:36"
   }
  ],
  "used_music": [
@@ -459,6 +460,7 @@
   "inspired",
   "deliberate_thought",
   "clean_soul",
-  "fluidscape"
+  "fluidscape",
+  "floating_cities"
  ]
 }
