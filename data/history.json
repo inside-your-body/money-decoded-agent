@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "۵ اشتباه پولی که بیشتر مردم تا آخر عمر تکرار می‌کنن",
-   "video_id": "Q7yXSTNhBAY",
-   "short_ids": [
-    "RTzBm0Jp34o"
-   ],
-   "publish_at": "2026-12-04T14:00:00Z",
-   "format": "tl",
-   "fmt": "countdown",
-   "music": "deliberate_thought",
-   "thumb_key": "اشتباهات مالی",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-17T16:30:34"
-  },
-  {
    "topic": "درآمد جانبی؛ آدم‌های معمولی چطور یه درآمد دوم ساختن؟",
    "video_id": "uX4YPQdGvM8",
    "short_ids": [
@@ -425,6 +408,24 @@
     "none"
    ],
    "built_at": "2026-11-22T06:49:36"
+  },
+  {
+   "rebuild": true,
+   "topic": "۵ اشتباه پولی که بیشتر مردم تا آخر عمر تکرار می‌کنن",
+   "video_id": "XZwGW3LR0SI",
+   "short_ids": [
+    "fiGvAahl3QA"
+   ],
+   "publish_at": "2026-12-04T14:00:00Z",
+   "format": "tl",
+   "fmt": "countdown",
+   "music": "inspired",
+   "thumb_key": "پول ساکن",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-22T08:54:59"
   }
  ],
  "used_music": [
@@ -461,6 +462,7 @@
   "deliberate_thought",
   "clean_soul",
   "fluidscape",
-  "floating_cities"
+  "floating_cities",
+  "inspired"
  ]
 }
