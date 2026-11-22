@@ -393,24 +393,6 @@
   },
   {
    "rebuild": true,
-   "topic": "۵ اشتباه پولی که بیشتر مردم تا آخر عمر تکرار می‌کنن",
-   "video_id": "XZwGW3LR0SI",
-   "short_ids": [
-    "fiGvAahl3QA"
-   ],
-   "publish_at": "2026-12-04T14:00:00Z",
-   "format": "tl",
-   "fmt": "countdown",
-   "music": "inspired",
-   "thumb_key": "پول ساکن",
-   "thumb": "none",
-   "short_thumbs": [
-    "none"
-   ],
-   "built_at": "2026-11-22T08:54:59"
-  },
-  {
-   "rebuild": true,
    "topic": "چرا هر چی بیشتر درآمد داری، بازم پولت ته ماه تموم می‌شه؟",
    "video_id": "vO3IeTZErwg",
    "short_ids": [
@@ -426,6 +408,24 @@
     "none"
    ],
    "built_at": "2026-11-22T16:12:31"
+  },
+  {
+   "rebuild": true,
+   "topic": "۵ اشتباه پولی که بیشتر مردم تا آخر عمر تکرار می‌کنن",
+   "video_id": "ai5h5H3FP9M",
+   "short_ids": [
+    "IY5XURIEOqE"
+   ],
+   "publish_at": "2026-12-04T14:00:00Z",
+   "format": "tl",
+   "fmt": "countdown",
+   "music": "clean_soul",
+   "thumb_key": "پول ساکن",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-22T21:55:57"
   }
  ],
  "used_music": [
@@ -464,6 +464,7 @@
   "fluidscape",
   "floating_cities",
   "inspired",
-  "deliberate_thought"
+  "deliberate_thought",
+  "clean_soul"
  ]
 }
