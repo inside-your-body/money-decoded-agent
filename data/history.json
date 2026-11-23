@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "برند مک‌دونالد در اصل از همبرگر پول درنمیاره!",
-   "video_id": "jcC5NiDbDqI",
-   "short_ids": [
-    "UDRjlGkl0aI"
-   ],
-   "publish_at": "2026-12-08T14:00:00Z",
-   "format": "tl",
-   "fmt": "timeline",
-   "music": "fluidscape",
-   "thumb_key": "برند مک‌دونالد",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-18T09:54:48"
-  },
-  {
    "topic": "برند زارا چطور هر هفته لباس جدید میاره و این‌قدر پولدار شد؟",
    "video_id": "HdN_xyxcwQQ",
    "short_ids": [
@@ -427,6 +410,24 @@
     "none"
    ],
    "built_at": "2026-11-23T02:54:05"
+  },
+  {
+   "rebuild": true,
+   "topic": "برند مک‌دونالد در اصل از همبرگر پول درنمیاره!",
+   "video_id": "mKR1xpuw0sw",
+   "short_ids": [
+    "Bu-l5ENJjZI"
+   ],
+   "publish_at": "2026-12-08T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "floating_cities",
+   "thumb_key": "اجاره",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-23T09:59:41"
   }
  ],
  "used_music": [
@@ -467,6 +468,7 @@
   "inspired",
   "deliberate_thought",
   "clean_soul",
-  "fluidscape"
+  "fluidscape",
+  "floating_cities"
  ]
 }
