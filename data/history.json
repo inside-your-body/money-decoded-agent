@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "درآمد جانبی؛ آدم‌های معمولی چطور یه درآمد دوم ساختن؟",
-   "video_id": "uX4YPQdGvM8",
-   "short_ids": [
-    "I63QubXntRo"
-   ],
-   "publish_at": "2026-12-06T14:00:00Z",
-   "format": "tl",
-   "fmt": "case",
-   "music": "clean_soul",
-   "thumb_key": "درآمد جانبی",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-18T08:08:00"
-  },
-  {
    "topic": "برند مک‌دونالد در اصل از همبرگر پول درنمیاره!",
    "video_id": "jcC5NiDbDqI",
    "short_ids": [
@@ -426,6 +409,24 @@
     "none"
    ],
    "built_at": "2026-11-22T21:55:57"
+  },
+  {
+   "rebuild": true,
+   "topic": "درآمد جانبی؛ آدم‌های معمولی چطور یه درآمد دوم ساختن؟",
+   "video_id": "3Ov9B3k4ZI0",
+   "short_ids": [
+    "-8ehh1auD9E"
+   ],
+   "publish_at": "2026-12-06T14:00:00Z",
+   "format": "tl",
+   "fmt": "case",
+   "music": "fluidscape",
+   "thumb_key": "آمار درآمد",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-23T02:54:05"
   }
  ],
  "used_music": [
@@ -465,6 +466,7 @@
   "floating_cities",
   "inspired",
   "deliberate_thought",
-  "clean_soul"
+  "clean_soul",
+  "fluidscape"
  ]
 }
