@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "چرا آیفونِ برند اپل این‌قدر گرونه ولی بازم همه می‌خرنش؟",
-   "video_id": "BbxOhDhlWgA",
-   "short_ids": [
-    "WmoKvs_N9oc"
-   ],
-   "publish_at": "2026-12-14T14:00:00Z",
-   "format": "tl",
-   "fmt": "countdown",
-   "music": "deliberate_thought",
-   "thumb_key": "آیفون",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-19T10:22:43"
-  },
-  {
    "topic": "برند کوکاکولا چطور فقط با آب و شکر یه امپراتوری ساخت؟",
    "video_id": "6YDeJaGPr1w",
    "short_ids": [
@@ -430,6 +413,24 @@
     "none"
    ],
    "built_at": "2026-11-24T11:47:15"
+  },
+  {
+   "rebuild": true,
+   "topic": "چرا آیفونِ برند اپل این‌قدر گرونه ولی بازم همه می‌خرنش؟",
+   "video_id": "_B0cXfYjpAs",
+   "short_ids": [
+    "DTmrRc-Uv6U"
+   ],
+   "publish_at": "2026-12-14T14:00:00Z",
+   "format": "tl",
+   "fmt": "countdown",
+   "music": "clean_soul",
+   "thumb_key": "آیفون",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-24T15:01:37"
   }
  ],
  "used_music": [
@@ -473,6 +474,7 @@
   "fluidscape",
   "floating_cities",
   "inspired",
-  "deliberate_thought"
+  "deliberate_thought",
+  "clean_soul"
  ]
 }
