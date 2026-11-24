@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "برند آیکیا چطور با مبل ارزون یکی از پولدارترین شرکت‌های دنیا شد؟",
-   "video_id": "YunGlM96LDk",
-   "short_ids": [
-    "v3-aZrFPSvw"
-   ],
-   "publish_at": "2026-12-12T14:00:00Z",
-   "format": "tl",
-   "fmt": "timeline",
-   "music": "inspired",
-   "thumb_key": "برند آیکیا",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-19T01:13:56"
-  },
-  {
    "topic": "چرا آیفونِ برند اپل این‌قدر گرونه ولی بازم همه می‌خرنش؟",
    "video_id": "BbxOhDhlWgA",
    "short_ids": [
@@ -429,6 +412,24 @@
     "none"
    ],
    "built_at": "2026-11-24T03:25:49"
+  },
+  {
+   "rebuild": true,
+   "topic": "برند آیکیا چطور با مبل ارزون یکی از پولدارترین شرکت‌های دنیا شد؟",
+   "video_id": "0Gk2Re--LAs",
+   "short_ids": [
+    "Nj4i_6189G0"
+   ],
+   "publish_at": "2026-12-12T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "deliberate_thought",
+   "thumb_key": "آچار آلن",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-24T11:47:15"
   }
  ],
  "used_music": [
@@ -471,6 +472,7 @@
   "clean_soul",
   "fluidscape",
   "floating_cities",
-  "inspired"
+  "inspired",
+  "deliberate_thought"
  ]
 }
