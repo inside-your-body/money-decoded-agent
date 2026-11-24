@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "برند زارا چطور هر هفته لباس جدید میاره و این‌قدر پولدار شد؟",
-   "video_id": "HdN_xyxcwQQ",
-   "short_ids": [
-    "0cQw55hLk8g"
-   ],
-   "publish_at": "2026-12-10T14:00:00Z",
-   "format": "tl",
-   "fmt": "timeline",
-   "music": "floating_cities",
-   "thumb_key": "برند زارا",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-18T18:09:39"
-  },
-  {
    "topic": "برند آیکیا چطور با مبل ارزون یکی از پولدارترین شرکت‌های دنیا شد؟",
    "video_id": "YunGlM96LDk",
    "short_ids": [
@@ -428,6 +411,24 @@
     "none"
    ],
    "built_at": "2026-11-23T09:59:41"
+  },
+  {
+   "rebuild": true,
+   "topic": "برند زارا چطور هر هفته لباس جدید میاره و این‌قدر پولدار شد؟",
+   "video_id": "GEj1MPfJkA0",
+   "short_ids": [
+    "ztffRlMdACU"
+   ],
+   "publish_at": "2026-12-10T14:00:00Z",
+   "format": "tl",
+   "fmt": "timeline",
+   "music": "inspired",
+   "thumb_key": null,
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-24T03:25:49"
   }
  ],
  "used_music": [
@@ -469,6 +470,7 @@
   "deliberate_thought",
   "clean_soul",
   "fluidscape",
-  "floating_cities"
+  "floating_cities",
+  "inspired"
  ]
 }
