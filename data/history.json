@@ -183,23 +183,6 @@
    "built_at": "2026-11-15T16:23:46"
   },
   {
-   "topic": "برند کوکاکولا چطور فقط با آب و شکر یه امپراتوری ساخت؟",
-   "video_id": "6YDeJaGPr1w",
-   "short_ids": [
-    "kRHmpjcfI6c"
-   ],
-   "publish_at": "2026-12-16T14:00:00Z",
-   "format": "tl",
-   "fmt": "case",
-   "music": "clean_soul",
-   "thumb_key": "برند کوکاکولا",
-   "thumb": "ok",
-   "short_thumbs": [
-    "ok"
-   ],
-   "built_at": "2026-11-19T11:17:36"
-  },
-  {
    "topic": "برند نوکیا که یه روز پادشاه موبایل بود، چطور سقوط کرد؟",
    "video_id": "qWfa3YLGiwI",
    "short_ids": [
@@ -431,6 +414,24 @@
     "none"
    ],
    "built_at": "2026-11-24T15:01:37"
+  },
+  {
+   "rebuild": true,
+   "topic": "برند کوکاکولا چطور فقط با آب و شکر یه امپراتوری ساخت؟",
+   "video_id": "gT-rgHu4r4s",
+   "short_ids": [
+    "zzbgJcwgmJ8"
+   ],
+   "publish_at": "2026-12-16T14:00:00Z",
+   "format": "tl",
+   "fmt": "case",
+   "music": "fluidscape",
+   "thumb_key": "کوکاکولا",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-25T00:50:03"
   }
  ],
  "used_music": [
@@ -475,6 +476,7 @@
   "floating_cities",
   "inspired",
   "deliberate_thought",
-  "clean_soul"
+  "clean_soul",
+  "fluidscape"
  ]
 }
