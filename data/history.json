@@ -432,6 +432,24 @@
     "none"
    ],
    "built_at": "2026-11-25T00:50:03"
+  },
+  {
+   "rebuild": false,
+   "topic": "برند استارباکس در اصل قهوه نمی‌فروشه!",
+   "video_id": "3jbUu6yw9-Y",
+   "short_ids": [
+    "8uBQtadOHgw"
+   ],
+   "publish_at": "2026-12-20T14:00:00Z",
+   "format": "tl",
+   "fmt": "countdown",
+   "music": "floating_cities",
+   "thumb_key": "پول فراموش‌شده",
+   "thumb": "none",
+   "short_thumbs": [
+    "none"
+   ],
+   "built_at": "2026-11-26T10:28:57"
   }
  ],
  "used_music": [
@@ -477,6 +495,7 @@
   "inspired",
   "deliberate_thought",
   "clean_soul",
-  "fluidscape"
+  "fluidscape",
+  "floating_cities"
  ]
 }
